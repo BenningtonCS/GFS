@@ -1,0 +1,14 @@
+CREATE|98|/foo/bar
+CREATE|108|/foo/bar
+CREATE|109|/foo/bar
+CREATE|110|/foo/bar
+CREATE|111|/foo/bar
+CREATE|112|/foo/bar
+CREATE|113|/poo/bar
+CREATE|114|/shit/bar
+CREATE|115|/shoot/bar
+CREATE|116|/toot/bar
+CREATE|117|/tot/bar
+CREATE|118|/tit/bar
+CREATE|119|/tits/bar
+CREATE|120|/titties/bar
