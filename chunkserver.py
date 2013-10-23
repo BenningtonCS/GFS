@@ -65,34 +65,39 @@ class chunkReaderThread(connThread):
 
 ##################################### Entering Brendon's Code ####################################
 class onPi(connThread):
+	# onPi reads every file within the path (which should be /data/gfsbin/Chunks)
+	# and returns it as a list in the form of <chunk handle>|<chunk handle>| etc.
 	path = "Chunks/"
         
         def run(self):
                 files = []
-                for filenames in os.walk(self.path):
-                        files.append(filenames)
-                output = str( '|'.join(files[0][2]))
-		if output == "":
-			self.connection.send(" ")
-		else:
-			self.connection.send(output)
+                for filenames in os.walk(self.path): # read every file
+                        files.append(filenames)      # append each one to a list
+                output = str( '|'.join(files[0][2])) # turn the list into a string
+		if output == "":		     # if there is nothing in the dir
+			self.connection.send(" ")    # send an empty string
+		else:				     # otherwise
+			self.connection.send(output) # send everything as a string
                 
 class makeChunk(connThread):
+	# makeChunk creates an empty file that has the name of the chunkhandle that 
+	# was given to it.
         def run(self):
 		self.connection.send("continue")
 		print "RAWR"
-                chunkHandle = self.connection.recv(1024)
-                open("Chunks/"+chunkHandle, 'w').close()
+                chunkHandle = self.connection.recv(1024) # get the name of the chunk
+                open("Chunks/"+chunkHandle, 'w').close() # create the file
 		print "DONE"
 class appendChunk(connThread):
-	
+	# appendChunk adds data that is handed to it to the given chunkhandle.
         def run(self):
 		self.connection.send("continue")
-		chunkHandle = self.connection.recv(1024)
-		self.connection.send("continue")
-		data = self.connection.recv(67108864)
-                with open("Chunks/"+chunkHandle, 'a') as a:
-                        a.write(data)
+		chunkHandle = self.connection.recv(1024) # name of the chunk
+		self.connection.send("continue") 
+		data = self.connection.recv(67108864)    # data being added
+                with open("Chunks/"+chunkHandle, 'a') as a: # open the chunk
+                        a.write(data) 			 # add the data to it
+
 ###################################### Exiting Brendon's Code ###########################################
 
 class distributorThread(connThread):
