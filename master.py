@@ -257,6 +257,94 @@ class handleCommand(threading.Thread):
 		# Return a pipe-seperated list of randomized hosts
 		return hostsList[randomInt] + "|" + hostsList[randomInt + 1] + "|" + hostsList[randomInt + 2]
 
+
+
+	# Function that executes the protocol when a CREATE message is received
+	def create(self):
+		# Get a new chunkhandle
+		chunkHandle = self.handleCounter()
+		# Choose which chunkserver it will be stored on
+		hosts = self.chooseHosts()
+		# Send the API a string containing the location and chunkHandle information
+		self.s.send(str(hosts) + "|" + str(chunkHandle))
+		print "sent", str(hosts) + "|" + str(chunkHandle)
+		# Split the list of locations by pipe
+		createLocations = hosts.split('|')
+		# Update the database to now include the newly created chunk
+		################################################################
+		#Should probably later be intergrated better with oplog updates#
+		################################################################
+		sequence = database.findHighestSequence(fileName) + 1
+		database.update(chunkHandle, fileName, sequence, createLocations)
+		
+
+
+	# Function that executes the protocol when an APPEND message is received
+	def append(self):
+		#in the case of an append, we need to locate the last chunk in a file
+		#so we set a Highest Sequence counter to keep track of which chunk
+		#is the newest
+		targetSequence = database.findHighestSequence(fileName)
+		print "target sequence ==", targetSequence
+		targetChunk = Chunk(00, 'test', -2)
+		for chunk in database.data:
+			#print chunk.fileName
+			#print fileName
+			#print chunk.sequenceNumber
+			#print targetSequence
+			if chunk.fileName.strip() == fileName.strip() and chunk.sequenceNumber == targetSequence:
+				targetChunk = chunk
+		#then we find the locations of the targetChunk
+
+		###########################################################################
+		#IF TARGETCHUNK IS NOT FOUND, A MAJOR ERROR WILL BE THROWN. NEEDS HANDLING#
+		###########################################################################
+		print "targetChunk handle ==", targetChunk.handle
+		locations = database.locate(targetChunk.handle)
+		print locations
+		#We create an empty message to append our locations to
+		appendMessage = ''
+		#we prepare to send the locations and chunkhandle to the API
+		for item in locations:
+			print "adding", item, "to append message"
+			#add the location plus a pipe
+			appendMessage += item.strip() + '|'
+		#append the chunkhandle to our message
+		appendMessage += str(targetChunk.handle)
+		#send our message
+		self.s.send(appendMessage)
+		print "sent message", appendMessage
+
+
+
+	# Function that executes the protocol when a DELETE message is received
+	def delete(self):
+		pass
+		
+		
+		
+	# Function that executes the protocol when an OPEN message is received
+	def open(self):
+		pass
+		
+		
+		
+	# Function that executes the protocol when a CLOSE message is received
+	def close(self):
+		pass
+
+
+
+	# Function that executes the protocol when an OPLOG message is received
+	def oplog(self):
+		print "Data Received: OPLOG"
+		# Create a new instance of an opLog object
+		self.oplog = opLog()
+		# Append to the OpLog the <ACTION>|<CHUNKHANDLE>|<FILENAME>
+		self.oplog.append(msg[1]+"|"+msg[2]+"|"+msg[3])
+
+
+
 	# Function to handle the message received from the API
 	def run(self):
 		# Parse the input into the msg variable
@@ -269,92 +357,30 @@ class handleCommand(threading.Thread):
 		print "connection from: ", self.ip, "on port ", self.port
 		print "received message", op
 
-		
 		# If the operation is to CREATE:
 		if op == "CREATE":
-			# Get a new chunkhandle
-			chunkHandle = self.handleCounter()
-			# Choose which chunkserver it will be stored on
-			hosts = self.chooseHosts()
-			# Send the API a string containing the location and chunkHandle information
-			self.s.send(str(hosts) + "|" + str(chunkHandle))
-			print "sent", str(hosts) + "|" + str(chunkHandle)
-			# Split the list of locations by pipe
-			createLocations = hosts.split('|')
-			# Update the database to now include the newly created chunk
-			################################################################
-			#Should probably later be intergrated better with oplog updates#
-			################################################################
-			sequence = database.findHighestSequence(fileName) + 1
-			database.update(chunkHandle, fileName, sequence, createLocations)
-
+			self.create()
 
 		# If the operation is to DELETE:
 		elif op == "DELETE":
-			# for right now, do nothing.
-			pass
-
+			self.delete()
 
 		# If the operation is to APPEND:
 		elif op == "APPEND":
-			#in the case of an append, we need to locate the last chunk in a file
-			#so we set a Highest Sequence counter to keep track of which chunk
-			#is the newest
-			targetSequence = database.findHighestSequence(fileName)
-			print "target sequence ==", targetSequence
-			targetChunk = Chunk(00, 'fuck off', -2)
-			for chunk in database.data:
-				#print chunk.fileName
-				#print fileName
-				#print chunk.sequenceNumber
-				#print targetSequence
-				if chunk.fileName.strip() == fileName.strip() and chunk.sequenceNumber == targetSequence:
-					targetChunk = chunk
-			#then we find the locations of the targetChunk
-
-			###########################################################################
-			#IF TARGETCHUNK IS NOT FOUND, A MAJOR ERROR WILL BE THROWN. NEEDS HANDLING#
-			###########################################################################
-			print "targetChunk handle ==", targetChunk.handle
-			locations = database.locate(targetChunk.handle)
-			print locations
-			#We create an empty message to append our locations to
-			appendMessage = ''
-			#we prepare to send the locations and chunkhandle to the API
-			for item in locations:
-				print "adding", item, "to append message"
-				#add the location plus a pipe
-				appendMessage += item.strip() + '|'
-			#append the chunkhandle to our message
-			appendMessage += str(targetChunk.handle)
-			#send our message
-			self.s.send(appendMessage)
-			print "sent message", appendMessage
-
+			self.append()
 
 		# If the operation is to OPEN:
 		elif op == "OPEN":
-			# For now, do nothing.
-			pass
-			# Return the locations of the chunks
-
+			self.open()
 
 		# If the operation is to CLOSE:
 		elif op == "CLOSE":
-
-			# For right now, do nothing.
-			pass
-
+			self.close()
 
 		# If the operation is to update the oplog, OPLOG:
 		elif op == "OPLOG":
-			print "Data Received: OPLOG"
-			print msg[1]+"|"+msg[2]+"|"+msg[3]
-			# Create a new instance of an opLog object
-			self.oplog = opLog()
-			# Append to the OpLog the <ACTION>|<CHUNKHANDLE>|<FILENAME>
-			self.oplog.append(msg[1]+"|"+msg[2]+"|"+msg[3])
-			# Update OpLog and update Memory database
+			self.oplog()
+						
 		else:
 			# If the operation is something else, something went terribly wrong. 
 			# This error handling needs to vastly improve
