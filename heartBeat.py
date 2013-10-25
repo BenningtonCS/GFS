@@ -65,9 +65,6 @@ class heartBeat:
 	# Function to ping chunk servers and, based on whether or not a response was received,
 	# to add or remove them from the activehosts file
         def heartBeat(self, IP):
-                # Get the list of all chunk server IPs
-                chunkServers = self.getChunkServerIPs()
-#               print chunkServers
                 # Get the list of all active chunk server IPs
                 activeServers = self.getActiveChunkServers()
 #               print activeServers
