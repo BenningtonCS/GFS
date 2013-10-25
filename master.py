@@ -22,12 +22,12 @@ import socket, threading, random, os, time, config
 
 
 
-# Define the paths of the host file, activehost file, and oplog
+# Define the paths of the host file, activehost file, and oplog from the config file, and
+# define the port to be used, also from the config file
 HOSTSFILE = config.hostsfile
 ACTIVEHOSTSFILE = config.activehostsfile
 OPLOG = config.oplog
-
-
+chunkPort = config.port
 
 
 
@@ -38,8 +38,7 @@ OPLOG = config.oplog
 #########################################################
 
 
-#we have a preset chunkPort for auditing the chunkServers
-chunkPort = config.port
+
 
 
 #we define our class for Chunk Metadata
@@ -172,8 +171,6 @@ class Database:
 		return highestSequence
 
 
-database = Database()
-database.initialize()
 
 
 
@@ -181,27 +178,9 @@ database.initialize()
 
 #################################################################
 
-#			API HANDLER OBJECT			#
+#			API HANDLER OBJECT CREATOR							#
 
 #################################################################
-
-
-
-
-# Create a server TCP socket and allow address re-use
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-# Create a list in which threads will be stored in order to be joined later
-threads = []
-
-# Define a Port variable
-userPort = config.port
-
-# Bind the listener-server 
-s.bind(('', userPort))
-
-
 
 
 
@@ -390,6 +369,7 @@ class handleCommand(threading.Thread):
 
 
 
+
 #################################################################
 
 #                       OPLOG OBJECT CREATOR                    #
@@ -419,12 +399,29 @@ class opLog:
 
 
 
-#########################################################################
 
-#                       MAIN THREAD - API LISTENER                      #
 
-#########################################################################
+#######################################################################
 
+#                       MAIN 						                  #
+
+#######################################################################
+
+# Make sure the database initializes before anything else is done
+database = Database()
+database.initialize()
+
+
+# Create a server TCP socket and allow address re-use
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+# Create a list in which threads will be stored in order to be joined later
+threads = []
+
+
+# Bind the listener-server 
+s.bind(('', chunkPort))
 
 
 # Main listening thread for API commands
