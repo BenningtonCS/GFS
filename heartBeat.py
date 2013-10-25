@@ -11,10 +11,10 @@
 # File:         heartBeat.py                                                    #
 #                                                                               #
 # Summary:      heartBeat.py sends a ping to each of the chunkservers in the    #
-#				host.txt file. If the chunkserver responds, it adds it to an	#
-#				activehosts file, so all responsive chunkserver addresses are	#
-#				stored in one location. If the chunkserver does not respond, 	#
-#				heartBeat.py makes sure it is removed from the activehosts list #
+#		host.txt file. If the chunkserver responds, it adds it to an	#
+#		activehosts file, so all responsive chunkserver addresses are	#
+#		stored in one location. If the chunkserver does not respond, 	#
+#		heartBeat.py makes sure it is removed from the activehosts list #
 #                                                                               #
 #################################################################################
 
@@ -42,7 +42,7 @@ class heartBeat:
                                 return cs
                 # If the hosts.txt file does not exist:
                 else:
-                        # TEMPORARY: print a message to inform of the issue
+                        # TEMPORARY: print a message to inform of the issue (ISSUE #41)
                         print "ERROR: hosts.txt does not exist."
 
         # Function that returns a list of all chunk server IPs that are active 
