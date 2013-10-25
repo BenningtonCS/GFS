@@ -48,6 +48,8 @@ class heartBeat:
 	SOCK_TIMEOUT = 2
 	PORT = config.port
 	DELAY = 3
+	HOSTS = config.hostsfile
+	AHOSTS = config.activehostsfile
 	# Debug message for successful calling of heartBeat object
 	logging.debug('init successful')
 
@@ -58,7 +60,7 @@ class heartBeat:
                 # If the hosts.txt file exists:
                 if os.path.isfile("hosts.txt"):
                         # Read from it and parse its contents into a list. Return the list.
-                        with open("hosts.txt", "r") as file:
+                        with open(HOSTS, "r") as file:
                                 cs = file.read().splitlines()
                                 return cs
                 # If the hosts.txt file does not exist:
@@ -72,15 +74,15 @@ class heartBeat:
         	# Debug message for successful calling of function
         	logging.debug('Getting active chunk server IPs')
                 # If the activehosts.txt file exists:
-                if os.path.isfile("activehosts.txt"):
+                if os.path.isfile(AHOSTS):
                         # Read from it and parse its contents into a list. Return the list.
-                        with open("activehosts.txt", "r") as file:
+                        with open(AHOSTS, "r") as file:
                                 activeCS = file.read().splitlines()
                                 return activeCS
                 # If the activehosts.txt file does not exist:
                 else:
                         # Create a file called activehosts.txt
-                        open("activehosts.txt", "a").close()
+                        open(AHOSTS, "a").close()
                         # Return an empty list, as there are no contents yet in activehosts.txt
                         # so parsing it into a list would return an empty list anyways.
                         return []
@@ -114,7 +116,7 @@ class heartBeat:
                         if data == "<3!":
                                 # If the chunkserver IP is not in the activeServers list, add it to the list
                                 if IP not in activeServers:
-                                        with open("activehosts.txt", "a") as file:
+                                        with open(AHOSTS, "a") as file:
                                                 file.write(IP + "\n")
 		# Handle the timeout (chunk server alive but not resonding) and connection (server dead) errors
 		except (socket.timeout, socket.error):
@@ -125,7 +127,7 @@ class heartBeat:
                                 activeServers.remove(IP)
 			# Clear the previous activehosts.txt file and replace it with the list of active servers, 
 			# which now excludes the failed chunkserver
-                        with open("activehosts.txt", "w") as file:
+                        with open(AHOSTS, "w") as file:
                                 newList = ""
                                 for item in activeServers:
                                         newList += item + "\n"
