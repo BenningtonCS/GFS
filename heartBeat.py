@@ -10,33 +10,43 @@
 # Date:         21 October 2013                                                 #
 # File:         heartBeat.py                                                    #
 #                                                                               #
-# Summary:      Send love over TCP		                                #
+# Summary:      heartBeat.py sends a ping to each of the chunkservers in the    #
+#				host.txt file. If the chunkserver responds, it adds it to an	#
+#				activehosts file, so all responsive chunkserver addresses are	#
+#				stored in one location. If the chunkserver does not respond, 	#
+#				heartBeat.py makes sure it is removed from the activehosts list #
 #                                                                               #
 #################################################################################
 
 import socket, time, os
 
-# Define a heartBeat object
+# Define a heartBeat object which will be used to ping the chunkservers and add those that
+# respond to an activehosts log, while removing those that do not respond from the 
+# activehosts log
 class heartBeat:
-	# Define constants that may want to be changed later
+	# Define variables that may need to be tweaked to optimize performance
+	# SOCK_TIMEOUT sets the length of the timeout in seconds
+	# PORT sets the port which the heartBeat will use to communicate with the chunkservers
+	# DELAY sets the delay between chunkserver pings, as to reduce the load on the network
 	SOCK_TIMEOUT = 2
 	PORT = 9666
 	DELAY = 3
 
-	# Function that returns a list of all chunk server IPs in the HOSTS.txt file
+	# Function that returns a list of all chunk server IPs in the hosts.txt file
         def getChunkServerIPs(self):
-                # If the HOSTS.txt file exists:
+                # If the hosts.txt file exists:
                 if os.path.isfile("hosts.txt"):
                         # Read from it and parse its contents into a list. Return the list.
                         with open("hosts.txt", "r") as file:
                                 cs = file.read().splitlines()
                                 return cs
-                # If the HOSTS.txt file does not exist:
+                # If the hosts.txt file does not exist:
                 else:
-                        # Print a vulgar message because it should always exist.
-                        print "Fuck! Abort! Abort!"
+                        # TEMPORARY: print a message to inform of the issue
+                        print "ERROR: hosts.txt does not exist."
 
-        # Function that returns a list of all chunk server IPs that are active (that have responded to heartbeats
+        # Function that returns a list of all chunk server IPs that are active 
+        # (that have responded to heartbeats)
         def getActiveChunkServers(self):
                 # If the activehosts.txt file exists:
                 if os.path.isfile("activehosts.txt"):
@@ -49,9 +59,11 @@ class heartBeat:
                         # Create a file called activehosts.txt
                         open("activehosts.txt", "a").close()
                         # Return an empty list, as there are no contents yet in activehosts.txt
+                        # so parsing it into a list would return an empty list anyways.
                         return []
 
-	# Function to check if chunk servers are active or not
+	# Function to ping chunk servers and, based on whether or not a response was received,
+	# to add or remove them from the activehosts file
         def heartBeat(self, IP):
                 # Get the list of all chunk server IPs
                 chunkServers = self.getChunkServerIPs()
@@ -67,16 +79,16 @@ class heartBeat:
                         self.s.settimeout(self.SOCK_TIMEOUT)
 			# Allow the socket to re-use address/port
                         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-			# Connect to the chunkserver over a specified port
+			# Connect to the chunkserver over the specified port
                         self.s.connect((IP, self.PORT))
-			# Send the chunk server a heart
+			# Send the chunk server a heart (ping)
                         self.s.send("<3?")
 			# Get the chunk server response
                         data = self.s.recv(1024)
                         print data
-			# Don't forget to close the connection so future heartBeats have a chance!
+			# Close the connection to allow future connections
                         self.s.close()
-                        # If the chunk server sends back a heart:
+                        # If the chunk server responds with a heart, add it to activehosts
                         if data == "<3!":
                                 # If the chunkserver IP is not in the activeServers list, add it to the list
                                 if IP not in activeServers:
@@ -89,16 +101,17 @@ class heartBeat:
                         if IP in activeServers:
 				# If it is, remove it from the list
                                 activeServers.remove(IP)
-			# Clear/create the activehosts.txt file and put in it the list of active servers, which now excludes the failed chunkserver
+			# Clear the previous activehosts.txt file and replace it with the list of active servers, 
+			# which now excludes the failed chunkserver
                         with open("activehosts.txt", "w") as file:
                                 newList = ""
                                 for item in activeServers:
                                         newList += item + "\n"
                                 file.write(newList)
 
-	# For all the chunkservers in the HOSTS list, send a heartbeat to see if it is still alive
-	def pumpSomeBlood(self):
-		# Get the list of chunk server IPs from the HOSTS file
+	# Function to iterate through all of the chunk servers and send a heart beat
+	def pumpBlood(self):
+		# Get the list of chunk server IPs from the hosts file
                 chunkServers = self.getChunkServerIPs()
 		# For every IP, run the heartBeat funtion, with a short delay between each to ease network load
                 for item in chunkServers:
@@ -107,7 +120,7 @@ class heartBeat:
                         self.heartBeat(item)
                         time.sleep(self.DELAY)
 
-# initiate!
+# create an object instance and initiate the heartBeat
 master = heartBeat()
-master.pumpSomeBlood()
+master.pumpBlood()
 
