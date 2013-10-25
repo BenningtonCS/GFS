@@ -12,21 +12,20 @@
 # Date:         21 October 2013                                                 #
 # File:         master.py	                                                #
 #                                                                               #
-# Summary:      Does masterly things, namely managing chunk metadata in an      #
-#		in-memory databse, maintaining an operations log, executing	#
-#		API commands.							#
+# Summary:      Manages chunk metadata in an in-memory database,     #
+#		maintains an operations log, and executes API commands					#
 #                                                                               #
 #################################################################################
 
 
-import socket, threading, random, os, time
+import socket, threading, random, os, time, config
 
 
 
 # Define the paths of the host file, activehost file, and oplog
-HOSTSFILE = 'hosts.txt'
-ACTIVEHOSTSFILE = 'activehosts.txt'
-OPLOG = 'opLog.txt'
+HOSTSFILE = config.hostsfile
+ACTIVEHOSTSFILE = config.activehostsfile
+OPLOG = config.oplog
 
 
 
@@ -40,7 +39,7 @@ OPLOG = 'opLog.txt'
 
 
 #we have a preset chunkPort for auditing the chunkServers
-chunkPort = 9666
+chunkPort = config.port
 
 
 #we define our class for Chunk Metadata
@@ -187,7 +186,7 @@ s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 threads = []
 
 # Define a Port variable
-userPort = 9666
+userPort = config.port
 
 # Bind the listener-server 
 s.bind(('', userPort))
