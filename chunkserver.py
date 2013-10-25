@@ -16,12 +16,13 @@ a distributor thread which parses the first message and hands the connection to 
 import socket
 import threading
 import os
+import config
 
 
 mg64 = 1024*1024 # 64 megabytes in binary
 	
 ADDRESS = '' # set address to the local IP
-PORT = 9666 # carry out all communications on port 9666
+PORT = config.port # carry out all communications on port 9666
 
 class connThread(threading.Thread): 
 	# This class is the parent class from which all other threads inherit 

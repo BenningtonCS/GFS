@@ -5,6 +5,7 @@
 import socket
 import threading
 import time
+import config
 
 class API():
 
@@ -12,7 +13,7 @@ class API():
 	global MASTER_ADDRESS
 	global TCP_PORT
 	MASTER_ADDRESS = '10.10.117.109'
-	TCP_PORT = 9666
+	TCP_PORT = config.port
 	MY_ADDRESS = '10.10.117.182'
 	
 	#lets make the API a server and a client to send and recieve messages

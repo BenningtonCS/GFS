@@ -18,7 +18,7 @@
 #                                                                               #
 #################################################################################
 
-import socket, time, os
+import socket, time, os, config
 
 # Define a heartBeat object which will be used to ping the chunkservers and add those that
 # respond to an activehosts log, while removing those that do not respond from the 
@@ -29,7 +29,7 @@ class heartBeat:
 	# PORT sets the port which the heartBeat will use to communicate with the chunkservers
 	# DELAY sets the delay between chunkserver pings, as to reduce the load on the network
 	SOCK_TIMEOUT = 2
-	PORT = 9666
+	PORT = config.port
 	DELAY = 3
 
 	# Function that returns a list of all chunk server IPs in the hosts.txt file
