@@ -18,7 +18,24 @@
 #                                                                               #
 #################################################################################
 
-import socket, time, os, config
+import socket, time, os, config, logging, sys
+
+# Setup for having a verbose mode for debugging:
+# USAGE: When running program, $ python heartBeat.py , no debug message will show up
+# Instead, the program should be run in verbose, $ python heartBeat.py -v , for debug 
+# messages to show up
+
+# Get a list of command line arguments
+args = sys.argv
+# Check to see if the verbose flag was one of the command line arguments
+if "-v" in args:
+	# If it was one of the arguments, set the logging level to debug 
+	logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
+else:
+	# If it was not, set the logging level to default (only shows messages with level
+	# warning or higher)
+	logging.basicConfig(format='%(levelname)s : %(message)s')
+
 
 # Define a heartBeat object which will be used to ping the chunkservers and add those that
 # respond to an activehosts log, while removing those that do not respond from the 
@@ -31,9 +48,13 @@ class heartBeat:
 	SOCK_TIMEOUT = 2
 	PORT = config.port
 	DELAY = 3
+	# Debug message for successful calling of heartBeat object
+	logging.debug('init successful')
 
 	# Function that returns a list of all chunk server IPs in the hosts.txt file
         def getChunkServerIPs(self):
+        		# Debug message for successful calling of function
+        		logging.debug('Getting chunk server IPs')
                 # If the hosts.txt file exists:
                 if os.path.isfile("hosts.txt"):
                         # Read from it and parse its contents into a list. Return the list.
@@ -43,11 +64,13 @@ class heartBeat:
                 # If the hosts.txt file does not exist:
                 else:
                         # TEMPORARY: print a message to inform of the issue (ISSUE #41)
-                        print "ERROR: hosts.txt does not exist."
+                        logging.error("hosts.txt does not exist.")
 
         # Function that returns a list of all chunk server IPs that are active 
         # (that have responded to heartbeats)
         def getActiveChunkServers(self):
+        		# Debug message for successful calling of function
+        		logging.debug('Getting active chunk server IPs')
                 # If the activehosts.txt file exists:
                 if os.path.isfile("activehosts.txt"):
                         # Read from it and parse its contents into a list. Return the list.
@@ -65,6 +88,8 @@ class heartBeat:
 	# Function to ping chunk servers and, based on whether or not a response was received,
 	# to add or remove them from the activehosts file
         def heartBeat(self, IP):
+        		# Debug message for successful calling of function
+        		logging.debug('Initiating heartBeat protocol')
                 # Get the list of all active chunk server IPs
                 activeServers = self.getActiveChunkServers()
 #               print activeServers
@@ -108,6 +133,8 @@ class heartBeat:
 
 	# Function to iterate through all of the chunk servers and send a heart beat
 	def pumpBlood(self):
+		# Debug message for successful calling of function
+		logging.debug('Begin sending heartbeats to chunk servers')
 		# Get the list of chunk server IPs from the hosts file
                 chunkServers = self.getChunkServerIPs()
 		# For every IP, run the heartBeat funtion, with a short delay between each to ease network load
