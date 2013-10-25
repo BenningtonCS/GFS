@@ -107,8 +107,18 @@ class Database:
 			#send the message that audits the chunkserver
 			s.send('Contents?')
 			print "sent 'Contents?' to", line
-		        #recieve their reply, which is formatted as chunkhandle1|chunkhandle2|chunkha$
-			data = s.recv(1024)
+		        #recieve their reply, which is formatted as chunkhandle1|chunkhandle2|chunkhandle3|...
+		        #to make sure we get all data, even if it exceeds the buffer size, we can
+		        #loop over the receive and append to a string to get the whole message
+			while 1:
+				#receive the data
+				d = s.recv(1024)
+				#if there is no more data, exit the loop
+				if not d:
+					break
+				#append the received data into a string
+				data += d
+				
 			print "received", data, "from", line
 		        #make a list of all the chunkhandles on the chunkserver
 			chunkData = data.split('|')
@@ -399,8 +409,15 @@ while 1:
 		print "Listening....................."
 		# Accept the incoming connection
 		conn, addr = s.accept()
-		# Receive the data from the connection (Command request)
-		data = conn.recv(1024)
+		# Receive all the data from the connection (Command request)
+		while 1:
+				#receive the data
+				d = conn.recv(1024)
+				#if there is no more data, exit the loop
+				if not d:
+					break
+				#append the received data into a string
+				data += d
 		# When the connection is established and data is successfully acquired,
 		# start a new thread to handle the command. Having this threaded allows for
 		# multiple commands (or multiple API) to interact with the master at one time
