@@ -53,8 +53,8 @@ class heartBeat:
 
 	# Function that returns a list of all chunk server IPs in the hosts.txt file
         def getChunkServerIPs(self):
-        		# Debug message for successful calling of function
-        		logging.debug('Getting chunk server IPs')
+        	# Debug message for successful calling of function
+        	logging.debug('Getting chunk server IPs')
                 # If the hosts.txt file exists:
                 if os.path.isfile("hosts.txt"):
                         # Read from it and parse its contents into a list. Return the list.
@@ -69,8 +69,8 @@ class heartBeat:
         # Function that returns a list of all chunk server IPs that are active 
         # (that have responded to heartbeats)
         def getActiveChunkServers(self):
-        		# Debug message for successful calling of function
-        		logging.debug('Getting active chunk server IPs')
+        	# Debug message for successful calling of function
+        	logging.debug('Getting active chunk server IPs')
                 # If the activehosts.txt file exists:
                 if os.path.isfile("activehosts.txt"):
                         # Read from it and parse its contents into a list. Return the list.
@@ -88,8 +88,8 @@ class heartBeat:
 	# Function to ping chunk servers and, based on whether or not a response was received,
 	# to add or remove them from the activehosts file
         def heartBeat(self, IP):
-        		# Debug message for successful calling of function
-        		logging.debug('Initiating heartBeat protocol')
+        	# Debug message for successful calling of function
+        	logging.debug('Initiating heartBeat protocol')
                 # Get the list of all active chunk server IPs
                 activeServers = self.getActiveChunkServers()
 #               print activeServers
