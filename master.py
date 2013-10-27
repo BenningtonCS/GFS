@@ -22,14 +22,6 @@ import socket, threading, random, os, time, config
 
 
 
-# Define the paths of the host file, activehost file, and oplog from the config file, and
-# define the port to be used, also from the config file
-HOSTSFILE = config.hostsfile
-ACTIVEHOSTSFILE = config.activehostsfile
-OPLOG = config.oplog
-chunkPort = config.port
-
-
 
 #########################################################
 
@@ -416,6 +408,13 @@ class opLog:
 #                       MAIN 						                  #
 
 #######################################################################
+
+# Define the paths of the host file, activehost file, and oplog from the config file, and
+# define the port to be used, also from the config file
+HOSTSFILE = config.hostsfile
+ACTIVEHOSTSFILE = config.activehostsfile
+OPLOG = config.oplog
+chunkPort = config.port
 
 # Make sure the database initializes before anything else is done
 database = Database()
