@@ -263,8 +263,8 @@ class handleCommand(threading.Thread):
 		################################################################
 		#Should probably later be intergrated better with oplog updates#
 		################################################################
-		sequence = database.findHighestSequence(fileName) + 1
-		database.update(chunkHandle, fileName, sequence, createLocations)
+		sequence = database.findHighestSequence(self.fileName) + 1
+		database.update(chunkHandle, self.fileName, sequence, createLocations)
 		
 
 
@@ -273,7 +273,7 @@ class handleCommand(threading.Thread):
 		#in the case of an append, we need to locate the last chunk in a file
 		#so we set a Highest Sequence counter to keep track of which chunk
 		#is the newest
-		targetSequence = database.findHighestSequence(fileName)
+		targetSequence = database.findHighestSequence(self.fileName)
 		print "target sequence ==", targetSequence
 		targetChunk = Chunk(00, 'test', -2)
 		for chunk in database.data:
@@ -281,7 +281,7 @@ class handleCommand(threading.Thread):
 			#print fileName
 			#print chunk.sequenceNumber
 			#print targetSequence
-			if chunk.fileName.strip() == fileName.strip() and chunk.sequenceNumber == targetSequence:
+			if chunk.fileName.strip() == self.fileName.strip() and chunk.sequenceNumber == targetSequence:
 				targetChunk = chunk
 		#then we find the locations of the targetChunk
 
@@ -330,44 +330,44 @@ class handleCommand(threading.Thread):
 		# Create a new instance of an opLog object
 		self.oplog = opLog()
 		# Append to the OpLog the <ACTION>|<CHUNKHANDLE>|<FILENAME>
-		self.oplog.append(msg[1]+"|"+msg[2]+"|"+msg[3])
+		self.oplog.append(self.msg[1]+"|"+self.msg[2]+"|"+self.msg[3])
 
 
 
 	# Function to handle the message received from the API
 	def run(self):
 		# Parse the input into the msg variable
-		msg = self.handleInput(data)
+		self.msg = self.handleInput(self.data)
 		# Define the first item in the list to be the operation name
-		op = msg[0]
+		self.op = self.msg[0]
 		# Define the second item in the list to be the file name
-		fileName = msg[1]
+		self.fileName = self.msg[1]
 		# Visual confirmation for debugging
 		print "connection from: ", self.ip, "on port ", self.port
-		print "received message", op
+		print "received message", self.op
 
 		# If the operation is to CREATE:
-		if op == "CREATE":
+		if self.op == "CREATE":
 			self.create()
 
 		# If the operation is to DELETE:
-		elif op == "DELETE":
+		elif self.op == "DELETE":
 			self.delete()
 
 		# If the operation is to APPEND:
-		elif op == "APPEND":
+		elif self.op == "APPEND":
 			self.append()
 
 		# If the operation is to OPEN:
-		elif op == "OPEN":
+		elif self.op == "OPEN":
 			self.open()
 
 		# If the operation is to CLOSE:
-		elif op == "CLOSE":
+		elif self.op == "CLOSE":
 			self.close()
 
 		# If the operation is to update the oplog, OPLOG:
-		elif op == "OPLOG":
+		elif self.op == "OPLOG":
 			self.oplog()
 						
 		else:
