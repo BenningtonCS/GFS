@@ -18,7 +18,18 @@
 #                                                                               #
 #################################################################################
 
+
+
 import socket, time, os, config, logging, sys
+
+
+
+###############################################################################
+
+#               Verbose (Debug) Handling                                      #
+
+###############################################################################
+
 
 # Setup for having a verbose mode for debugging:
 # USAGE: When running program, $ python heartBeat.py , no debug message will show up
@@ -29,12 +40,21 @@ import socket, time, os, config, logging, sys
 args = sys.argv
 # Check to see if the verbose flag was one of the command line arguments
 if "-v" in args:
-	# If it was one of the arguments, set the logging level to debug 
-	logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
+        # If it was one of the arguments, set the logging level to debug 
+        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
 else:
-	# If it was not, set the logging level to default (only shows messages with level
-	# warning or higher)
-	logging.basicConfig(format='%(levelname)s : %(message)s')
+        # If it was not, set the logging level to default (only shows messages with level
+        # warning or higher)
+        logging.basicConfig(format='%(levelname)s : %(message)s')
+
+
+
+
+###############################################################################
+
+#               Define heartBeat Object                                       #
+
+###############################################################################
 
 
 # Define a heartBeat object which will be used to ping the chunkservers and add those that
@@ -145,6 +165,14 @@ class heartBeat:
                         print item
                         self.heartBeat(item)
                         time.sleep(self.DELAY)
+
+
+
+###############################################################################
+
+#               MAIN BODY                                                     #
+
+###############################################################################
 
 # create an object instance and initiate the heartBeat
 master = heartBeat()
