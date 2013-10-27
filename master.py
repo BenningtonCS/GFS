@@ -18,7 +18,33 @@
 #################################################################################
 
 
-import socket, threading, random, os, time, config
+import socket, threading, random, os, time, config, sys, logging
+
+
+
+###############################################################################
+
+#               Verbose (Debug) Handling                                      #
+
+###############################################################################
+
+
+# Setup for having a verbose mode for debugging:
+# USAGE: When running program, $python heartBeat.py , no debug message will show up
+# Instead, the program should be run in verbose, $python heartBeat.py -v , for debug 
+# messages to show up
+
+# Get a list of command line arguments
+args = sys.argv
+# Check to see if the verbose flag was one of the command line arguments
+if "-v" in args:
+        # If it was one of the arguments, set the logging level to debug 
+        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
+else:
+        # If it was not, set the logging level to default (only shows messages with level
+        # warning or higher)
+        logging.basicConfig(format='%(levelname)s : %(message)s')
+
 
 
 
@@ -108,7 +134,7 @@ class Database:
 			bufferSize = 1024
 			while 1:
 					#receive the data
-					d = conn.recv(bufferSize)
+					d = s.recv(bufferSize)
 					# If the length of the received data is less than that of the bufferSize,
 					# then no more data will need to be received, so put the received data
 					# into the data string and exit the receiving loop
@@ -195,20 +221,27 @@ class handleCommand(threading.Thread):
 		self.port = port
 		self.s = socket
 		self.data = data
-		# Visual confirmation for debugging
-		print data
-		#print self.data
-		print "Started new thread for", ip, "on port", port
+		# Visual confirmation for debugging: see what data was received
+		logging.debug('DATA ==> ' + data)
+		# Visual confirmation for debugging:confirm that init was successful 
+		#and new thread was made
+		logging.debug("Started new thread for " + str(ip) + " on port " + str(port))
 
 	# Funtion to parse input into usable data by splitting at a pipe character
 	def handleInput(self, apiInput):
+		# Visual confirmation for debugging: confirm init of handleInput()
+		logging.debug('Parsing input')
 		# Create a list by splitting at a pipe
 		input = apiInput.split("|")
+		# Visual confirmation for debugging: confirm success of handleInput()
+		logging.debug('Successfully parsed input')
 		# Return the list
 		return input
 
 	# Function to keep track of chunkHandle numbers and to increment the number
 	def handleCounter(self):
+		# Visual confirmation for debugging: confirm init of handleCounter()
+		logging.debug('Generating chunk handle')
 		# Create an empty string to hold the current chunk handle
 		chunkHandle = ""
 		# Open the text file holding the current chunkHandle number and read it into memory
@@ -219,11 +252,15 @@ class handleCommand(threading.Thread):
 		with open('handleCounter.txt', 'w') as file:
 			self.int += 1
 			file.write(str(self.int))
+		# Visual confirmation for debugging: confirm success of handleCounter()
+		logging.debug('Successfully generated chunk handle')
 		# Return the chunkHandle
 		return chunkHandle
 
 	# Function to randomly choose three hosts to hold the copies of the chunk
 	def chooseHosts(self):
+		# Visual confirmation for debugging: confirm init of chooseHosts()
+		logging.debug('Selecting storage locations')
 		# Get a list of all the hosts available
 		with open(HOSTSFILE, 'r') as file:
 			hostsList = file.read().splitlines()
@@ -235,6 +272,8 @@ class handleCommand(threading.Thread):
 		intHigh = lengthList - 3
 		# Randomize between the limits
 		randomInt = random.randint(intLow, intHigh)
+		# Visual confirmation for debugging: confirm success of chooseHosts()
+		logging.debug('Successfully selected storage locations')
 		# Return a pipe-seperated list of randomized hosts
 		return hostsList[randomInt] + "|" + hostsList[randomInt + 1] + "|" + hostsList[randomInt + 2]
 
@@ -242,13 +281,16 @@ class handleCommand(threading.Thread):
 
 	# Function that executes the protocol when a CREATE message is received
 	def create(self):
+		# Visual confirmation for debugging: confirm init of create()
+		logging.debug('Creating chunk metadata')
 		# Get a new chunkhandle
 		chunkHandle = self.handleCounter()
 		# Choose which chunkserver it will be stored on
 		hosts = self.chooseHosts()
 		# Send the API a string containing the location and chunkHandle information
 		self.s.send(str(hosts) + "|" + str(chunkHandle))
-		print "sent", str(hosts) + "|" + str(chunkHandle)
+		# Visual confirmation for debugging: confirm send of a list of storage hosts and chunk handle
+		logging.debug('SENT ==> ' + str(hosts) + "|" + str(chunkHandle))
 		# Split the list of locations by pipe
 		createLocations = hosts.split('|')
 		# Update the database to now include the newly created chunk
@@ -257,16 +299,22 @@ class handleCommand(threading.Thread):
 		################################################################
 		sequence = database.findHighestSequence(self.fileName) + 1
 		database.update(chunkHandle, self.fileName, sequence, createLocations)
+		# Visual confirmation for debugging: confirm success of create()
+		logging.debug('Chunk metadata successfully created')
 		
 
 
 	# Function that executes the protocol when an APPEND message is received
 	def append(self):
+		# Visual confirmation for debugging: confirm init of append()
+		logging.debug('Gathering metadata for chunk append')
 		#in the case of an append, we need to locate the last chunk in a file
 		#so we set a Highest Sequence counter to keep track of which chunk
 		#is the newest
 		targetSequence = database.findHighestSequence(self.fileName)
-		print "target sequence ==", targetSequence
+		# Visual confirmation for debugging: confirm the target sequence
+		logging.debug('TARGET SEQUENCE ==> ' + str(targetSequence))
+
 		targetChunk = Chunk(00, 'test', -2)
 		for chunk in database.data:
 			#print chunk.fileName
@@ -294,7 +342,11 @@ class handleCommand(threading.Thread):
 		appendMessage += str(targetChunk.handle)
 		#send our message
 		self.s.send(appendMessage)
-		print "sent message", appendMessage
+		# Visual confirmation for debugging: confirm send of a list of storage hosts and chunk handle
+		logging.debug('SENT == ' + str(appendMessage))
+		# Visual confirmation for debugging: confirm success of append()
+		logging.debug('Append successfully handled')
+
 
 
 
@@ -318,11 +370,14 @@ class handleCommand(threading.Thread):
 
 	# Function that executes the protocol when an OPLOG message is received
 	def oplog(self):
-		print "Data Received: OPLOG"
+		# Visual confirmation for debugging: confirm init of oplog()
+		logging.debug('Initializing oplog append')
 		# Create a new instance of an opLog object
 		self.oplog = opLog()
 		# Append to the OpLog the <ACTION>|<CHUNKHANDLE>|<FILENAME>
 		self.oplog.append(self.msg[1]+"|"+self.msg[2]+"|"+self.msg[3])
+		# Visual confirmation for debugging: confirm success of oplog()
+		logging.debug('Oplog append successful')
 
 
 
@@ -334,9 +389,11 @@ class handleCommand(threading.Thread):
 		self.op = self.msg[0]
 		# Define the second item in the list to be the file name
 		self.fileName = self.msg[1]
-		# Visual confirmation for debugging
-		print "connection from: ", self.ip, "on port ", self.port
-		print "received message", self.op
+		# Visual confirmation for debugging: confirm connection
+		logging.debug('Connection from: ' + str(self.ip) + " on port " + str(self.port))
+		# Visual confirmation for debugging: confirm received operation
+		logging.debug('Received message: ' + str(self.op))
+
 
 		# If the operation is to CREATE:
 		if self.op == "CREATE":
@@ -438,7 +495,7 @@ while 1:
 	try:
 		# Listen for API connections, maintaining a queue of 5 connections
 		s.listen(5)
-		print "Listening....................."
+		print "Listening..."
 		# Accept the incoming connection
 		conn, addr = s.accept()
 		# Define a string that will hold all of the received data
