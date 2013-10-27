@@ -32,8 +32,8 @@ import socket, time, os, config, logging, sys
 
 
 # Setup for having a verbose mode for debugging:
-# USAGE: When running program, $ python heartBeat.py , no debug message will show up
-# Instead, the program should be run in verbose, $ python heartBeat.py -v , for debug 
+# USAGE: When running program, $python heartBeat.py , no debug message will show up
+# Instead, the program should be run in verbose, $python heartBeat.py -v , for debug 
 # messages to show up
 
 # Get a list of command line arguments
@@ -114,14 +114,13 @@ class heartBeat:
         	logging.debug('Initiating heartBeat protocol')
                 # Get the list of all active chunk server IPs
                 activeServers = self.getActiveChunkServers()
-#               print activeServers
 
                 try:
                         # Create a TCP socket instance
                         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			# Set the timeout of the socket
                         self.s.settimeout(self.SOCK_TIMEOUT)
-			# Allow the socket to re-use address/port
+			# Allow the socket to re-use address
                         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			# Connect to the chunkserver over the specified port
                         self.s.connect((IP, self.PORT))
