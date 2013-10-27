@@ -109,15 +109,25 @@ class Database:
 		        #recieve their reply, which is formatted as chunkhandle1|chunkhandle2|chunkhandle3|...
 		        #to make sure we get all data, even if it exceeds the buffer size, we can
 		        #loop over the receive and append to a string to get the whole message
+			# Define a string that will hold all of the received data
+			data = ""
+			# Define a buffer size for how much data the socket.recv function will
+			# be able to handle at one time
+			bufferSize = 1024
 			while 1:
-				#receive the data
-				d = s.recv(1024)
-				#if there is no more data, exit the loop
-				if not d:
-					break
-				#append the received data into a string
-				data += d
-				
+					#receive the data
+					d = conn.recv(bufferSize)
+					# If the length of the received data is less than that of the bufferSize,
+					# then no more data will need to be received, so put the received data
+					# into the data string and exit the receiving loop
+					if len(d) < bufferSize:
+						data += d
+						break
+					# If the length of the received data is equal to the max buffer size,
+					# then there is more data that could be received, so append the received
+					# data to the data string, and continue looping to receive the rest of the data
+					if len(d) == bufferSize:
+						data += d
 			print "received", data, "from", line
 		        #make a list of all the chunkhandles on the chunkserver
 			chunkData = data.split('|')
@@ -432,15 +442,25 @@ while 1:
 		print "Listening....................."
 		# Accept the incoming connection
 		conn, addr = s.accept()
-		# Receive all the data from the connection (Command request)
+		# Define a string that will hold all of the received data
+		data = ""
+		# Define a buffer size for how much data the socket.recv function will
+		# be able to handle at one time
+		bufferSize = 1024
 		while 1:
 				#receive the data
-				d = conn.recv(1024)
-				#if there is no more data, exit the loop
-				if not d:
+				d = conn.recv(bufferSize)
+				# If the length of the received data is less than that of the bufferSize,
+				# then no more data will need to be received, so put the received data
+				# into the data string and exit the receiving loop
+				if len(d) < bufferSize:
+					data += d
 					break
-				#append the received data into a string
-				data += d
+				# If the length of the received data is equal to the max buffer size,
+				# then there is more data that could be received, so append the received
+				# data to the data string, and continue looping to receive the rest of the data
+				if len(d) == bufferSize:
+					data += d
 		# When the connection is established and data is successfully acquired,
 		# start a new thread to handle the command. Having this threaded allows for
 		# multiple commands (or multiple API) to interact with the master at one time
