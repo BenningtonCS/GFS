@@ -72,7 +72,8 @@ class Chunk:
                 self.location = []
 
 class Database:
-
+		
+		
         #create an empty database list
         data = []
 
@@ -81,7 +82,9 @@ class Database:
         #the locations of the chunks in that database by querying the
         #chunkservers
         def initialize(self):
-        	print "opening opp log"
+        	# Visual confirmation for debugging: confirm init of Database
+			logging.debug('Initializing Database instance')
+        	logging.debug('opening opp log')
 		oppLog = open(OPLOG)
 
 
@@ -92,14 +95,14 @@ class Database:
                         #on each line
 
                         #we create a list out of each line in the opp log
-			print "line read:", line
+			logging.debug("line read: " + str(line))
 			lineData = line.split('|')
                         #we only adjust the metadata on a create as of version 1
 			if lineData[0] == 'CREATE':
                                 #we initialize a new chunk with the data from the opp log
                                 #and we determine the sequence number based on the highest
                                 #existing sequence number currently in the file
-               		 	print "read", lineData[0]
+               		 	logging.debug("read : " + str(lineData[0]))
 				sequence = self.findHighestSequence(lineData[2]) + 1
 				newChunk = Chunk(lineData[1], lineData[2], sequence)
                                 #and we append that chunk to our database list
@@ -109,21 +112,21 @@ class Database:
 
                 #first we open the hostfile
 		hostFile = open(ACTIVEHOSTSFILE)
-		print hostFile
+		logging.debug(str(hostFile))
 		#and go through it line by line
 		for line in hostFile:
-			print "going through hostfile"
+			logging.debug("going through hostfile")
 		    	#new socket
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		#turn on reuseaddr to preempt address already in use error
 			s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		        #connect to a listening chunkserver
-			print line
+			logging.debug(str(line))
 			s.connect((line, chunkPort))
-			print "connected to", line, "through", chunkPort
+			logging.debug("Connected to " + str(line) + " through " str(chunkPort))
 			#send the message that audits the chunkserver
 			s.send('Contents?')
-			print "sent 'Contents?' to", line
+			logging.debug("sent 'Contents?' to : " + str(line))
 		        #recieve their reply, which is formatted as chunkhandle1|chunkhandle2|chunkhandle3|...
 		        #to make sure we get all data, even if it exceeds the buffer size, we can
 		        #loop over the receive and append to a string to get the whole message
@@ -146,7 +149,7 @@ class Database:
 					# data to the data string, and continue looping to receive the rest of the data
 					if len(d) == bufferSize:
 						data += d
-			print "received", data, "from", line
+			logging.debug("Received " + str(data) + " from " + str(line))
 		        #make a list of all the chunkhandles on the chunkserver
 			chunkData = data.split('|')
 		        #compare each chunkhandle in our database to the chunkhandles on the server
@@ -156,10 +159,14 @@ class Database:
 					chunk.location.append(line)
 		        	#close our connection, for cleanliness
 			s.close()
+			# Visual confirmation for debugging: confirm successful init of Database
+			logging.debug('Database initialization successful!')
 
 
 	#update() is run when a new chunk is created and the master is already running
         def update(self, chunkHandle, fileN, sequence, location):
+        	# Visual confirmation for debugging: confirm init of update()
+			logging.debug('Initializing Update')
 
                 #we create a new chunk with the data passed into the function
                 sequence = self.findHighestSequence(fileN) + 1
@@ -168,10 +175,14 @@ class Database:
                 newChunk.location = location
                 #then add that chunk to the database list
                 self.data.append(newChunk)
+                # Visual confirmation for debugging: confirm successful update
+				logging.debug('Database initialization successful!')
 
         #locate() is run when the API wants to know the locations of a specific chunk
         #it returns a list of location IP's
         def locate(self, chunkHandle):
+        	# Visual confirmation for debugging: confirm init of locate()
+			logging.debug('Initializing Locate')
                 #we go through all the chunks in the database
                 for chunk in self.data:
                         #If the chunkhandle they're looking for exists
@@ -181,8 +192,12 @@ class Database:
                                 print chunk.location                              
                                 return chunk.location
 				print "chunk with handle", chunkHandle, "not found"
+				# Visual confirmation for debugging: confirm success of locate()
+				logging.debug('Locate Successful')
 
         def findHighestSequence(self, fileName):
+        	# Visual confirmation for debugging: confirm init of findHighestSequence()
+			logging.debug('Initializing Find Highest Sequence')
         	highestSequence = 0
 			#we go through all the chunks in the database, and figure out which chunk
 			#with the given filename has the highest sequence number
@@ -197,6 +212,8 @@ class Database:
 				highestSequence = chunk.sequenceNumber
 				#print highestSequence
 		return highestSequence
+			# Visual confirmation for debugging: confirm success of findHighestSequence()
+			logging.debug('Highest Sequence Number Found!')
 
 
 
