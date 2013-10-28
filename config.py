@@ -5,3 +5,4 @@ activehostsfile = 'activehosts.txt'
 oplog = 'opLog.txt'
 port = 9666
 masterip = ''
+chunkPath = /data/gfsbin/Chunks
