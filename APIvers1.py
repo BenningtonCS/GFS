@@ -1,7 +1,19 @@
 #!/usr/bin/env python
 
-#API version 1
 
+##############################################################################
+#                        ################                                    #
+#                        # API Version 1#                                    #
+#                        ################                                    #
+#This is the API version 1. It currently has the create and append functions #
+#with read, open, close, and delete to be implemented later on (soon). This  #
+#file will be imported and called from a client file that the client can just#
+#run.                                                                        #
+##############################################################################
+
+
+#import socket for connection, threading to make threads, time in case we want
+#a delay, and config to keep the protocol standard.
 import socket
 import threading
 import time
