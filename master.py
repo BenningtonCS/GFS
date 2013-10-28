@@ -285,14 +285,12 @@ class handleCommand(threading.Thread):
 		lengthList = len(hostsList)
 		# Define a low limit
 		intLow = 0
-		# Define a high limit
-		intHigh = lengthList - 3
 		# Randomize between the limits
-		randomInt = random.randint(intLow, intHigh)
+		randomInt = random.randint(intLow, lengthList)
 		# Visual confirmation for debugging: confirm success of chooseHosts()
 		logging.debug('Successfully selected storage locations')
 		# Return a pipe-seperated list of randomized hosts
-		return hostsList[randomInt] + "|" + hostsList[randomInt + 1] + "|" + hostsList[randomInt + 2]
+		return hostsList[randomInt%lengthList] + "|" + hostsList[(randomInt + 1)%lengthList] + "|" + hostsList[(randomInt + 2)%lengthList]
 
 
 
