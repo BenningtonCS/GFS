@@ -7,7 +7,7 @@
 #											                                                            #~~~~~~
 ####################################################################################~~~~~~~
 
-""" The Chunk Server is a multithreaded server designed to run on multiple server machines it uses the socket libary for connections
+""" The Chunk Server is a multithreaded server designed to run on multiple server machines it uses the socket library for connections
 with the other members of the GFS; the threading library to ensure that it can handle multiple requests; and the os library to 
 manage miscellaneous file counting functions. The main thread listens on the specified port and upon accepting a connection spawns
 a distributor thread which parses the first message and hands the connection to the appropriate worker thread""" 
@@ -35,7 +35,7 @@ class connThread(threading.Thread):
 		self.data = data 
 
 class heartBeatThread(connThread):
-	# The heartBeatThread just sends a "<3!" to the master, it is calles with the command "<3?"
+	# The heartBeatThread just sends a "<3!" to the master, it is called with the command "<3?"
 	def run(self):
 		self.connection.send("<3!")
 		self.connection.close()
@@ -54,8 +54,8 @@ class chunkReaderThread(connThread):
 	def run(self):
 		self.connection.send("continue") # confirms readiness for data
 		chunkHandle = self.connection.recv(1024) # listens for chunkHandle
-		self.connection.send("continue") # confirmes ready state
-		byteOffSet = int(self.connection.recv(1024)) # listes for a byte offset to read from (relative to the beginning of the given chunk)
+		self.connection.send("continue") # confirms ready state
+		byteOffSet = int(self.connection.recv(1024)) # listens for a byte offset to read from (relative to the beginning of the given chunk)
 		self.connection.send("continue") # confirms the desire for EVEN MORE data
 		bytesToRead = int(self.connection.recv(1024)) # listens for the number of bytes to read
 		chunk = open("chunkHandle") # opens the designated chunk to read from
@@ -104,7 +104,7 @@ class appendChunk(connThread):
 class distributorThread(connThread):
 	# The mighty distributor thread
 	def __init__(self,acceptedConn): # it has no data option because its going to make/get the data
-		threading.Thread.__init__(self) # call threading.Thread.__init__ in order to initial hethread correctly
+		threading.Thread.__init__(self) # call threading.Thread.__init__ in order to initial the thread correctly
 		self.connection = acceptedConn # give itself the accepted connection
 	def run(self):
 		command = self.connection[0].recv(1024) # listens for a command on the connection handed down from the main thread
