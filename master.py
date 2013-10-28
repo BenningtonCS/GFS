@@ -83,7 +83,7 @@ class Database:
         #chunkservers
         def initialize(self):
         	# Visual confirmation for debugging: confirm init of Database
-			logging.debug('Initializing Database instance')
+		logging.debug('Initializing Database instance')
         	logging.debug('opening opp log')
 		oppLog = open(OPLOG)
 
@@ -159,14 +159,14 @@ class Database:
 					chunk.location.append(line)
 		        	#close our connection, for cleanliness
 			s.close()
-			# Visual confirmation for debugging: confirm successful init of Database
-			logging.debug('Database initialization successful!')
+		# Visual confirmation for debugging: confirm successful init of Database
+		logging.debug('Database initialization successful!')
 
 
 	#update() is run when a new chunk is created and the master is already running
         def update(self, chunkHandle, fileN, sequence, location):
         	# Visual confirmation for debugging: confirm init of update()
-			logging.debug('Initializing Update')
+		logging.debug('Initializing Update')
 
                 #we create a new chunk with the data passed into the function
                 sequence = self.findHighestSequence(fileN) + 1
@@ -176,13 +176,13 @@ class Database:
                 #then add that chunk to the database list
                 self.data.append(newChunk)
                 # Visual confirmation for debugging: confirm successful update
-				logging.debug('Database initialization successful!')
+		logging.debug('Database initialization successful!')
 
         #locate() is run when the API wants to know the locations of a specific chunk
         #it returns a list of location IP's
         def locate(self, chunkHandle):
         	# Visual confirmation for debugging: confirm init of locate()
-			logging.debug('Initializing Locate')
+		logging.debug('Initializing Locate')
                 #we go through all the chunks in the database
                 for chunk in self.data:
                         #If the chunkhandle they're looking for exists
@@ -192,12 +192,12 @@ class Database:
                                 print chunk.location                              
                                 return chunk.location
 				print "chunk with handle", chunkHandle, "not found"
-				# Visual confirmation for debugging: confirm success of locate()
-				logging.debug('Locate Successful')
+		# Visual confirmation for debugging: confirm success of locate()
+		logging.debug('Locate Successful')
 
         def findHighestSequence(self, fileName):
         	# Visual confirmation for debugging: confirm init of findHighestSequence()
-			logging.debug('Initializing Find Highest Sequence')
+		logging.debug('Initializing Find Highest Sequence')
         	highestSequence = 0
 			#we go through all the chunks in the database, and figure out which chunk
 			#with the given filename has the highest sequence number
@@ -212,8 +212,8 @@ class Database:
 				highestSequence = chunk.sequenceNumber
 				#print highestSequence
 		return highestSequence
-			# Visual confirmation for debugging: confirm success of findHighestSequence()
-			logging.debug('Highest Sequence Number Found!')
+		# Visual confirmation for debugging: confirm success of findHighestSequence()
+		logging.debug('Highest Sequence Number Found!')
 
 
 
