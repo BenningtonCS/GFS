@@ -12,9 +12,8 @@ class API():
 	#lets define some variables
 	global MASTER_ADDRESS
 	global TCP_PORT
-	MASTER_ADDRESS = '10.10.117.109'
+	MASTER_ADDRESS = raw_input("What is the IP of the master? : ")
 	TCP_PORT = config.port
-	MY_ADDRESS = '10.10.117.182'
 	
 	#lets make the API a server and a client to send and recieve messages
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 	
@@ -24,6 +23,12 @@ class API():
 
 	#lets make some methods
 	
+	#creates a file by first sending a request to the master. Then the 
+	#master will send back a chunk handle followed by three locations in
+	#which to create this chunk handle. the client then sends the chunk 
+	#handle to the three locations (which are chunk servers) along with
+	#the data "makeChunk". The chunkservers then make an empty chunk at
+	#each of those locations. Takes the filename as an arguement.
 	def create(self,filename):
 		#creates a file and gives it to the master
 		self.s.send("CREATE|" + filename)
@@ -40,9 +45,13 @@ class API():
 			thread.start()
 		opLog = updateOpLog("OPLOG|CREATE|"+cH+"|"+filename)
 		opLog.start()
-		#self.s.send("OPLOG|CREATE|"+cH+"|"+filename)
-		#self.s.send("CREATE|" + filename)
-
+	
+	#appends to an existing file by first prompting the client for what 
+	#new data they would like to add to the file (the filename is given 
+	#as an arg). The API sends append and the filename to the master which
+	#sends back the chunk handle and locations of the existing file. The 
+	#client then sends "append" and the new data to the chunk servers which
+	#append the new data to the files.
 	def append(self, filename):
 		global newData
 		newData = str(raw_input("Input the data you want to append: "))
