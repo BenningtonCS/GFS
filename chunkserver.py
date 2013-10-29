@@ -1,7 +1,7 @@
 #############################################################################~
-#        10/23/2013            		                                     #~~
-#	Multi-Threaded Chunk Server	                               	      #~~~
-#		by				                               #~~~~
+#        10/23/2013            		                                #~~
+#	Multi-Threaded Chunk Server	                               #~~~
+#		by				                              #~~~~
 #	Torrent Glenn & Brendon Walter                                          #~~~~
 #				                                                 #~~~~~
 #			                                                          #~~~~~~
