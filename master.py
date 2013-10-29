@@ -379,8 +379,8 @@ class handleCommand(threading.Thread):
 
 	# Function that executes the protocol when a READ message is received
 	def read(self):
-		byteOffset = self.msg[2]
-		bytesToRead = self.msg[3]
+		byteOffset = int(self.msg[2])
+		bytesToRead = int(self.msg[3])
 
 		# With the byte offSet, we want to modulo it with the chunkSize in the config
 		# so we will know what chunk sequence the start of the read will be 
@@ -421,7 +421,7 @@ class handleCommand(threading.Thread):
 					if chunk.fileName.strip() == self.fileName.strip() and chunk.sequenceNumber == seq:
 						targetChunk = chunk
 						# Append a location where the chunk is stored (0th element in the locations list)
-						responseMessage += "|" + str(targetChunk.location[0])
+						responseMessage += "|" + str(targetChunk.location[0].strip())
 						# Append the chunk handle
 						responseMessage += "|" + str(targetChunk.handle)
 						# Append the byte offset to start reading from
@@ -438,7 +438,6 @@ class handleCommand(threading.Thread):
 				# If the specific file can not be found in the database, let it be known!
 				# Should also send an error message to client so their protocol terminates.
 				logging.error("Specified file does not exist in database")
-
 
 		#send our message
 		self.s.send(responseMessage)
