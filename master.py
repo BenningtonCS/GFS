@@ -70,6 +70,8 @@ class Chunk:
                 self.sequenceNumber = sequence
                 #as well as a list of chunkservers the chunk is currently being stored on
                 self.location = []
+                #as well as a flag for deletion
+                self.delete = False
 
 class Database:
 		
@@ -367,10 +369,39 @@ class handleCommand(threading.Thread):
 
 	# Function that executes the protocol when a DELETE message is received
 	def delete(self):
-		pass
+		logging.debug('Begin updating delete flag to True')
 		
-		
-		
+		try:
+			# Look through all the chunks in the database which have the specified file name
+			for chunk in database.data:
+				if chunk.fileName.strip() == self.fileName.strip():
+					chunk.delete = True
+
+			logging.debug('Delete flag updated')
+	
+		# Update this exception handling to the case where no file was found to match the given fileName
+		except:
+			logging.error('Fatal Error')	
+
+
+
+	def undelete(self):
+		logging.debug('Begin updating delete flag to False')
+
+		try:
+			# Look through all the chunks in the database which have the specified file name
+			for chunk in database.data:
+				if chunk.fileName.strip() == self.fileName.strip():
+					chunk.delete = False
+
+			logging.debug('Delete flag updated')
+
+		# Update this exception handling to the case where no file was found to match the given fileName
+		except:
+			logging.error('Fatal error')
+
+
+
 	# Function that executes the protocol when an OPEN message is received
 	def open(self):
 		pass
@@ -417,6 +448,10 @@ class handleCommand(threading.Thread):
 		# If the operation is to DELETE:
 		elif self.op == "DELETE":
 			self.delete()
+
+		# If the operation is to UNDELETE:
+		elif self.op == "UNDELETE":
+			self.undelete()
 
 		# If the operation is to APPEND:
 		elif self.op == "APPEND":
