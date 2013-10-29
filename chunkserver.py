@@ -113,19 +113,19 @@ class distributorThread(connThread):
 			# in this and each other if/elif statement the correct worker thread is started for a given command
 			beat = heartBeatThread(self.connection)
 			beat.start()
-		elif command == "ChunkSpace?":
+		elif command == "CHUNKSPACE?":
 			t = chunkSpaceThread(self.connection)
 			t.start()
-		elif command == "Read":
+		elif command == "READ":
 			t = chunkReaderThread(self.connection)
 			t.start()
-		elif command == "Contents?":
+		elif command == "CONTENTS?":
 			t = onPi(self.connection)
 			t.start()
-		elif command == "makeChunk":
+		elif command == "MAKECHUNK":
 			t = makeChunk(self.connection)
 			t.start()
-		elif command == "append":
+		elif command == "APPEND":
 			t = appendChunk(self.connection)
 			t.start()
 	
