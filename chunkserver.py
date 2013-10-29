@@ -1,10 +1,10 @@
 #############################################################################~
-#        10/23/2013            								                               #~~
-#	Multi-Threaded Chunk Server						                                	    #~~~
-#		by									                                                       #~~~~
-#	Torrent Glenn & Brendon Walter							                                  #~~~~
-#											                                                           #~~~~~
-#											                                                            #~~~~~~
+#        10/23/2013            		                                     #~~
+#	Multi-Threaded Chunk Server	                               	      #~~~
+#		by				                               #~~~~
+#	Torrent Glenn & Brendon Walter                                          #~~~~
+#				                                                 #~~~~~
+#			                                                          #~~~~~~
 ####################################################################################~~~~~~~
 
 """ The Chunk Server is a multithreaded server designed to run on multiple server machines it uses the socket library for connections
