@@ -61,6 +61,7 @@ class chunkReaderThread(connThread):
 		chunk = open("chunkHandle") # opens the designated chunk to read from
 		chunk.seek(byteOffSet) # goes to the specified byte offset
 		fileContent = chunk.read(bytesToRead) # stuffs all the stuff to be read into a variable
+		self.connection.send(fileContent)
 		chunk.close() # closes the chunk
 		self.connection.close() # closes the connection
 
