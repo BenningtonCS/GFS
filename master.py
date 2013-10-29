@@ -30,8 +30,8 @@ import socket, threading, random, os, time, config, sys, logging
 
 
 # Setup for having a verbose mode for debugging:
-# USAGE: When running program, $python heartBeat.py , no debug message will show up
-# Instead, the program should be run in verbose, $python heartBeat.py -v , for debug 
+# USAGE: When running program, $python master.py , no debug message will show up
+# Instead, the program should be run in verbose, $python master.py -v , for debug 
 # messages to show up
 
 # Get a list of command line arguments
