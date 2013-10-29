@@ -123,7 +123,7 @@ class Database:
 		        #connect to a listening chunkserver
 			logging.debug(str(line))
 			s.connect((line, chunkPort))
-			logging.debug("Connected to " + str(line) + " through " str(chunkPort))
+			logging.debug("Connected to " + str(line) + " through " + str(chunkPort))
 			#send the message that audits the chunkserver
 			s.send('Contents?')
 			logging.debug("sent 'Contents?' to : " + str(line))
