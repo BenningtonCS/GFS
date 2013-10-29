@@ -280,19 +280,26 @@ class handleCommand(threading.Thread):
 	def chooseHosts(self):
 		# Visual confirmation for debugging: confirm init of chooseHosts()
 		logging.debug('Selecting storage locations')
-		# Get a list of all the hosts available
-		with open(HOSTSFILE, 'r') as file:
-			hostsList = file.read().splitlines()
-		# Find how many hosts there are in the list
-		lengthList = len(hostsList)
-		# Define a low limit
-		intLow = 0
-		# Randomize between the limits
-		randomInt = random.randint(intLow, lengthList)
-		# Visual confirmation for debugging: confirm success of chooseHosts()
-		logging.debug('Successfully selected storage locations')
-		# Return a pipe-seperated list of randomized hosts
-		return hostsList[randomInt%lengthList] + "|" + hostsList[(randomInt + 1)%lengthList] + "|" + hostsList[(randomInt + 2)%lengthList]
+
+		try:
+			# Get a list of all the hosts available
+			with open(HOSTSFILE, 'r') as file:
+				hostsList = file.read().splitlines()
+			# Find how many hosts there are in the list
+			lengthList = len(hostsList)
+			# Define a low limit
+			intLow = 0
+			# Randomize between the limits
+			randomInt = random.randint(intLow, lengthList)
+			# Visual confirmation for debugging: confirm success of chooseHosts()
+			logging.debug('Successfully selected storage locations')
+			# Return a pipe-seperated list of randomized hosts
+			return hostsList[randomInt%lengthList] + "|" + hostsList[(randomInt + 1)%lengthList] + "|" + hostsList[(randomInt + 2)%lengthList]
+
+		except IOError:
+			# Handle this error better in the future --> similar to how heartBeat.py
+			# needs to handle for this case..
+			logging.warning('hosts.txt does not exist')
 
 
 
@@ -304,10 +311,6 @@ class handleCommand(threading.Thread):
 		chunkHandle = self.handleCounter()
 		# Choose which chunkserver it will be stored on
 		hosts = self.chooseHosts()
-		# Send the API a string containing the location and chunkHandle information
-		self.s.send(str(hosts) + "|" + str(chunkHandle))
-		# Visual confirmation for debugging: confirm send of a list of storage hosts and chunk handle
-		logging.debug('SENT ==> ' + str(hosts) + "|" + str(chunkHandle))
 		# Split the list of locations by pipe
 		createLocations = hosts.split('|')
 		# Update the database to now include the newly created chunk
@@ -318,6 +321,13 @@ class handleCommand(threading.Thread):
 		database.update(chunkHandle, self.fileName, sequence, createLocations)
 		# Visual confirmation for debugging: confirm success of create()
 		logging.debug('Chunk metadata successfully created')
+		try:
+			# Send the API a string containing the location and chunkHandle information
+			self.s.send(str(hosts) + "|" + str(chunkHandle))
+		except socket.error:
+			logging.warning('Socket Connection Broken')
+		# Visual confirmation for debugging: confirm send of a list of storage hosts and chunk handle
+		logging.debug('SENT ==> ' + str(hosts) + "|" + str(chunkHandle))
 		
 
 
@@ -493,7 +503,6 @@ class handleCommand(threading.Thread):
 		self.oplog.append(self.msg[1]+"|"+self.msg[2]+"|"+self.msg[3])
 		# Visual confirmation for debugging: confirm success of oplog()
 		logging.debug('Oplog append successful')
-
 
 
 	# Function to handle the message received from the API
