@@ -367,6 +367,75 @@ class handleCommand(threading.Thread):
 
 
 
+	# Function that executes the protocol when a READ message is received
+	def read(self):
+		byteOffset = self.msg[2]
+		bytesToRead = self.msg[3]
+
+		# With the byte offSet, we want to modulo it with the chunkSize in the config
+		# so we will know what chunk sequence the start of the read will be 
+
+		# Get the size of a chunk from the config file
+		maxChunkSize = config.chunkSize
+		# Find the sequence of the chunk in the given file by using integer division
+		# (divide and take the floor)
+		startSequence = byteOffset//maxChunkSize
+
+		# Get the offset of the read-start within its given chunk
+		chunkByteOffset = byteOffset%maxChunkSize
+
+
+		# With the bytesToRead, we want to add it to the byte offset, then modulo that 
+		# number to see if it is in the same chunk seqence. If not, then we will have to
+		# return multiple locations and chunkHandles
+
+		# To find where the user wants to read ending, add the number of bytes they want
+		# to read to their starting point, the byteOffest. This will give the byte offset
+		# of the end of the read
+		endReadOffset = byteOffset + bytesToRead
+
+		# Find the sequence of the chunk in which the end of the read will terminate
+		endSequence = endReadOffset//maxChunkSize
+
+		# Create an empty string to hold the message that will be sent to the client
+		responseMessage = "READFROM"
+
+		# For each sequence number that exists between (and including) the read-start chunk
+		# and the read-end chunk, get the file's chunk with the appropriate sequence number,
+		# and append to the response message, a location it is stored at, its chunk handle, 
+		# and the byte offset from within that chunk to begin reading from.
+		for seq in range(startSequence, (endSequence + 1)):
+			try:
+				for chunk in database.data:
+					# If the chunk fileName and sequence number match up, we have the chunk we're looking for
+					if chunk.fileName.strip() == self.fileName.strip() and chunk.sequenceNumber == seq:
+						targetChunk = chunk
+						# Append a location where the chunk is stored (0th element in the locations list)
+						responseMessage += "|" + str(targetChunk.location[0])
+						# Append the chunk handle
+						responseMessage += "|" + str(targetChunk.handle)
+						# Append the byte offset to start reading from
+						responseMessage += "|" + str(chunkByteOffset)
+						# If the read request spans over more than one chunk, we will start reading
+						# the second chunk from where the first chunk left off, that is to say, at the 
+						# beginning of the second chunk (and this would be true if for whatever reason
+						# we read through the end of the second chunk into a third chunk), so we much now
+						# change the byteOffset to be zero so we start reading additional chunks in the 
+						# correct place.
+						chunkByteOffset = 0
+
+			except:
+				# If the specific file can not be found in the database, let it be known!
+				# Should also send an error message to client so their protocol terminates.
+				logging.error("Specified file does not exist in database")
+
+
+		#send our message
+		self.s.send(responseMessage)
+		logging.debug('SENT == ' + responseMessage)
+		# Visual confirmation for debugging: confirm success of read()
+		logging.debug('Append successfully handled')
+
 	# Function that executes the protocol when a DELETE message is received
 	def delete(self):
 		logging.debug('Begin updating delete flag to True')
@@ -456,6 +525,10 @@ class handleCommand(threading.Thread):
 		# If the operation is to APPEND:
 		elif self.op == "APPEND":
 			self.append()
+
+		# If the operation is to READ:
+		elif self.op == "READ":
+			self.read()
 
 		# If the operation is to OPEN:
 		elif self.op == "OPEN":
