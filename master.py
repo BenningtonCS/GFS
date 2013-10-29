@@ -125,7 +125,7 @@ class Database:
 			s.connect((line, chunkPort))
 			logging.debug("Connected to " + str(line) + " through " + str(chunkPort))
 			#send the message that audits the chunkserver
-			s.send('Contents?')
+			s.send('CONTENTS?')
 			logging.debug("sent 'Contents?' to : " + str(line))
 		        #recieve their reply, which is formatted as chunkhandle1|chunkhandle2|chunkhandle3|...
 		        #to make sure we get all data, even if it exceeds the buffer size, we can
