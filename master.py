@@ -39,11 +39,11 @@ args = sys.argv
 # Check to see if the verbose flag was one of the command line arguments
 if "-v" in args:
         # If it was one of the arguments, set the logging level to debug 
-        logging.basicConfig(level=logging.INFO, format='%(levelname)s : %(message)s')
+        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
 else:
         # If it was not, set the logging level to default (only shows messages with level
         # warning or higher)
-        logging.basicConfig(filename='masterLog.txt', format='%(levelname)s : %(message)s')
+        logging.basicConfig(level=logging.INFO, filename='masterLog.txt', format='%(asctime)s %(levelname)s : %(message)s')
 
 
 

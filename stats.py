@@ -5,6 +5,7 @@ import config
 import APIvers1
 import sys
 import logging
+from datetime import datetime
 from APIvers1 import API
 
 # logging
@@ -100,6 +101,7 @@ class statGen:
 	def close(self):
 		# append the html body to the stat file
 		self.file.write(self.data)
+		self.file.write("<p>Generated at: " + str(datetime.now()) + "</p>")
 		# append the closing html tags to the stat file
 		self.file.write('</body></html>')
 		# close stat file
