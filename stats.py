@@ -107,5 +107,6 @@ class statGen:
 statGen = statGen()
 statGen.getHosts()
 statGen.getFiles()
+statGen.getLog()
 statGen.getCat()
 statGen.close()
