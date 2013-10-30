@@ -283,7 +283,7 @@ class handleCommand(threading.Thread):
 
 		try:
 			# Get a list of all the hosts available
-			with open(HOSTSFILE, 'r') as file:
+			with open(ACTIVEHOSTSFILE, 'r') as file:
 				hostsList = file.read().splitlines()
 			# Find how many hosts there are in the list
 			lengthList = len(hostsList)
