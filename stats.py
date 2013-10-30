@@ -4,6 +4,7 @@
 import config
 import APIvers1
 import sys
+import logging
 from APIvers1 import API
 
 # logging
