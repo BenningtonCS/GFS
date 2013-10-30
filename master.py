@@ -39,7 +39,7 @@ args = sys.argv
 # Check to see if the verbose flag was one of the command line arguments
 if "-v" in args:
         # If it was one of the arguments, set the logging level to debug 
-        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
+        logging.basicConfig(level=logging.INFO, format='%(levelname)s : %(message)s')
 else:
         # If it was not, set the logging level to default (only shows messages with level
         # warning or higher)
@@ -543,7 +543,6 @@ class handleCommand(threading.Thread):
 	def fileList(self):
 		# call the database object's returnData method
 		list = str(database.returnData())
-		print list
 		self.s.send(list)
 
 	# Function to handle the message received from the API
@@ -664,7 +663,7 @@ threads = []
 # Bind the listener-server 
 s.bind(('', chunkPort))
 
-
+logging.info("Master successfully initialized!")
 # Main listening thread for API commands
 while 1:
 	try:
