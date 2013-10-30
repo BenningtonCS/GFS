@@ -43,7 +43,7 @@ if "-v" in args:
 else:
         # If it was not, set the logging level to default (only shows messages with level
         # warning or higher)
-        logging.basicConfig(format='%(levelname)s : %(message)s')
+        logging.basicConfig(filename='masterLog.txt', format='%(levelname)s : %(message)s')
 
 
 
@@ -458,12 +458,12 @@ class handleCommand(threading.Thread):
 						chunkByteOffset = 0
 						logging.debug('reset chunk byte offset')
 					else:
-						logging.error('chunk not found in database')
+						logging.error('Chunk ' + str(chunk.handle) + ' not found in database')
 
 			except:
 				# If the specific file can not be found in the database, let it be known!
 				# Should also send an error message to client so their protocol terminates.
-				logging.error("Specified file does not exist in database")
+				logging.error("Specified file "  +str(self.fileName) + " does not exist in database")
 
 
 		logging.debug('RESPONSE MESSAGE == ' + str(responseMessage))
@@ -596,7 +596,7 @@ class handleCommand(threading.Thread):
 		else:
 			# If the operation is something else, something went terribly wrong. 
 			# This error handling needs to vastly improve
-			logging.error("Command not recognized. No actions taken.")
+			logging.error("Command " + self.op + " not recognized. No actions taken.")
 
 
 

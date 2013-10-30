@@ -3,7 +3,20 @@
 # import libraries
 import config
 import APIvers1
+import sys
 from APIvers1 import API
+
+# logging
+args = sys.argv
+# Check to see if the verbose flag was one of the command line arguments
+if "-v" in args:
+        # If it was one of the arguments, set the logging level to debug 
+        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
+else:
+        # If it was not, set the logging level to default (only shows messages with level
+        # warning or higher)
+        logging.basicConfig(filename='masterLog.txt', format='%(asctime)s %(levelname)s : %(message)s')
+
 
 # stat page generator object
 class statGen:
@@ -18,7 +31,7 @@ class statGen:
 			self.file.write('<h1>DAT STATZ</h1>')
 		# if file operations file, raise an exception and exit
 		except:
-			print "Couldn't generate stat file!"		
+			loggin.error("Couldn't generate stat file!")		
 			exit()
 	# makes a list of hosts and sees which ones are online
 	def getHosts(self):
@@ -70,6 +83,14 @@ class statGen:
 		except Exception as e:
 			print e
 			self.data += "Couldnt generate file list!"
+	def getLog(self):
+		try:
+			masterLogFile = open('masterLog.txt', 'r')
+			masterLog = masterLogFile.read()
+			self.data += "<h2>DAT LOG</h2>"
+			self.data += masterLog
+		except:
+			self.data += "Couldn't generate master log!"
 	def getCat(self):
 		self.data += '<h2>CAT</h2><img src="http://i.imgur.com/MRkP4yJ.jpg" />'
 	def close(self):
