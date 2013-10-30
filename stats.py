@@ -89,7 +89,7 @@ class statGen:
 			masterLogFile = open('masterLog.txt', 'r')
 			masterLog = masterLogFile.read()
 			self.data += "<h2>DAT LOG</h2>"
-			self.data += masterLog
+			self.data += '<textarea rows="10" style="width:60%">' + masterLog + "</textarea>
 		except:
 			self.data += "Couldn't generate master log!"
 	def getCat(self):
