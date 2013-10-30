@@ -7,3 +7,4 @@ port = 9666
 masterip = ''
 chunkPath = '/data/gfsbin/Chunks'
 chunkSize = 12000 #bytes
+debug = False
