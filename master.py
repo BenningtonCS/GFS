@@ -299,7 +299,7 @@ class handleCommand(threading.Thread):
 		except IOError:
 			# Handle this error better in the future --> similar to how heartBeat.py
 			# needs to handle for this case..
-			logging.warning('hosts.txt does not exist')
+			logging.error( ACTIVEHOSTSFILE + ' does not exist')
 
 
 
@@ -450,7 +450,7 @@ class handleCommand(threading.Thread):
 						chunkByteOffset = 0
 						logging.debug('reset chunk byte offset')
 					else:
-						logging.debug('chunk not found in db')
+						logging.error('chunk not found in database')
 
 			except:
 				# If the specific file can not be found in the database, let it be known!
@@ -535,7 +535,7 @@ class handleCommand(threading.Thread):
 		# Visual confirmation for debugging: confirm connection
 		logging.debug('Connection from: ' + str(self.ip) + " on port " + str(self.port))
 		# Visual confirmation for debugging: confirm received operation
-		logging.debug('Received message: ' + str(self.op))
+		logging.debug('Received operation: ' + str(self.op))
 
 
 		# If the operation is to CREATE:
@@ -573,7 +573,7 @@ class handleCommand(threading.Thread):
 		else:
 			# If the operation is something else, something went terribly wrong. 
 			# This error handling needs to vastly improve
-			print "Command not recognized. No actions taken."
+			logging.error("Command not recognized. No actions taken.")
 
 
 
@@ -592,9 +592,9 @@ class opLog:
 	# Open the opLog file. If it can't open, notify and exit.
         def __init__(self):
             	try:
-             		self.logFile = open('opLog.txt', 'a')
-		except IOError as e:
-               		print "Couldn't open file!"
+             		self.logFile = open(OPLOG, 'a')
+		except IOError:
+               		logging.error('Could not open: ' + OPLOG)
                		exit()
 
         # Define a function to append to the opLog
@@ -603,8 +603,8 @@ class opLog:
                		# append the log of the operation to the oplog
                 	self.logFile.write(data + "\n")
                 	self.logFile.close()
-        	except IOError as e:
-                	print "Couldn't write to OpLog!"
+        	except IOError:
+                	logging.error('Could not write to: ' + OPLOG)
                 	exit()
 
 
@@ -649,6 +649,7 @@ while 1:
 		print "Listening..."
 		# Accept the incoming connection
 		conn, addr = s.accept()
+
 		# Define a string that will hold all of the received data
 		data = ""
 		# Define a buffer size for how much data the socket.recv function will
@@ -668,6 +669,7 @@ while 1:
 				# data to the data string, and continue looping to receive the rest of the data
 				if len(d) == bufferSize:
 					data += d
+
 		# When the connection is established and data is successfully acquired,
 		# start a new thread to handle the command. Having this threaded allows for
 		# multiple commands (or multiple API) to interact with the master at one time
