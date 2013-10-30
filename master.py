@@ -419,15 +419,16 @@ class handleCommand(threading.Thread):
 		# and the read-end chunk, get the file's chunk with the appropriate sequence number,
 		# and append to the response message, a location it is stored at, its chunk handle, 
 		# and the byte offset from within that chunk to begin reading from.
-		logging.debug('beginning for loop in read function. Looking for file:' + self.fileName + 'between sequence number ' + str(startSequence) + ' and ' + str(endSequence))
-		for seq in range(startSequence, (endSequence + 1)):
+		logging.debug('beginning for loop in read function. Looking for file:' + self.fileName + 'between sequence number ' + str(startSequence + 1) + ' and ' + str(endSequence + 1))
+		for sequence in range(startSequence, (endSequence + 1)):
 			try:
+				seq = sequence + 1 # I know I know I'll fix it soon
 				for chunk in database.data:
 					logging.debug('checking if statement in for loop: chunk = ' + str(chunk.handle) + ', file name =' + chunk.fileName + 'and sequence = ' + str(seq))
 					# If the chunk fileName and sequence number match up, we have the chunk we're looking for
 					logging.debug('chunk.sequenceNumber == ' + str(chunk.sequenceNumber))
 					logging.debug('seq == ' + str(seq))
-					if chunk.fileName.strip() == self.fileName.strip(): #and chunk.sequenceNumber == seq:
+					if chunk.fileName.strip() == self.fileName.strip() and chunk.sequenceNumber == seq:
 						logging.debug('if statement let us in')
 						targetChunk = chunk
 						logging.debug('a target chunk has been found')
