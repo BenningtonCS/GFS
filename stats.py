@@ -34,6 +34,9 @@ class statGen:
 		except:
 			loggin.error("Couldn't generate stat file!")		
 			exit()
+	def getMasterIP(self):
+		self.data += "<h2>MASTA</h2>"
+		self.data += config.masterip
 	# makes a list of hosts and sees which ones are online
 	def getHosts(self):
 		try: 
@@ -105,6 +108,7 @@ class statGen:
 
 ##############################################################
 statGen = statGen()
+statGen.getMasterIP()
 statGen.getHosts()
 statGen.getFiles()
 statGen.getLog()
