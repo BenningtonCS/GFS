@@ -465,6 +465,8 @@ class handleCommand(threading.Thread):
 		# Visual confirmation for debugging: confirm success of read()
 		logging.debug('Read successfully handled')
 
+
+
 	# Function that executes the protocol when a DELETE message is received
 	def delete(self):
 		logging.debug('Begin updating delete flag to True')
@@ -474,10 +476,13 @@ class handleCommand(threading.Thread):
 			for chunk in database.data:
 				if chunk.fileName.strip() == self.fileName.strip():
 					chunk.delete = True
-
-			logging.debug('Delete flag updated')
+					logging.debug('Delete flag marked True for ' + str(chunk.fileName) + ', chunk : ' + str(chunk.handle))
+				else:
+					logging.debug('Delete flag unchanged for ' + str(chunk.fileName) + ', chunk : ' + str(chunk.handle))
 	
-		# Update this exception handling to the case where no file was found to match the given fileName
+			logging.debug('Delete Flags Updated')
+
+		# Update this exception handling to the case where database is not found
 		except:
 			logging.error('Fatal Error')	
 
@@ -491,10 +496,13 @@ class handleCommand(threading.Thread):
 			for chunk in database.data:
 				if chunk.fileName.strip() == self.fileName.strip():
 					chunk.delete = False
+					logging.debug('Delete flag marked False for ' + str(chunk.fileName) + ', chunk : ' + str(chunk.handle))
+				else:
+					logging.debug('Delete flag unchanged for ' + str(chunk.fileName) + ', chunk : ' + str(chunk.handle))
 
 			logging.debug('Delete flag updated')
 
-		# Update this exception handling to the case where no file was found to match the given fileName
+		# Update this exception handling to the case where database is not found
 		except:
 			logging.error('Fatal error')
 
