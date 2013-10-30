@@ -58,7 +58,6 @@ class statGen:
 			fileList = fileString.split("@")
 			if(fileList[-1] == ""):
 				fileList.remove("")
-			print fileList
 			fileDict = dict()
 			for file in fileList:
 				fileSplit = file.split("|")
