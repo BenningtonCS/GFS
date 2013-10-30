@@ -543,6 +543,7 @@ class handleCommand(threading.Thread):
 	def fileList(self):
 		# call the database object's returnData method
 		list = str(database.returnData())
+		print list
 		self.s.send(list)
 
 	# Function to handle the message received from the API
