@@ -217,9 +217,17 @@ class Database:
 		# Visual confirmation for debugging: confirm success of findHighestSequence()
 		logging.debug('Highest Sequence Number Found!')
 
-
-
-
+	# returns the file matrix
+	def returnData(self):
+		# make a list to hold the data
+		list = ''
+		# for each chunk, add an entry to the list
+		for chunk in self.data:
+			list += str(chunk.fileName).strip("\n") + "|"
+			list += str(chunk.handle)
+			list += "@"
+		# return that list
+		return list
 
 
 
@@ -283,7 +291,7 @@ class handleCommand(threading.Thread):
 
 		try:
 			# Get a list of all the hosts available
-			with open(HOSTSFILE, 'r') as file:
+			with open(ACTIVEHOSTSFILE, 'r') as file:
 				hostsList = file.read().splitlines()
 			# Find how many hosts there are in the list
 			lengthList = len(hostsList)
@@ -522,7 +530,12 @@ class handleCommand(threading.Thread):
 		self.oplog.append(self.msg[1]+"|"+self.msg[2]+"|"+self.msg[3])
 		# Visual confirmation for debugging: confirm success of oplog()
 		logging.debug('Oplog append successful')
-
+	
+	# Function that executes the protocol when FILELIST message is received	
+	def fileList(self):
+		# call the database object's returnData method
+		list = str(database.returnData())
+		self.s.send(list)
 
 	# Function to handle the message received from the API
 	def run(self):
@@ -569,6 +582,8 @@ class handleCommand(threading.Thread):
 		# If the operation is to update the oplog, OPLOG:
 		elif self.op == "OPLOG":
 			self.oplog()
+		elif self.op == "FILELIST":
+			self.fileList()
 						
 		else:
 			# If the operation is something else, something went terribly wrong. 
