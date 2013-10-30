@@ -38,14 +38,15 @@ import socket, time, os, config, logging, sys
 
 # Get a list of command line arguments
 args = sys.argv
+FORMAT = "%(acstime)s HEARTBEAT %(levelname)s : %(message)s"
 # Check to see if the verbose flag was one of the command line arguments
 if "-v" in args:
         # If it was one of the arguments, set the logging level to debug 
-        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
+        logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 else:
         # If it was not, set the logging level to default (only shows messages with level
         # warning or higher)
-        logging.basicConfig(format='%(levelname)s : %(message)s')
+        logging.basicConfig(filename='masterLog.txt', format=FORMAT)
 
 
 
@@ -67,7 +68,7 @@ class heartBeat:
 	# DELAY sets the delay between chunkserver pings, as to reduce the load on the network
 	SOCK_TIMEOUT = 2
 	PORT = config.port
-	DELAY = 3
+	DELAY = 1
 	HOSTS = config.hostsfile
 	AHOSTS = config.activehostsfile
 	# Debug message for successful calling of heartBeat object
@@ -79,14 +80,18 @@ class heartBeat:
         	logging.debug('Getting chunk server IPs')
                 # If the hosts.txt file exists:
                 if os.path.isfile(self.HOSTS):
-                        # Read from it and parse its contents into a list. Return the list.
-                        with open(self.HOSTS, "r") as file:
-                                cs = file.read().splitlines()
-                                return cs
+                        try:
+                                # Read from it and parse its contents into a list. Return the list.
+                                with open(self.HOSTS, "r") as file:
+                                        cs = file.read().splitlines()
+                                        return cs
+                        # If the hosts.txt file can not be read, alert the logger
+                        except IOError
+                                logging.error('Could not read from ' + self.HOSTS)
                 # If the hosts.txt file does not exist:
                 else:
                         # TEMPORARY: print a message to inform of the issue (ISSUE #41)
-                        logging.error("hosts.txt does not exist.")
+                        logging.error(self.HOSTS + " does not exist.")
 
         # Function that returns a list of all chunk server IPs that are active 
         # (that have responded to heartbeats)
@@ -95,10 +100,14 @@ class heartBeat:
         	logging.debug('Getting active chunk server IPs')
                 # If the activehosts.txt file exists:
                 if os.path.isfile(self.AHOSTS):
-                        # Read from it and parse its contents into a list. Return the list.
-                        with open(self.AHOSTS, "r") as file:
-                                activeCS = file.read().splitlines()
-                                return activeCS
+                        try:
+                                # Read from it and parse its contents into a list. Return the list.
+                                with open(self.AHOSTS, "r") as file:
+                                        activeCS = file.read().splitlines()
+                                        return activeCS
+                        # If the activehosts.txt file can not be read, alert the logger
+                        except IOError:
+                                logging.error('Could not read from ' + self.AHOSTS)
                 # If the activehosts.txt file does not exist:
                 else:
                         # Create a file called activehosts.txt
@@ -140,6 +149,7 @@ class heartBeat:
 		# Handle the timeout (chunk server alive but not resonding) and connection (server dead) errors
 		except (socket.timeout, socket.error):
 			print "</3"
+                        logging.error('Could not connect to ' + IP)
 			# Check to see if the chunk server is in the list of active IPs
                         if IP in activeServers:
 				# If it is, remove it from the list
