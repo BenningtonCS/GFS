@@ -425,6 +425,8 @@ class handleCommand(threading.Thread):
 				for chunk in database.data:
 					logging.debug('checking if statement in for loop: chunk = ' + str(chunk.handle) + ', file name =' + chunk.fileName + 'and sequence = ' + str(seq))
 					# If the chunk fileName and sequence number match up, we have the chunk we're looking for
+					logging.debug('chunk.sequenceNumber == ' + str(chunk.sequenceNumber))
+					logging.debug('seq == ' + str(seq))
 					if chunk.fileName.strip() == self.fileName.strip(): #and chunk.sequenceNumber == seq:
 						logging.debug('if statement let us in')
 						targetChunk = chunk
@@ -433,10 +435,10 @@ class handleCommand(threading.Thread):
 						responseMessage += "|" + str(targetChunk.location[0].strip())
 						logging.debug('location == ' + str(targetChunk.location))
 						# Append the chunk handle
-						responseMessage += "|" + str(targetChunk.handle)
+						responseMessage += "*" + str(targetChunk.handle)
 						logging.debug('chunk handle == ' + str(targetChunk.handle))
 						# Append the byte offset to start reading from
-						responseMessage += "|" + str(chunkByteOffset)
+						responseMessage += "*" + str(chunkByteOffset)
 						logging.debug('byte offset == ' + str(chunkByteOffset))
 						# If the read request spans over more than one chunk, we will start reading
 						# the second chunk from where the first chunk left off, that is to say, at the 
