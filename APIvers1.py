@@ -24,7 +24,7 @@ class API():
 	#lets define some variables
 	global MASTER_ADDRESS
 	global TCP_PORT
-	MASTER_ADDRESS = raw_input("What is the IP of the Master? : ")
+	MASTER_ADDRESS = config.masterip
 	TCP_PORT = config.port
 
 	#lets make the API able to send and recieve messages
@@ -45,7 +45,7 @@ class API():
 		#creates a file and gives it to the master
 		self.s.send("CREATE|" + filename)
 		self.data = self.s.recv(1024)
-		print self.data
+		#print self.data
 		#master sends back chunk handle and locations
 		self.splitdata = self.data.split("|")
 		dataLength = len(self.splitdata)
@@ -104,6 +104,10 @@ class API():
 			thread = chunkConnectRead(location, cH, offset, bytesToRead)
 			thread.start()	
                	
+	def fileList(self):
+		self.s.send("FILELIST|x")
+		self.data = self.s.recv(1024)
+		return self.data
 
 #thread for create
 class chunkConnectCreate(threading.Thread):
@@ -186,6 +190,11 @@ class updateOpLog(threading.Thread):
 		print "opshit"
 
 
+<<<<<<< HEAD
 
+=======
+#API = API()
+#API.create("/foob/bar")
+>>>>>>> ab69760249ae9673cd91e592c451600bcf578484
 
 

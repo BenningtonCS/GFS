@@ -1,10 +1,10 @@
 #############################################################################~
-#        10/23/2013            								                               #~~
-#	Multi-Threaded Chunk Server						                                	    #~~~
-#		by									                                                       #~~~~
-#	Torrent Glenn & Brendon Walter							                                  #~~~~
-#											                                                           #~~~~~
-#											                                                            #~~~~~~
+#        10/23/2013            		                              #~~
+#	Multi-Threaded Chunk Server	                                  #~~~
+#		by				                            #~~~~
+#	Torrent Glenn & Brendon Walter                                         #~~~~
+#				                                                #~~~~~
+#			                                                         #~~~~~~
 ####################################################################################~~~~~~~
 
 """ The Chunk Server is a multithreaded server designed to run on multiple server machines it uses the socket library for connections
@@ -61,6 +61,7 @@ class chunkReaderThread(connThread):
 		chunk = open("chunkHandle") # opens the designated chunk to read from
 		chunk.seek(byteOffSet) # goes to the specified byte offset
 		fileContent = chunk.read(bytesToRead) # stuffs all the stuff to be read into a variable
+		self.connection.send(fileContent)
 		chunk.close() # closes the chunk
 		self.connection.close() # closes the connection
 
@@ -68,7 +69,7 @@ class chunkReaderThread(connThread):
 class onPi(connThread):
 	# onPi reads every file within the path (which should be /data/gfsbin/Chunks)
 	# and returns it as a list in the form of <chunk handle>|<chunk handle>| etc.
-	path = "Chunks/"
+	path = config.chunkPath
         
         def run(self):
                 files = []
@@ -85,10 +86,8 @@ class makeChunk(connThread):
 	# was given to it.
         def run(self):
 		self.connection.send("continue")
-		print "RAWR"
                 chunkHandle = self.connection.recv(1024) # get the name of the chunk
-                open("Chunks/"+chunkHandle, 'w').close() # create the file
-		print "DONE"
+                open(path+chunkHandle, 'w').close() # create the file
 class appendChunk(connThread):
 	# appendChunk adds data that is handed to it to the given chunkhandle.
         def run(self):
@@ -96,7 +95,7 @@ class appendChunk(connThread):
 		chunkHandle = self.connection.recv(1024) # name of the chunk
 		self.connection.send("continue") 
 		data = self.connection.recv(67108864)    # data being added
-                with open("Chunks/"+chunkHandle, 'a') as a: # open the chunk
+                with open(path+chunkHandle, 'a') as a: # open the chunk
                         a.write(data) 			 # add the data to it
 
 ###################################### Exiting Brendon's Code ###########################################
@@ -114,19 +113,19 @@ class distributorThread(connThread):
 			# in this and each other if/elif statement the correct worker thread is started for a given command
 			beat = heartBeatThread(self.connection)
 			beat.start()
-		elif command == "ChunkSpace?":
+		elif command == "CHUNKSPACE?":
 			t = chunkSpaceThread(self.connection)
 			t.start()
-		elif command == "Read":
+		elif command == "READ":
 			t = chunkReaderThread(self.connection)
 			t.start()
-		elif command == "Contents?":
+		elif command == "CONTENTS?":
 			t = onPi(self.connection)
 			t.start()
-		elif command == "makeChunk":
+		elif command == "MAKECHUNK":
 			t = makeChunk(self.connection)
 			t.start()
-		elif command == "append":
+		elif command == "APPEND":
 			t = appendChunk(self.connection)
 			t.start()
 	

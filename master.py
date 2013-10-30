@@ -30,8 +30,8 @@ import socket, threading, random, os, time, config, sys, logging
 
 
 # Setup for having a verbose mode for debugging:
-# USAGE: When running program, $python heartBeat.py , no debug message will show up
-# Instead, the program should be run in verbose, $python heartBeat.py -v , for debug 
+# USAGE: When running program, $python master.py , no debug message will show up
+# Instead, the program should be run in verbose, $python master.py -v , for debug 
 # messages to show up
 
 # Get a list of command line arguments
@@ -70,6 +70,8 @@ class Chunk:
                 self.sequenceNumber = sequence
                 #as well as a list of chunkservers the chunk is currently being stored on
                 self.location = []
+                #as well as a flag for deletion
+                self.delete = False
 
 class Database:
 		
@@ -123,9 +125,9 @@ class Database:
 		        #connect to a listening chunkserver
 			logging.debug(str(line))
 			s.connect((line, chunkPort))
-			logging.debug("Connected to " + str(line) + " through " str(chunkPort))
+			logging.debug("Connected to " + str(line) + " through " + str(chunkPort))
 			#send the message that audits the chunkserver
-			s.send('Contents?')
+			s.send('CONTENTS?')
 			logging.debug("sent 'Contents?' to : " + str(line))
 		        #recieve their reply, which is formatted as chunkhandle1|chunkhandle2|chunkhandle3|...
 		        #to make sure we get all data, even if it exceeds the buffer size, we can
@@ -215,9 +217,17 @@ class Database:
 		# Visual confirmation for debugging: confirm success of findHighestSequence()
 		logging.debug('Highest Sequence Number Found!')
 
-
-
-
+	# returns the file matrix
+	def returnData(self):
+		# make a list to hold the data
+		list = ''
+		# for each chunk, add an entry to the list
+		for chunk in self.data:
+			list += str(chunk.fileName).strip("\n") + "|"
+			list += str(chunk.handle)
+			list += "@"
+		# return that list
+		return list
 
 
 
@@ -278,19 +288,26 @@ class handleCommand(threading.Thread):
 	def chooseHosts(self):
 		# Visual confirmation for debugging: confirm init of chooseHosts()
 		logging.debug('Selecting storage locations')
-		# Get a list of all the hosts available
-		with open(HOSTSFILE, 'r') as file:
-			hostsList = file.read().splitlines()
-		# Find how many hosts there are in the list
-		lengthList = len(hostsList)
-		# Define a low limit
-		intLow = 0
-		# Randomize between the limits
-		randomInt = random.randint(intLow, lengthList)
-		# Visual confirmation for debugging: confirm success of chooseHosts()
-		logging.debug('Successfully selected storage locations')
-		# Return a pipe-seperated list of randomized hosts
-		return hostsList[randomInt%lengthList] + "|" + hostsList[(randomInt + 1)%lengthList] + "|" + hostsList[(randomInt + 2)%lengthList]
+
+		try:
+			# Get a list of all the hosts available
+			with open(ACTIVEHOSTSFILE, 'r') as file:
+				hostsList = file.read().splitlines()
+			# Find how many hosts there are in the list
+			lengthList = len(hostsList)
+			# Define a low limit
+			intLow = 0
+			# Randomize between the limits
+			randomInt = random.randint(intLow, lengthList)
+			# Visual confirmation for debugging: confirm success of chooseHosts()
+			logging.debug('Successfully selected storage locations')
+			# Return a pipe-seperated list of randomized hosts
+			return hostsList[randomInt%lengthList] + "|" + hostsList[(randomInt + 1)%lengthList] + "|" + hostsList[(randomInt + 2)%lengthList]
+
+		except IOError:
+			# Handle this error better in the future --> similar to how heartBeat.py
+			# needs to handle for this case..
+			logging.error( ACTIVEHOSTSFILE + ' does not exist')
 
 
 
@@ -302,10 +319,6 @@ class handleCommand(threading.Thread):
 		chunkHandle = self.handleCounter()
 		# Choose which chunkserver it will be stored on
 		hosts = self.chooseHosts()
-		# Send the API a string containing the location and chunkHandle information
-		self.s.send(str(hosts) + "|" + str(chunkHandle))
-		# Visual confirmation for debugging: confirm send of a list of storage hosts and chunk handle
-		logging.debug('SENT ==> ' + str(hosts) + "|" + str(chunkHandle))
 		# Split the list of locations by pipe
 		createLocations = hosts.split('|')
 		# Update the database to now include the newly created chunk
@@ -316,6 +329,13 @@ class handleCommand(threading.Thread):
 		database.update(chunkHandle, self.fileName, sequence, createLocations)
 		# Visual confirmation for debugging: confirm success of create()
 		logging.debug('Chunk metadata successfully created')
+		try:
+			# Send the API a string containing the location and chunkHandle information
+			self.s.send(str(hosts) + "|" + str(chunkHandle))
+		except socket.error:
+			logging.warning('Socket Connection Broken')
+		# Visual confirmation for debugging: confirm send of a list of storage hosts and chunk handle
+		logging.debug('SENT ==> ' + str(hosts) + "|" + str(chunkHandle))
 		
 
 
@@ -365,12 +385,137 @@ class handleCommand(threading.Thread):
 
 
 
+	# Function that executes the protocol when a READ message is received
+	def read(self):
+		byteOffset = int(self.msg[2])
+		bytesToRead = int(self.msg[3])
+		logging.debug('parsed byte offset and bytes to read')
+		# With the byte offSet, we want to modulo it with the chunkSize in the config
+		# so we will know what chunk sequence the start of the read will be 
+
+		# Get the size of a chunk from the config file
+		maxChunkSize = config.chunkSize
+		# Find the sequence of the chunk in the given file by using integer division
+		# (divide and take the floor)
+		startSequence = byteOffset//maxChunkSize
+
+		# Get the offset of the read-start within its given chunk
+		chunkByteOffset = byteOffset%maxChunkSize
+
+		logging.debug('start sequence # == ' + str(startSequence))
+		logging.debug('chunk byte offset == ' + str(chunkByteOffset))
+
+		# With the bytesToRead, we want to add it to the byte offset, then modulo that 
+		# number to see if it is in the same chunk seqence. If not, then we will have to
+		# return multiple locations and chunkHandles
+
+		# To find where the user wants to read ending, add the number of bytes they want
+		# to read to their starting point, the byteOffest. This will give the byte offset
+		# of the end of the read
+		endReadOffset = byteOffset + bytesToRead
+
+		# Find the sequence of the chunk in which the end of the read will terminate
+		endSequence = endReadOffset//maxChunkSize
+
+		logging.debug('end sequence # == ' + str(endSequence))
+		logging.debug('end read offset == ' + str(endReadOffset))
+
+		# Create an empty string to hold the message that will be sent to the client
+		responseMessage = "READFROM"
+
+		# For each sequence number that exists between (and including) the read-start chunk
+		# and the read-end chunk, get the file's chunk with the appropriate sequence number,
+		# and append to the response message, a location it is stored at, its chunk handle, 
+		# and the byte offset from within that chunk to begin reading from.
+		logging.debug('beginning for loop in read function. Looking for file:' + self.fileName + 'between sequence number ' + str(startSequence + 1) + ' and ' + str(endSequence + 1))
+		for sequence in range(startSequence, (endSequence + 1)):
+			try:
+				seq = sequence + 1 # I know I know I'll fix it soon
+				for chunk in database.data:
+					logging.debug('checking if statement in for loop: chunk = ' + str(chunk.handle) + ', file name =' + chunk.fileName + 'and sequence = ' + str(seq))
+					# If the chunk fileName and sequence number match up, we have the chunk we're looking for
+					logging.debug('chunk.sequenceNumber == ' + str(chunk.sequenceNumber))
+					logging.debug('seq == ' + str(seq))
+					if chunk.fileName.strip() == self.fileName.strip() and chunk.sequenceNumber == seq:
+						logging.debug('if statement let us in')
+						targetChunk = chunk
+						logging.debug('a target chunk has been found')
+						# Append a location where the chunk is stored (0th element in the locations list)
+						responseMessage += "|" + str(targetChunk.location[0].strip())
+						logging.debug('location == ' + str(targetChunk.location))
+						# Append the chunk handle
+						responseMessage += "*" + str(targetChunk.handle)
+						logging.debug('chunk handle == ' + str(targetChunk.handle))
+						# Append the byte offset to start reading from
+						responseMessage += "*" + str(chunkByteOffset)
+						logging.debug('byte offset == ' + str(chunkByteOffset))
+						# If the read request spans over more than one chunk, we will start reading
+						# the second chunk from where the first chunk left off, that is to say, at the 
+						# beginning of the second chunk (and this would be true if for whatever reason
+						# we read through the end of the second chunk into a third chunk), so we much now
+						# change the byteOffset to be zero so we start reading additional chunks in the 
+						# correct place.
+						chunkByteOffset = 0
+						logging.debug('reset chunk byte offset')
+					else:
+						logging.error('chunk not found in database')
+
+			except:
+				# If the specific file can not be found in the database, let it be known!
+				# Should also send an error message to client so their protocol terminates.
+				logging.error("Specified file does not exist in database")
+
+
+		logging.debug('RESPONSE MESSAGE == ' + str(responseMessage))
+		#send our message
+		self.s.send(responseMessage)
+		logging.debug('SENT == ' + responseMessage)
+		# Visual confirmation for debugging: confirm success of read()
+		logging.debug('Read successfully handled')
+
+
+
 	# Function that executes the protocol when a DELETE message is received
 	def delete(self):
-		pass
+		logging.debug('Begin updating delete flag to True')
 		
-		
-		
+		try:
+			# Look through all the chunks in the database which have the specified file name
+			for chunk in database.data:
+				if chunk.fileName.strip() == self.fileName.strip():
+					chunk.delete = True
+					logging.debug('Delete flag marked True for ' + str(chunk.fileName) + ', chunk : ' + str(chunk.handle))
+				else:
+					logging.debug('Delete flag unchanged for ' + str(chunk.fileName) + ', chunk : ' + str(chunk.handle))
+	
+			logging.debug('Delete Flags Updated')
+
+		# Update this exception handling to the case where database is not found
+		except:
+			logging.error('Fatal Error')	
+
+
+
+	def undelete(self):
+		logging.debug('Begin updating delete flag to False')
+
+		try:
+			# Look through all the chunks in the database which have the specified file name
+			for chunk in database.data:
+				if chunk.fileName.strip() == self.fileName.strip():
+					chunk.delete = False
+					logging.debug('Delete flag marked False for ' + str(chunk.fileName) + ', chunk : ' + str(chunk.handle))
+				else:
+					logging.debug('Delete flag unchanged for ' + str(chunk.fileName) + ', chunk : ' + str(chunk.handle))
+
+			logging.debug('Delete flag updated')
+
+		# Update this exception handling to the case where database is not found
+		except:
+			logging.error('Fatal error')
+
+
+
 	# Function that executes the protocol when an OPEN message is received
 	def open(self):
 		pass
@@ -393,8 +538,12 @@ class handleCommand(threading.Thread):
 		self.oplog.append(self.msg[1]+"|"+self.msg[2]+"|"+self.msg[3])
 		# Visual confirmation for debugging: confirm success of oplog()
 		logging.debug('Oplog append successful')
-
-
+	
+	# Function that executes the protocol when FILELIST message is received	
+	def fileList(self):
+		# call the database object's returnData method
+		list = str(database.returnData())
+		self.s.send(list)
 
 	# Function to handle the message received from the API
 	def run(self):
@@ -407,7 +556,7 @@ class handleCommand(threading.Thread):
 		# Visual confirmation for debugging: confirm connection
 		logging.debug('Connection from: ' + str(self.ip) + " on port " + str(self.port))
 		# Visual confirmation for debugging: confirm received operation
-		logging.debug('Received message: ' + str(self.op))
+		logging.debug('Received operation: ' + str(self.op))
 
 
 		# If the operation is to CREATE:
@@ -418,9 +567,17 @@ class handleCommand(threading.Thread):
 		elif self.op == "DELETE":
 			self.delete()
 
+		# If the operation is to UNDELETE:
+		elif self.op == "UNDELETE":
+			self.undelete()
+
 		# If the operation is to APPEND:
 		elif self.op == "APPEND":
 			self.append()
+
+		# If the operation is to READ:
+		elif self.op == "READ":
+			self.read()
 
 		# If the operation is to OPEN:
 		elif self.op == "OPEN":
@@ -433,11 +590,13 @@ class handleCommand(threading.Thread):
 		# If the operation is to update the oplog, OPLOG:
 		elif self.op == "OPLOG":
 			self.oplog()
+		elif self.op == "FILELIST":
+			self.fileList()
 						
 		else:
 			# If the operation is something else, something went terribly wrong. 
 			# This error handling needs to vastly improve
-			print "Command not recognized. No actions taken."
+			logging.error("Command not recognized. No actions taken.")
 
 
 
@@ -456,9 +615,9 @@ class opLog:
 	# Open the opLog file. If it can't open, notify and exit.
         def __init__(self):
             	try:
-             		self.logFile = open('opLog.txt', 'a')
-		except IOError as e:
-               		print "Couldn't open file!"
+             		self.logFile = open(OPLOG, 'a')
+		except IOError:
+               		logging.error('Could not open: ' + OPLOG)
                		exit()
 
         # Define a function to append to the opLog
@@ -467,8 +626,8 @@ class opLog:
                		# append the log of the operation to the oplog
                 	self.logFile.write(data + "\n")
                 	self.logFile.close()
-        	except IOError as e:
-                	print "Couldn't write to OpLog!"
+        	except IOError:
+                	logging.error('Could not write to: ' + OPLOG)
                 	exit()
 
 
@@ -513,6 +672,7 @@ while 1:
 		print "Listening..."
 		# Accept the incoming connection
 		conn, addr = s.accept()
+
 		# Define a string that will hold all of the received data
 		data = ""
 		# Define a buffer size for how much data the socket.recv function will
@@ -532,6 +692,7 @@ while 1:
 				# data to the data string, and continue looping to receive the rest of the data
 				if len(d) == bufferSize:
 					data += d
+
 		# When the connection is established and data is successfully acquired,
 		# start a new thread to handle the command. Having this threaded allows for
 		# multiple commands (or multiple API) to interact with the master at one time
