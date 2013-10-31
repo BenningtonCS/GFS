@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 #################################################################
-#																#
-#	SERVER EMULATOR FOR FUNCTIONLIBRARY.RECV() TESTING			#
-#																#
+#										
+#	SERVER EMULATOR FOR FUNCTIONLIBRARY.RECV() TESTING		
+#						
 #################################################################
 
 import socket, config
