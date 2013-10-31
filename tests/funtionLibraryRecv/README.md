@@ -2,6 +2,8 @@
 
 The client and server emulators act as a way to test out the recv() function, in the functionLibrary. They import config and functionLibrary so should be run from a directory containing them.
 
+The server emulator should be initialized before the client emulator
+
 1. Client Emulator
 
 	A simple TCP client which prompts for a port to connect over, a message to send, and whether you would like to send the message with an EOT character or not. See notes for effects of this.
