@@ -19,7 +19,7 @@
 
 
 import socket, threading, random, os, time, config, sys, logging
-
+import functionLibrary as fL
 
 
 ###############################################################################
@@ -127,30 +127,14 @@ class Database:
 			s.connect((line, chunkPort))
 			logging.debug("Connected to " + str(line) + " through " + str(chunkPort))
 			#send the message that audits the chunkserver
-			s.send('CONTENTS?')
+			s.send('CONTENTS?' + EOT)
 			logging.debug("sent 'Contents?' to : " + str(line))
 		        #recieve their reply, which is formatted as chunkhandle1|chunkhandle2|chunkhandle3|...
 		        #to make sure we get all data, even if it exceeds the buffer size, we can
 		        #loop over the receive and append to a string to get the whole message
-			# Define a string that will hold all of the received data
-			data = ""
-			# Define a buffer size for how much data the socket.recv function will
-			# be able to handle at one time
-			bufferSize = 1024
-			while 1:
-					#receive the data
-					d = s.recv(bufferSize)
-					# If the length of the received data is less than that of the bufferSize,
-					# then no more data will need to be received, so put the received data
-					# into the data string and exit the receiving loop
-					if len(d) < bufferSize:
-						data += d
-						break
-					# If the length of the received data is equal to the max buffer size,
-					# then there is more data that could be received, so append the received
-					# data to the data string, and continue looping to receive the rest of the data
-					if len(d) == bufferSize:
-						data += d
+			# Receive data
+			data = fL.recv(s)
+
 			logging.debug("Received " + str(data) + " from " + str(line))
 		        #make a list of all the chunkhandles on the chunkserver
 			chunkData = data.split('|')
@@ -331,7 +315,7 @@ class handleCommand(threading.Thread):
 		logging.debug('Chunk metadata successfully created')
 		try:
 			# Send the API a string containing the location and chunkHandle information
-			self.s.send(str(hosts) + "|" + str(chunkHandle))
+			self.s.send(str(hosts) + "|" + str(chunkHandle) + EOT)
 		except socket.error:
 			logging.warning('Socket Connection Broken')
 		# Visual confirmation for debugging: confirm send of a list of storage hosts and chunk handle
@@ -376,7 +360,7 @@ class handleCommand(threading.Thread):
 		#append the chunkhandle to our message
 		appendMessage += str(targetChunk.handle)
 		#send our message
-		self.s.send(appendMessage)
+		self.s.send(appendMessage + EOT)
 		# Visual confirmation for debugging: confirm send of a list of storage hosts and chunk handle
 		logging.debug('SENT == ' + str(appendMessage))
 		# Visual confirmation for debugging: confirm success of append()
@@ -468,7 +452,7 @@ class handleCommand(threading.Thread):
 
 		logging.debug('RESPONSE MESSAGE == ' + str(responseMessage))
 		#send our message
-		self.s.send(responseMessage)
+		self.s.send(responseMessage + EOT)
 		logging.debug('SENT == ' + responseMessage)
 		# Visual confirmation for debugging: confirm success of read()
 		logging.debug('Read successfully handled')
@@ -543,7 +527,7 @@ class handleCommand(threading.Thread):
 	def fileList(self):
 		# call the database object's returnData method
 		list = str(database.returnData())
-		self.s.send(list)
+		self.s.send(list + EOT)
 
 	# Function to handle the message received from the API
 	def run(self):
@@ -646,6 +630,7 @@ HOSTSFILE = config.hostsfile
 ACTIVEHOSTSFILE = config.activehostsfile
 OPLOG = config.oplog
 chunkPort = config.port
+EOT = config.eot
 
 # Make sure the database initializes before anything else is done
 database = Database()
@@ -673,26 +658,9 @@ while 1:
 		# Accept the incoming connection
 		conn, addr = s.accept()
 
-		# Define a string that will hold all of the received data
-		data = ""
-		# Define a buffer size for how much data the socket.recv function will
-		# be able to handle at one time
-		bufferSize = 1024
-		while 1:
-				#receive the data
-				d = conn.recv(bufferSize)
-				# If the length of the received data is less than that of the bufferSize,
-				# then no more data will need to be received, so put the received data
-				# into the data string and exit the receiving loop
-				if len(d) < bufferSize:
-					data += d
-					break
-				# If the length of the received data is equal to the max buffer size,
-				# then there is more data that could be received, so append the received
-				# data to the data string, and continue looping to receive the rest of the data
-				if len(d) == bufferSize:
-					data += d
-
+		# Receive the data
+		data = fL.recv(conn)
+		
 		# When the connection is established and data is successfully acquired,
 		# start a new thread to handle the command. Having this threaded allows for
 		# multiple commands (or multiple API) to interact with the master at one time
