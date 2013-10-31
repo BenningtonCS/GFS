@@ -21,6 +21,7 @@
 
 
 import socket, time, os, config, logging, sys
+import functionLibrary as fL
 
 
 
@@ -134,9 +135,9 @@ class heartBeat:
 			# Connect to the chunkserver over the specified port
                         self.s.connect((IP, self.PORT))
 			# Send the chunk server a heart (ping)
-                        self.s.send("<3?")
+                        self.s.send("<3?" + config.eot)
 			# Get the chunk server response
-                        data = self.s.recv(1024)
+                        data = fL.recv(self.s)
                         print data
 			# Close the connection to allow future connections
                         self.s.close()
