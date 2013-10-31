@@ -1,19 +1,19 @@
 #!/usr/bin/env
 
 #################################################################################
-#																				#
-#			GFS COMMON FUNCTION LIBRARY 										#
+#										#
+#		GFS COMMON FUNCTION LIBRARY 					#
 #_______________________________________________________________________________#
-#																				#
-# Authors:	Erick Daniszewski													#
-# Date:		30 October 2013														#
-# File:		functionLibrary.py 													#
-#																				#
-# Summary:	The function library is a library that all components of the GFS	#
-#			implementation have access to, which contains basic functions that	#
-#			are used by multiple components, so the same code need not be 		#
-#			written repeatedly. 												#
-#																				#
+#										#
+# Authors:	Erick Daniszewski						#
+# Date:		30 October 2013							#
+# File:		functionLibrary.py 						#
+#										#
+# Summary:	The function library is a library that all components of the GFS#
+#		implementation have access to, which contains basic functions that	#
+#		are used by multiple components, so the same code need not be 	#
+#		written repeatedly. 						#
+#										#
 #################################################################################
 
 
