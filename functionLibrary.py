@@ -63,7 +63,6 @@ def recv(connection):
 	logging.debug('Starting recv() function')
 	# Create an empty string which will eventually hold the received message
 	data = ""
-
 	# Coninuously receive data over the socket connection until the end of 
 	# transmission character appears at the end of a message.
 	while 1:
@@ -78,7 +77,7 @@ def recv(connection):
 		try:
 			ending = d[-1]
 		except IndexError:
-			logging.error('Continued to recieve, but no data to receive -- no EOT character sent')
+			logging.error('No data received')
 			exit()
 		# Check the ending of the received data to see if it contains an end of
 		# transmission character, and if it does, break out of the loop since 
@@ -86,6 +85,7 @@ def recv(connection):
 		if eot in ending:
 			logging.debug('End of transmission character found. No longer receiving.')
 			break
+
 		logging.debug('End of transmission character not found. Continue receiving.')
 
 	# In the received data, remove the end of transmission character
