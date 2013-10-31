@@ -401,11 +401,15 @@ class handleCommand(threading.Thread):
 		# Find the sequence of the chunk in which the end of the read will terminate
 		endSequence = endReadOffset//maxChunkSize
 
+		# Get the offset of the read-end within its given chunk
+		endOffset = endReadOffset%maxChunkSize
+
 		logging.debug('end sequence # == ' + str(endSequence))
-		logging.debug('end read offset == ' + str(endReadOffset))
+		logging.debug('end read offset == ' + str(endOffset))
 
 		# Create an empty string to hold the message that will be sent to the client
 		responseMessage = "READFROM"
+		
 
 		# For each sequence number that exists between (and including) the read-start chunk
 		# and the read-end chunk, get the file's chunk with the appropriate sequence number,
@@ -433,6 +437,19 @@ class handleCommand(threading.Thread):
 						# Append the byte offset to start reading from
 						responseMessage += "*" + str(chunkByteOffset)
 						logging.debug('byte offset == ' + str(chunkByteOffset))
+
+						# Check to see if the READ will take place in the same chunk. If it does, append the 
+						# endOffset to the message so the client will know where to end reading
+						if startSequence == endSequence:
+							responseMessage += "*" + str(endOffset)
+						# If the READ takes place over multiple chunks, write the end of read for the current
+						# chunk to be the end of the chunk, and then increase the sequence number so when the 
+						# metadata for the last chunk is processed, it will be caught by the if statement above
+						# and send the appropriate ending offset.
+						elif startSequence < endSequence:
+							responseMessage += "*" + maxChunkSize
+							startSequence += 1
+
 						# If the read request spans over more than one chunk, we will start reading
 						# the second chunk from where the first chunk left off, that is to say, at the 
 						# beginning of the second chunk (and this would be true if for whatever reason
