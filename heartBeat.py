@@ -87,7 +87,7 @@ class heartBeat:
                                         cs = file.read().splitlines()
                                         return cs
                         # If the hosts.txt file can not be read, alert the logger
-                        except IOError
+                        except IOError:
                                 logging.error('Could not read from ' + self.HOSTS)
                 # If the hosts.txt file does not exist:
                 else:
