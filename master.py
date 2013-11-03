@@ -225,12 +225,13 @@ class Database:
 # Define constructor which will build an API-handling thread
 class handleCommand(threading.Thread):
 	# Define initialization parameters
-	def __init__(self, ip, port, socket, data):
+	def __init__(self, ip, port, socket, data, lock):
 		threading.Thread.__init__(self)
 		self.ip = ip
 		self.port = port
 		self.s = socket
 		self.data = data
+		self.lock = lock
 		# Visual confirmation for debugging: see what data was received
 		logging.debug('DATA ==> ' + data)
 		# Visual confirmation for debugging:confirm that init was successful 
@@ -253,8 +254,12 @@ class handleCommand(threading.Thread):
 	def create(self):
 		# Visual confirmation for debugging: confirm init of create()
 		logging.debug('Creating chunk metadata')
+		# Acquire a lock so the chunk handle counter can not be accessed simultaneously
+		self.lock.acquire()
 		# Get a new chunkhandle
 		chunkHandle = fL.handleCounter()
+		# Release the lock so others can access the chunk handle counter
+		self.lock.release()
 		# Choose which chunkserver it will be stored on
 		hosts = fL.chooseHosts()
 		# Split the list of locations by pipe
@@ -602,6 +607,8 @@ ACTIVEHOSTSFILE = config.activehostsfile
 OPLOG = config.oplog
 chunkPort = config.port
 EOT = config.eot
+# Define a thread lock to be used to get and increment chunk handles
+threadLock = threading.Lock()
 
 # Make sure the database initializes before anything else is done
 database = Database()
@@ -635,7 +642,7 @@ while 1:
 		# When the connection is established and data is successfully acquired,
 		# start a new thread to handle the command. Having this threaded allows for
 		# multiple commands (or multiple API) to interact with the master at one time
-		newThread = handleCommand(addr[0], addr[1], conn, data)
+		newThread = handleCommand(addr[0], addr[1], conn, data, threadLock)
 		newThread.start()
 		# Append the thread to the thread[] list, which will be joined upon exiting the 
 		# while loop
