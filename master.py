@@ -254,9 +254,9 @@ class handleCommand(threading.Thread):
 		# Visual confirmation for debugging: confirm init of create()
 		logging.debug('Creating chunk metadata')
 		# Get a new chunkhandle
-		chunkHandle = self.handleCounter()
+		chunkHandle = fL.handleCounter()
 		# Choose which chunkserver it will be stored on
-		hosts = self.chooseHosts()
+		hosts = fL.chooseHosts()
 		# Split the list of locations by pipe
 		createLocations = hosts.split('|')
 		# Update the database to now include the newly created chunk
