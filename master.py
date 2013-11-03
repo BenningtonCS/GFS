@@ -550,6 +550,7 @@ class handleCommand(threading.Thread):
 		# If the operation is to update the oplog, OPLOG:
 		elif self.op == "OPLOG":
 			self.oplog()
+
 		elif self.op == "FILELIST":
 			self.fileList()
 						
@@ -592,6 +593,25 @@ class opLog:
 
 
 
+#######################################################################
+
+#                       DEFINE WORKER FUNCTION FOR QUEUE THREAD
+
+#######################################################################
+
+# The worker function will become threaded and act whenever an item is
+# added to the queue
+def worker():
+	while True:
+		# Get an item from the queue
+		item = q.get()
+		# Define an object that will handle the data passed in by the queue
+		handler = handleCommand(addr[0], addr[1], conn, data, threadLock)
+		# Run the handler to process the data
+		handler.run()
+		# Mark the task as complete
+		q.task_done()
+
 
 
 #######################################################################
@@ -610,17 +630,27 @@ EOT = config.eot
 # Define a thread lock to be used to get and increment chunk handles
 threadLock = threading.Lock()
 
+# Define a queue
+q = Queue.Queue(maxsize=0)
+
+# Define the number of worker threads to be activated
+WORKERS = 5
+
 # Make sure the database initializes before anything else is done
 database = Database()
 database.initialize()
 
 
+# Initiate the worker threads as daemon threads
+for i in range(WORKERS):
+	t = threading.Thread(target=worker)
+	t.daemon = True
+	t.start()
+
+
 # Create a server TCP socket and allow address re-use
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-# Create a list in which threads will be stored in order to be joined later
-threads = []
 
 
 # Bind the listener-server 
@@ -630,33 +660,23 @@ logging.info("Master successfully initialized!")
 # Main listening thread for API commands
 while 1:
 	try:
-		# Listen for API connections, maintaining a queue of 5 connections
-		s.listen(5)
+		# Listen for API connections
+		s.listen(1)
 		print "Listening..."
 		# Accept the incoming connection
 		conn, addr = s.accept()
 
 		# Receive the data
 		data = fL.recv(conn)
-		
-		# When the connection is established and data is successfully acquired,
-		# start a new thread to handle the command. Having this threaded allows for
-		# multiple commands (or multiple API) to interact with the master at one time
-		newThread = handleCommand(addr[0], addr[1], conn, data, threadLock)
-		newThread.start()
-		# Append the thread to the thread[] list, which will be joined upon exiting the 
-		# while loop
-		threads.append(newThread)
+		# Put the data into a queue so the queue worker can hand the data off to 
+		# an instance of the handleCommand object.
+		q.put(data)
+
 	# If someone ends the master through keyboard interrupt, break out of the loop
 	# to allow the threads to finsh before closing the main thread
 	except KeyboardInterrupt:
 		print "Exiting Now."
 		break
-
-# When server ends gracefully, wait until remaining threads finish before ending
-for t in threads:
-	t.join()
-
 
 
 
