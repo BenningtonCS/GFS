@@ -51,7 +51,7 @@ else:
 
 ###############################################################################
 
-#               TCP RECEIVE FUNCTION 	                                      #
+#               TCP RECEIVE FUNCTION 
 
 ###############################################################################
 
@@ -95,6 +95,15 @@ def recv(connection):
 	return data
 
 
+
+
+###############################################################################
+
+#               GET AND INCREMENT CHUNK HANDLE
+
+###############################################################################
+
+
 # Function to keep track of chunkHandle numbers and to increment the number
 def handleCounter():
 	# Visual confirmation for debugging: confirm init of handleCounter()
@@ -112,6 +121,15 @@ def handleCounter():
 	# Return the chunkHandle
 	return chunkHandle
 
+
+
+###############################################################################
+
+#               RANDOMLY CHOOSE CHUNK SERVER LOCATIONS
+
+###############################################################################
+
+
 def chooseHosts():
 	# Visual confirmation for debugging: confirm init of chooseHosts()
 	logging.debug('Selecting storage locations')
@@ -122,10 +140,8 @@ def chooseHosts():
 			hostsList = file.read().splitlines()
 		# Find how many hosts there are in the list
 		lengthList = len(hostsList)
-		# Define a low limit
-		intLow = 0
 		# Randomize between the limits
-		randomInt = random.randint(intLow, lengthList)
+		randomInt = random.randint(0, lengthList)
 		# Visual confirmation for debugging: confirm success of chooseHosts()
 		logging.debug('Successfully selected storage locations')
 		# Return a pipe-seperated list of randomized hosts
@@ -135,3 +151,7 @@ def chooseHosts():
 		# Handle this error better in the future --> similar to how heartBeat.py
 		# needs to handle for this case..
 		logging.error( ACTIVEHOSTSFILE + ' does not exist')
+
+
+
+
