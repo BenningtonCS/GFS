@@ -95,4 +95,43 @@ def recv(connection):
 	return data
 
 
+# Function to keep track of chunkHandle numbers and to increment the number
+def handleCounter():
+	# Visual confirmation for debugging: confirm init of handleCounter()
+	logging.debug('Generating chunk handle')
+	# Create an empty string to hold the current chunk handle
+	chunkHandle = ""
+	# Open the text file holding the current chunkHandle number and read it into memory
+	with open('handleCounter.txt', 'r') as file:
+		chunkHandle = int(file.read())
+	# Open the text file holding the current chunkHandle and increment it by 1
+	with open('handleCounter.txt', 'w') as file:
+		file.write(str(chunkHandle + 1))
+	# Visual confirmation for debugging: confirm success of handleCounter()
+	logging.debug('Successfully generated chunk handle')
+	# Return the chunkHandle
+	return chunkHandle
 
+def chooseHosts():
+	# Visual confirmation for debugging: confirm init of chooseHosts()
+	logging.debug('Selecting storage locations')
+
+	try:
+		# Get a list of all the hosts available
+		with open(ACTIVEHOSTSFILE, 'r') as file:
+			hostsList = file.read().splitlines()
+		# Find how many hosts there are in the list
+		lengthList = len(hostsList)
+		# Define a low limit
+		intLow = 0
+		# Randomize between the limits
+		randomInt = random.randint(intLow, lengthList)
+		# Visual confirmation for debugging: confirm success of chooseHosts()
+		logging.debug('Successfully selected storage locations')
+		# Return a pipe-seperated list of randomized hosts
+		return hostsList[randomInt%lengthList] + "|" + hostsList[(randomInt + 1)%lengthList] + "|" + hostsList[(randomInt + 2)%lengthList]
+
+	except IOError:
+		# Handle this error better in the future --> similar to how heartBeat.py
+		# needs to handle for this case..
+		logging.error( ACTIVEHOSTSFILE + ' does not exist')
