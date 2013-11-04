@@ -184,7 +184,8 @@ class heartBeat:
 
 ###############################################################################
 
-# create an object instance and initiate the heartBeat
-master = heartBeat()
-master.pumpBlood()
+if __name__ == "__main__":
+        # create an object instance and initiate the heartBeat
+        master = heartBeat()
+        master.pumpBlood()
 
