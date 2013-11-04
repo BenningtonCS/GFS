@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-import APIvers1
+import API
 import time
-from APIvers1 import *
+from API import *
 
 API = API()
 
