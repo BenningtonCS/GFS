@@ -697,6 +697,7 @@ while 1:
 	# to allow the threads to finsh before closing the main thread
 	except KeyboardInterrupt:
 		print "Exiting Now."
+		logging.info("Master stopped by keyboard interrupt")
 		break
 
 

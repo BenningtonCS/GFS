@@ -28,14 +28,12 @@ class statGen:
 		try:
 			# open stats.html in the www folder
 			self.file = open('/var/www/pages/stats.php', 'w')
-			# write initial html code
-			self.file.write('<h1>GFS MASTER</h1>')
 		# if file operations file, raise an exception and exit
 		except:
-			loggin.error("Couldn't generate stat file!")		
+			logging.error("Couldn't generate stat file!")		
 			exit()
-	def getMasterIP(self):
-		self.data += "<h2>MASTA</h2>"
+	def getMasterStats(self):
+		self.data += "<h2>Master Statistics</h2>"
 		self.data += config.masterip
 	# makes a list of hosts and sees which ones are online
 	def getHosts(self):
@@ -49,16 +47,20 @@ class statGen:
 				# make a list of active hosts
 				activeHosts = self.activeHostsFile.read().splitlines()
 				# string to be appended to body
-				string = '<h2>CHUNKSERVAZ</h2>'
+				string = '<h2>Chunkservers</h2>'
+				string += '<div class="table-responsive"><table class="table table-hover"><tr><th>Server IP</th><th>Status</th><th>Space Remaining</th><th>Total Space</th><th>View Logs</th>'
 				# from the list of all hosts, check which ones are
 				# also in the active hosts file
 				for x in range(0, len(hosts)):
+					string += '<td>'
 					# if active, add OFFLINE to the end of string
 					if hosts[x] not in activeHosts:
-						string += hosts[x] + ' | <span class="offline">OFFLINE</span><br>'
+						string += '<td>' + hosts[x] + '</td><td><span class="offline">OFFLINE</span></td>'
 					# if online, add ONLINE to end of string
 					elif hosts[x] in activeHosts:
-						string += hosts[x] + ' | <span class="online">ONLINE</span><br>'
+						string += '<td>' + hosts[x] + '</td><td><span class="online">ONLINE</span></td>'
+					string += '<td></td><td></td><td></td></tr>'
+				string += '</table></div>'
 				# append all data to the html body string			
 				self.data += string
 		# if hosts or active hosts file dont open, add an error in the HTML
@@ -91,8 +93,8 @@ class statGen:
 		try:
 			masterLogFile = open('masterLog.txt', 'r')
 			masterLog = masterLogFile.read()
-			self.data += "<h2>DAT LOG</h2>"
-			self.data += '<textarea rows="10" style="width:60%">' + masterLog + "</textarea>"
+			self.data += "<h2>Master Log</h2>"
+			self.data += '<textarea rows="15" class="form-control">' + masterLog + "</textarea>"
 		except:
 			self.data += "Couldn't generate master log!"
 	def getCat(self):
@@ -107,9 +109,9 @@ class statGen:
 
 ##############################################################
 statGen = statGen()
-statGen.getMasterIP()
+statGen.getMasterStats()
 statGen.getHosts()
 statGen.getFiles()
 statGen.getLog()
-statGen.getCat()
+#statGen.getCat()
 statGen.close()
