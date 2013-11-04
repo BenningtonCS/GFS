@@ -435,11 +435,22 @@ class handleCommand(threading.Thread):
 
 
 
-	# Function that executes the protocol when a DELETE message is received
+	# When a DELETE message is received for a file, the chunks associated with that 
+	# file will have their delete flags set to True. (The chunks will not be deleted off 
+	# of the chunkservers until the scrubber runs and removes them. The scrubber will 
+	# alert the database to update based on what has been deleted.)
 	def delete(self):
 		logging.debug('Begin updating delete flag to True')
 		
 		try:
+			# SET UP CONNECTION WITH THE DB, NEED TO TALK TO KLEMENTE ABOUT HOW
+			# WE WANT TO DO THIS CONNECTION, AND SEND THE OPERATION AND FILENAME
+			#fL.send(connection, "DELETE|" + self.fileName)
+			#response = fL.recv(connection)
+			#if response is success, then alert client of success
+			#if response is fail, alert client of fail
+
+
 			# Look through all the chunks in the database which have the specified file name
 			for chunk in database.data:
 				if chunk.fileName.strip() == self.fileName.strip():
@@ -455,11 +466,21 @@ class handleCommand(threading.Thread):
 			logging.error('Fatal Error')	
 
 
-
+	# When an UNDELETE message is received for a file, the chunks associated with that
+	# file will have their delete flags set to False
 	def undelete(self):
 		logging.debug('Begin updating delete flag to False')
 
 		try:
+			# SET UP CONNECTION WITH THE DB, NEED TO TALK TO KLEMENTE ABOUT HOW
+			# WE WANT TO DO THIS CONNECTION, AND SEND THE OPERATION AND FILENAME
+			#fL.send(connection, "UNDELETE|" + self.fileName)
+			#response = fL.recv(connection)
+			#if response is success, then alert client of success
+			#if response is fail, alert client of fail
+
+
+
 			# Look through all the chunks in the database which have the specified file name
 			for chunk in database.data:
 				if chunk.fileName.strip() == self.fileName.strip():
