@@ -17,7 +17,7 @@ import socket
 import threading
 import os
 import config
-
+import functionLibrary as fL
 
 mg64 = 1024*1024 # 64 megabytes in binary
 	
@@ -37,31 +37,31 @@ class connThread(threading.Thread):
 class heartBeatThread(connThread):
 	# The heartBeatThread just sends a "<3!" to the master, it is called with the command "<3?"
 	def run(self):
-		self.connection.send("<3!")
+		fL.send(self.connection, "<3!")
 		self.connection.close()
 
 class chunkSpaceThread(connThread):
 	# This is activated by the "chunkSpace?" command. 
 	def run(self):
-		self.connection.send("continue") # after receiving the connection the thread confirms that it is ready to receive arguments
-		chunkHandle = self.connection.recv(1024) # it listens on its connection for a chunkhandle
+		fL.send(self.connection, "continue") # after receiving the connection the thread confirms that it is ready to receive arguments
+		chunkHandle = fL.recv(self.connection) # it listens on its connection for a chunkhandle
 		emptySpace = mg64 - os.stat(chunkHandle).st_size # then checks the difference between the file's size and 64mg (the max chunk size)
-		self.connection.send(emptySpace) # and returns the amount of space left to the API
+		fL.send(self.connection, emptySpace) # and returns the amount of space left to the API
 		self.connection.close() # closes the connection
 
 class chunkReaderThread(connThread):
 	# activated by the "Read" command.
 	def run(self):
-		self.connection.send("continue") # confirms readiness for data
-		chunkHandle = self.connection.recv(1024) # listens for chunkHandle
-		self.connection.send("continue") # confirms ready state
-		byteOffSet = int(self.connection.recv(1024)) # listens for a byte offset to read from (relative to the beginning of the given chunk)
-		self.connection.send("continue") # confirms the desire for EVEN MORE data
-		bytesToRead = int(self.connection.recv(1024)) # listens for the number of bytes to read
+		fL.send(self.connection, "continue") # confirms readiness for data
+		chunkHandle = fL.recv(self.connection) # listens for chunkHandle
+		fL.send(self.connection, "continue") # confirms ready state
+		byteOffSet = int(fL.recv(self.connection)) # listens for a byte offset to read from (relative to the beginning of the given chunk)
+		fL.send(self.connection, "continue") # confirms the desire for EVEN MORE data
+		bytesToRead = int(fL.recv(self.connection)) # listens for the number of bytes to read
 		chunk = open("chunkHandle") # opens the designated chunk to read from
 		chunk.seek(byteOffSet) # goes to the specified byte offset
 		fileContent = chunk.read(bytesToRead) # stuffs all the stuff to be read into a variable
-		self.connection.send(fileContent)
+		fL.send(self.connection, fileContent)
 		chunk.close() # closes the chunk
 		self.connection.close() # closes the connection
 
@@ -77,24 +77,24 @@ class onPi(connThread):
                         files.append(filenames)      # append each one to a list
                 output = str( '|'.join(files[0][2])) # turn the list into a string
 		if output == "":		     # if there is nothing in the dir
-			self.connection.send(" ")    # send an empty string
+			fL.send(self.connection, " ")    # send an empty string
 		else:				     # otherwise
-			self.connection.send(output) # send everything as a string
+			fL.send(self.connection, output) # send everything as a string
                 
 class makeChunk(connThread):
 	# makeChunk creates an empty file that has the name of the chunkhandle that 
 	# was given to it.
         def run(self):
-		self.connection.send("continue")
-                chunkHandle = self.connection.recv(1024) # get the name of the chunk
+		fL.send(self.connection, "continue")
+                chunkHandle = fL.recv(self.connection) # get the name of the chunk
                 open(path+chunkHandle, 'w').close() # create the file
 class appendChunk(connThread):
 	# appendChunk adds data that is handed to it to the given chunkhandle.
         def run(self):
-		self.connection.send("continue")
-		chunkHandle = self.connection.recv(1024) # name of the chunk
-		self.connection.send("continue") 
-		data = self.connection.recv(67108864)    # data being added
+		fL.send(self.connection, "continue")
+		chunkHandle = fL.recv(self.connection) # name of the chunk
+		fL.send(self.connection, "continue") 
+		data = fL.recv(self.connection)    # data being added
                 with open(path+chunkHandle, 'a') as a: # open the chunk
                         a.write(data) 			 # add the data to it
 
@@ -106,7 +106,7 @@ class distributorThread(connThread):
 		threading.Thread.__init__(self) # call threading.Thread.__init__ in order to initial the thread correctly
 		self.connection = acceptedConn # give itself the accepted connection
 	def run(self):
-		command = self.connection[0].recv(1024) # listens for a command on the connection handed down from the main thread
+		command = fL.recv(self.connection[0]) # listens for a command on the connection handed down from the main thread
 		# next the distributor hands the connection to the appropriate worker based on the command given, invalid commands simply fall through
 
 		if command == "<3?":
