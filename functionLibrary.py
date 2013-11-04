@@ -4,8 +4,7 @@
 #										
 #		GFS COMMON FUNCTION LIBRARY 					
 #_______________________________________________________________________________
-#										
-# Authors:	Erick Daniszewski						
+#																
 # Date:		30 October 2013							
 # File:		functionLibrary.py 						
 #										
