@@ -20,6 +20,17 @@
 import config, sys, logging, socket
 
 
+###############################################################################
+
+#               DEFINE SOME CONSTANTS                                        #
+
+###############################################################################
+
+
+# From the config file, get the end of transmission character
+eot = config.eot
+
+
 
 ###############################################################################
 
@@ -55,8 +66,6 @@ else:
 
 ###############################################################################
 
-# From the confid file, get the end of transmission character
-eot = config.eot
 
 def recv(connection):
 	# Debug message to show the function has been called
@@ -93,6 +102,17 @@ def recv(connection):
 	logging.debug('Data Parsed Successfully!')
 	# Give back the received data
 	return data
+
+
+
+###############################################################################
+
+#               TCP SEND FUNCTION 
+
+###############################################################################
+
+def send(conn, message):
+	conn.send(message + eot)
 
 
 

@@ -2,7 +2,7 @@
 
 #################################################################
 #							
-#	CLIENT EMULATOR FOR FUNCTIONLIBRARY.RECV() TESTING	
+#	CLIENT EMULATOR FOR FUNCTIONLIBRARY TESTING	
 #								
 #################################################################
 
@@ -24,7 +24,7 @@ ending = str(raw_input('Include proper EOT character? (y/n): ')).lower()
 
 # Send the message with a proper EOT termination
 if ending == "y":
-	s.send(message + config.eot)
+	fL.send(s, message)
 
 # Send the message without the proper EOT termination
 elif ending == "n":
