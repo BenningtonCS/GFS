@@ -14,11 +14,40 @@
 
 #import socket for connection, threading to make threads, time in case we want
 #a delay, and config to keep the protocol standard.
-import socket
-import threading
-import time
-import config
+import socket, threading, time, config, sys, logging
 import functionLibrary as fL
+
+
+
+###############################################################################
+
+#               Verbose (Debug) Handling                                      #
+
+###############################################################################
+
+
+# Setup for having a verbose mode for debugging:
+# USAGE: When running program, $python API.py , no debug message will show up
+# Instead, the program should be run in verbose, $python API.py -v , for debug 
+# messages to show up
+
+# Get a list of command line arguments
+args = sys.argv
+# Check to see if the verbose flag was one of the command line arguments
+if "-v" in args:
+        # If it was one of the arguments, set the logging level to debug 
+        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
+else:
+        # If it was not, set the logging level to default (only shows messages with level
+        # warning or higher)
+        logging.basicConfig(filename='apiLog.txt', format='%(asctime)s %(levelname)s : %(message)s')
+
+
+
+
+
+
+
 
 class API():
 
@@ -188,14 +217,12 @@ class updateOpLog(threading.Thread):
         def run(self):
                 self.s.connect((MASTER_ADDRESS,TCP_PORT))
                 fL.send(self.s, self.message)
-		print "opshit"
+		print "opLog message sent"
 
 
-<<<<<<< HEAD
 
-=======
 #API = API()
 #API.create("/foob/bar")
->>>>>>> ab69760249ae9673cd91e592c451600bcf578484
+
 
 
