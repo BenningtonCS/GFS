@@ -126,7 +126,7 @@ class Database:
 			s.connect((line, chunkPort))
 			logging.debug("Connected to " + str(line) + " through " + str(chunkPort))
 			#send the message that audits the chunkserver
-			s.send('CONTENTS?' + EOT)
+			fL.send(s, 'CONTENTS?')
 			logging.debug("sent 'Contents?' to : " + str(line))
 		        #recieve their reply, which is formatted as chunkhandle1|chunkhandle2|chunkhandle3|...
 		        #to make sure we get all data, even if it exceeds the buffer size, we can
@@ -274,7 +274,7 @@ class handleCommand(threading.Thread):
 		logging.debug('Chunk metadata successfully created')
 		try:
 			# Send the API a string containing the location and chunkHandle information
-			self.s.send(str(hosts) + "|" + str(chunkHandle) + EOT)
+			fL.send(self.s, str(hosts) + "|" + str(chunkHandle))
 		except socket.error:
 			logging.warning('Socket Connection Broken')
 		# Visual confirmation for debugging: confirm send of a list of storage hosts and chunk handle
@@ -319,7 +319,7 @@ class handleCommand(threading.Thread):
 		#append the chunkhandle to our message
 		appendMessage += str(targetChunk.handle)
 		#send our message
-		self.s.send(appendMessage + EOT)
+		fL.send(self.s, appendMessage)
 		# Visual confirmation for debugging: confirm send of a list of storage hosts and chunk handle
 		logging.debug('SENT == ' + str(appendMessage))
 		# Visual confirmation for debugging: confirm success of append()
@@ -428,7 +428,7 @@ class handleCommand(threading.Thread):
 
 		logging.debug('RESPONSE MESSAGE == ' + str(responseMessage))
 		#send our message
-		self.s.send(responseMessage + EOT)
+		fL.send(self.s, responseMessage)
 		logging.debug('SENT == ' + responseMessage)
 		# Visual confirmation for debugging: confirm success of read()
 		logging.debug('Read successfully handled')
@@ -503,7 +503,7 @@ class handleCommand(threading.Thread):
 	def fileList(self):
 		# call the database object's returnData method
 		list = str(database.returnData())
-		self.s.send(list + EOT)
+		fL.send(self.s, list)
 
 	# Function to handle the message received from the API
 	def run(self):
