@@ -81,6 +81,7 @@ class workerThread(connThread):
 							# the connection handed 
 							# down from the main 
 							# thread
+		logging.debug("Recieved command ", command)
 
 		# next the distributor hands the connection to the appropriate 
 		# worker based on the command given, invalid commands simply fall 
@@ -90,14 +91,18 @@ class workerThread(connThread):
 			# in this and each other if/elif statement the correct 
 			# worker thread is started for a given command
 			self.connection.send("<3!")
+			logging.debug("Send heart beat back")
 			self.connection.close()
+			logging.debug("Closed connection.")
 
 		elif command == "CHUNKSPACE?":
 			self.connection.send("continue") # after receiving the connection 
 							 # the thread confirms that it is 
 							 # ready to receive arguments
+			logging.debug("send a continue")
 			chunkHandle = self.connection.recv(1024) # it listens on its 
 								 # connection for a chunkhandle
+			logging.debug("recieved name of the chunkhandle: ", chunkHandle)
 			emptySpace = mg64 - os.stat(chunkHandle).st_size # then checks the 
 								         # difference 
 								         # between the 
@@ -106,26 +111,36 @@ class workerThread(connThread):
 								         # chunk size)
 			self.connection.send(emptySpace) # and returns the amount of space 
 							 # left to the API
+			logging.debug("Send the spaec remaining")
 			self.connection.close() # closes the connection
+			logging.debug("Closed the connection")
 
 		elif command == "READ":
 			self.connection.send("continue") # confirms readiness for data
+			logging.debug("sent continue #1")
 			chunkHandle = self.connection.recv(1024) # listens for chunkHandle
+			logging.debug("recieved name of the chunkhandle: ", chunkHandle)
 			self.connection.send("continue") # confirms ready state
+			logging.debug("sent continue #2")
 			byteOffSet = int(self.connection.recv(1024)) # listens for a byte 
 								     # offset to read from 
 								     # (relative to the 
 								     # beginning of the 
 								     # given chunk)
+			logging.debug("recieved the byte offset number.")
 			self.connection.send("continue") # confirms the desire for EVEN MORE data
+			logging.debug("sent continue #3") 
 			bytesToRead = int(self.connection.recv(1024)) # listens for the 
 								      # number of bytes to read
+			logging.debug("recieved the number of bytes to read")
 			chunk = open(config.chunkPath+"/"+chunkHandle) # opens the designated chunk to read from
 			chunk.seek(byteOffSet) # goes to the specified byte offset
 			fileContent = chunk.read(bytesToRead) # stuffs all the stuff to be 
 							      # read into a variable
 			self.connection.send(fileContent)
+			logging.debug("send the file content")
 			chunk.close() # closes the chunk
+			logging.debug("closed the connection")
 			self.connection.close() # closes the connection
 
 		elif command == "CONTENTS?":
@@ -135,19 +150,27 @@ class workerThread(connThread):
                 output = str( '|'.join(files[0][2])) # turn the list into a string
 			if output == "":		     # if there is nothing in the dir
 				self.connection.send(" ")    # send an empty string
+				logging.debug("Sent an empty string which should be the output")
 			else:				     # otherwise
 				self.connection.send(output) # send everything as a string
+				logging.debug("sent the output")
 
 		elif command == "CREATE":
 			self.connection.send("continue")
+			logging.debug("Sent continue")
             chunkHandle = self.connection.recv(1024) # get the name of the chunk
+			logging.debug("recieved name of the chunk")
             open(chunkPath+"/"+chunkHandle, 'w').close() # create the file
 
 		elif command == "APPEND":
 			self.connection.send("continue")
+			logging.debug("sent continue #1")
 			chunkHandle = self.connection.recv(1024) # name of the chunk
+			logging.debug("Recieved name of the chunk")
 			self.connection.send("continue") 
+			logging.debug("Sent continue #2") 
 			data = self.connection.recv(config.chunkSize)    # data being added
+			logging.debug("Recieved the data to be added")
                 with open(config.chunkPath+"/"+chunkHandle, 'a') as a: # open the chunk
                         a.write(data) 			 # add the data to it
 
@@ -163,7 +186,9 @@ s.bind((ADDRESS, PORT)) # bind
 
 while 1: # always and forever
 	s.listen(1) # listen for incoming connections from the master or API
+	logging.debug("listening for a connection")
 	t = workerThread(s.accept()) # if something comes in spawn a 
 					  # distributor thread and hand it off
+	logging.debug("accepted connection. Created thread.")
 	t.start() # start the distributor thread
 s.close()
