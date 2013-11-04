@@ -19,6 +19,7 @@
 
 import socket, config, logging, sys
 import database
+import functionLibrary as fL
 
 
 #########################################################################
@@ -96,11 +97,11 @@ class Scrubber:
 					self.connectToCS(IP)
 					# Send the chunk server a SANITIZE message with the chunk handle
 					# so it knows which chunk it is deleting
-					self.s.send('SANITIZE|' + str(chunkHandle))
+					fL.send(self.s, 'SANITIZE|' + str(chunkHandle))
 					logging.debug("Sent Sanitize Request")
 					# Wait for a response back from the chunk server to verify that
 					# the chunk was removed
-					data = self.s.recv(1024)
+					data = fL.recv(self.s)
 					logging.debug("Received ACK")
 					# If the chunk server responds with a success message, DO SOMETHING!
 					if data == "SUCCESS":
