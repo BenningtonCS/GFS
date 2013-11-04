@@ -83,30 +83,14 @@ class Database:
 			s.connect((line, chunkPort))
 			logging.debug("Connected to " + str(line) + " through " + str(chunkPort))
 			#send the message that audits the chunkserver
-			s.send('CONTENTS?')
+			fL.send(s, 'CONTENTS?')
 			logging.debug("sent 'Contents?' to : " + str(line))
 		        #recieve their reply, which is formatted as chunkhandle1|chunkhandle2|chunkhandle3|...
 		        #to make sure we get all data, even if it exceeds the buffer size, we can
 		        #loop over the receive and append to a string to get the whole message
 			# Define a string that will hold all of the received data
-			data = ""
-			# Define a buffer size for how much data the socket.recv function will
-			# be able to handle at one time
-			bufferSize = 1024
-			while 1:
-					#receive the data
-					d = s.recv(bufferSize)
-					# If the length of the received data is less than that of the bufferSize,
-					# then no more data will need to be received, so put the received data
-					# into the data string and exit the receiving loop
-					if len(d) < bufferSize:
-						data += d
-						break
-					# If the length of the received data is equal to the max buffer size,
-					# then there is more data that could be received, so append the received
-					# data to the data string, and continue looping to receive the rest of the data
-					if len(d) == bufferSize:
-						data += d
+			data = fL.recv(s)
+
 			logging.debug("Received " + str(data) + " from " + str(line))
 		        #make a list of all the chunkhandles on the chunkserver
 			chunkData = data.split('|')
