@@ -18,6 +18,7 @@ import socket
 import threading
 import time
 import config
+import functionLibrary as fL
 
 class API():
 
@@ -43,8 +44,8 @@ class API():
 	#each of those locations. Takes the filename as an arguement.
 	def create(self,filename):
 		#creates a file and gives it to the master
-		self.s.send("CREATE|" + filename)
-		self.data = self.s.recv(1024)
+		fL.send(self.s, "CREATE|" + filename)
+		self.data = fL.recv(self.s)
 		#print self.data
 		#master sends back chunk handle and locations
 		self.splitdata = self.data.split("|")
@@ -67,8 +68,8 @@ class API():
 	#append the new data to the files.
 	def append(self, filename, newData):
 		#appends to an existing file
-		self.s.send("APPEND|" + filename)
-		self.data = self.s.recv(1024)
+		fL.send(self.s, "APPEND|" + filename)
+		self.data = fL.recv(self.s)
 		print self.data
 		#gets data from master
 		self.splitdata = self.data.split("|")
@@ -84,9 +85,9 @@ class API():
 	#reads an existing file by first  
 	def read(self, filename, byteOffset, bytesToRead):
 		#send read and the filename to the master
-		self.s.send("READ|" + filename + "|" + str(byteOffset) + "|" + str(bytesToRead))
+		fL.send(self.s, "READ|" + filename + "|" + str(byteOffset) + "|" + str(bytesToRead))
 		#recieve data from the master
-		self.data = self.s.recv(1024)
+		self.data = fL.recv(self.s)
 		print self.data
 		#split the data into a list
 		self.splitdata = self.data.split("|")
@@ -105,8 +106,8 @@ class API():
 			thread.start()	
                	
 	def fileList(self):
-		self.s.send("FILELIST|x")
-		self.data = self.s.recv(1024)
+		fL.send(self.s, "FILELIST|x")
+		self.data = fL.recv(self.s)
 		return self.data
 
 #thread for create
@@ -119,12 +120,12 @@ class chunkConnectCreate(threading.Thread):
 		
 	def run(self):
 		self.s.connect((self.location,TCP_PORT))
-		self.s.send("makeChunk")
+		fL.send(self.s, "makeChunk")
 		print "makeChunk"
-		dat = self.s.recv(1024)
+		dat = fL.recv(self.s)
 		if dat == "continue":	
 			print self.cH
-			self.s.send(self.cH)
+			fL.send(self.s, self.cH)
 
 #thread for append
 class chunkConnectAppend(threading.Thread):
@@ -137,15 +138,15 @@ class chunkConnectAppend(threading.Thread):
               
         def run(self):
                 self.s.connect((self.location,TCP_PORT))
-                self.s.send("APPEND")
+                fL.send(self.s, "APPEND")
 		print "APPEND"
-		dat = self.s.recv(1024)
+		dat = fL.recv(self.s)
                	if dat == "continue":
-			self.s.send(self.cH)
+			fL.send(self.s, self.cH)
 			print self.cH
-		dat = self.s.recv(1024)
+		dat = fL.recv(self.s)
 		if dat == "continue":
-			self.s.send(self.newData)
+			fL.send(self.s, self.newData)
 			print self.newData
 
 #thread for read
@@ -160,21 +161,21 @@ class chunkConnectRead(threading.Thread):
 	def run(self):
 		self.s.connect((self.location,TCP_PORT))
 		print "tried to connect to chunk server"
-		self.s.send("READ")
+		fL.send(self.s, "READ")
 		print "READ"
-		dat = self.s.recv(1024)
+		dat = fL.recv(self.s)
 		if dat == "continue":
-			self.s.send(self.cH)
+			fL.send(self.s, self.cH)
 			print self.cH
-		dat = self.s.recv(1024)
+		dat = fL.recv(self.s)
 		if dat == "continue":
-			self.s.send(self.offSet)
+			fL.send(self.s, self.offSet)
 			print self.offSet
-		dat = self.s.recv(1024)
+		dat = fL.recv(self.s)
 		if dat == "continue":
-			self.s.send(self.bytesToRead)
+			fL.send(self.s, self.bytesToRead)
 			print self.bytesToRead
-		dat = self.s.recv(2**20)
+		dat = fL.recv(self.s)
 		print dat		
 
 #oplog stuff. for questions contact rohail
@@ -186,7 +187,7 @@ class updateOpLog(threading.Thread):
 
         def run(self):
                 self.s.connect((MASTER_ADDRESS,TCP_PORT))
-                self.s.send(self.message)
+                fL.send(self.s, self.message)
 		print "opshit"
 
 
