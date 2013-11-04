@@ -27,10 +27,9 @@ class statGen:
 		self.data = ''
 		try:
 			# open stats.html in the www folder
-			self.file = open('/var/www/stats.html', 'w')
+			self.file = open('/var/www/pages/stats.php', 'w')
 			# write initial html code
-			self.file.write('<!DOCTYPE html><html><head><title>GFS Stats</title><link rel="stylesheet" type="text/css" href="style.css"></script></head><body>')
-			self.file.write('<h1>DAT STATZ</h1>')
+			self.file.write('<h1>GFS MASTER</h1>')
 		# if file operations file, raise an exception and exit
 		except:
 			loggin.error("Couldn't generate stat file!")		
@@ -102,8 +101,6 @@ class statGen:
 		# append the html body to the stat file
 		self.file.write(self.data)
 		self.file.write("<p>Generated at: " + str(datetime.now()) + "</p>")
-		# append the closing html tags to the stat file
-		self.file.write('</body></html>')
 		# close stat file
 		self.file.close()
 
