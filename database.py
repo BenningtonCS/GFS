@@ -50,6 +50,11 @@ class Database:
 	# Create an empty dictionary to be used as a chunk --> fileName lookup
 	lookup = {}
 
+	# Create an empty list that will hold fileNames of files flagged for deletion, so
+	# the scrubber does not need to waste resources parsing through the data dictionary
+	toDelete = []
+
+
 	def initialize(self):
 		self.readFromOpLog()
 		self.interrogateChunkServers()
@@ -93,14 +98,12 @@ class Database:
 			# If the operation was to delete a file, change the file object's delete attribute
 			# to True, so the scrubber will recognize it as marked for deletion.
 			elif lineData[0] == 'DELETE':
-				# Flag the given file for deletion
-				self.data[lineData[2]].delete = True
+				self.flagDelete(lineData[2])
 
 			# If the operation was to undelete a file, change the file object's delete attribute
 			# back to False, so the scrubber will not delete it.
 			elif lineData[0] == "UNDELETE":
-				# Unflag the given file for deletion
-				self.data[lineData[2]].delete = False
+				self.flagUndelete(lineData[2])
 
 			# If the operation was to sanitize, that is, the chunks were actually deleted,
 			# as opposed to marked for deletion, then remove the metadata for the file and
@@ -205,9 +208,18 @@ class Database:
 		return str(max(keyValues))
 
 
+	def flagDelete(self, fileName):
+		# Flag the given file for deletion
+		self.data[fileName].delete = True
+		# Add the file name to the list of files to be deleted
+		self.toDelete.append(fileName)
 
 
-
+	def flagUndelete(self, fileName):
+		# Unflag the given file for deletion
+		self.data[fileName].delete = False
+		# Remove the file name from the list of files to be deleted
+		self.toDelete.remove(fileName)
 
 
 

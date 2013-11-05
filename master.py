@@ -19,6 +19,7 @@
 
 import socket, threading, random, os, time, config, sys, logging
 import functionLibrary as fL
+import database as db
 
 
 ###############################################################################
@@ -250,7 +251,7 @@ class handleCommand(threading.Thread):
 		return input
 
 
-	# Function that executes the protocol when a CREATE message is received
+	# Function that will create a new file in the database
 	def create(self):
 		# Visual confirmation for debugging: confirm init of create()
 		logging.debug('Creating chunk metadata')
@@ -435,65 +436,24 @@ class handleCommand(threading.Thread):
 
 
 
-	# When a DELETE message is received for a file, the chunks associated with that 
-	# file will have their delete flags set to True. (The chunks will not be deleted off 
-	# of the chunkservers until the scrubber runs and removes them. The scrubber will 
-	# alert the database to update based on what has been deleted.)
+	# Function that will prompt the database to update the delete flag for 
+	# the specified file
 	def delete(self):
 		logging.debug('Begin updating delete flag to True')
-		
-		try:
-			# SET UP CONNECTION WITH THE DB, NEED TO TALK TO KLEMENTE ABOUT HOW
-			# WE WANT TO DO THIS CONNECTION, AND SEND THE OPERATION AND FILENAME
-			#fL.send(connection, "DELETE|" + self.fileName)
-			#response = fL.recv(connection)
-			#if response is success, then alert client of success
-			#if response is fail, alert client of fail
+
+		db.Database.flagDelete(self.fileName)
+
+		logging.debug('Delete Flags Updated')
 
 
-			# Look through all the chunks in the database which have the specified file name
-			for chunk in database.data:
-				if chunk.fileName.strip() == self.fileName.strip():
-					chunk.delete = True
-					logging.debug('Delete flag marked True for ' + str(chunk.fileName) + ', chunk : ' + str(chunk.handle))
-				else:
-					logging.debug('Delete flag unchanged for ' + str(chunk.fileName) + ', chunk : ' + str(chunk.handle))
-	
-			logging.debug('Delete Flags Updated')
-
-		# Update this exception handling to the case where database is not found
-		except:
-			logging.error('Fatal Error')	
-
-
-	# When an UNDELETE message is received for a file, the chunks associated with that
-	# file will have their delete flags set to False
+	# Function that will prompt the database to update the delete flag for 
+	# the specified file
 	def undelete(self):
 		logging.debug('Begin updating delete flag to False')
 
-		try:
-			# SET UP CONNECTION WITH THE DB, NEED TO TALK TO KLEMENTE ABOUT HOW
-			# WE WANT TO DO THIS CONNECTION, AND SEND THE OPERATION AND FILENAME
-			#fL.send(connection, "UNDELETE|" + self.fileName)
-			#response = fL.recv(connection)
-			#if response is success, then alert client of success
-			#if response is fail, alert client of fail
+		db.Database.flagUndelete(self.fileName)
 
-
-
-			# Look through all the chunks in the database which have the specified file name
-			for chunk in database.data:
-				if chunk.fileName.strip() == self.fileName.strip():
-					chunk.delete = False
-					logging.debug('Delete flag marked False for ' + str(chunk.fileName) + ', chunk : ' + str(chunk.handle))
-				else:
-					logging.debug('Delete flag unchanged for ' + str(chunk.fileName) + ', chunk : ' + str(chunk.handle))
-
-			logging.debug('Delete flag updated')
-
-		# Update this exception handling to the case where database is not found
-		except:
-			logging.error('Fatal error')
+		logging.debug('Delete flag updated')
 
 
 
