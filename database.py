@@ -51,8 +51,12 @@ class Database:
 	lookup = {}
 
 	def initialize(self):
+		self.readFromOpLog()
+		self.interrogateChunkServers()
 
-		########### BREAK THIS INTO A READ FROM OPLOG FUNCTION LATER ##########
+
+	def readFromOpLog(self):
+		# Read the contents of the oplog into a list
 		with open(OPLOG, 'r') as oplog:
 			opLog = oplog.read().splitlines()
 
@@ -107,9 +111,8 @@ class Database:
 
 
 
-		########### BREAK THIS INTO A CHUNKSERVER INTERROGATION FUNCTION LATER ##########
-		hostFile = open(ACTIVEHOSTSFILE)
-
+	def interrogateChunkServers(self):
+		# Read the contents of the activehosts file into a list
 		with open(ACTIVEHOSTSFILE, "r") as hosts:
 			hostList = hosts.read().splitlines()
 
