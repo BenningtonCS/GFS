@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 
 #################################################################################
-#																				#
-#			GFS SCRUBBER (GARBAGE COLLECTION)									#
-#_______________________________________________________________________________#
-#																				#
-# Authors:	Erick Daniszewski													#
-# Date:		29 October 2013														#
-# File:		scrubber.py 														#
-#																				#
-# Summary:	scrubber.py goes through the master file system database and checks	#
-#			each file, and thus the chunks associated with them, to see if the 	#
-#			the file/its chunks have been flagged for deletion. Once it knows 	#
-#			which files/associated chunks are to be deleted, it issues delete 	#
-#			commands to the chunkservers containing the condemned chunks. 		#
-#																				#
+#																	
+#			GFS SCRUBBER (GARBAGE COLLECTION)					
+#________________________________________________________________________________
+#																
+# Authors:	Erick Daniszewski									
+# Date:		29 October 2013									
+# File:		scrubber.py 									
+#																
+# Summary:	scrubber.py goes through the master file system database and checks
+#			each file, and thus the chunks associated with them, to see if the 
+#			the file/its chunks have been flagged for deletion. Once it knows 
+#			which files/associated chunks are to be deleted, it issues delete 
+#			commands to the chunkservers containing the condemned chunks. 
+#																		
 #################################################################################
 
 import socket, config, logging, sys
@@ -24,7 +24,7 @@ import functionLibrary as fL
 
 #########################################################################
 
-#			VERBOSE (DEBUG)	HANDLING									#
+#			VERBOSE (DEBUG)	HANDLING	
 
 #########################################################################
 
@@ -50,7 +50,7 @@ else:
 
 #########################################################################
 
-#			SCRUBBER (GARBAGE COLLECTOR)								#
+#			SCRUBBER (GARBAGE COLLECTOR)
 
 #########################################################################
 
@@ -58,8 +58,10 @@ else:
 class Scrubber:
 
 	def __init__(self):
+		logging.debug("Initilizing Scrubber Instance")
 		# Get the data from the database's toDelete list
 		self.data = db.Database.toDelete
+		# Get the port number from the config file
 		self.port = config.port
 
 	def connectToCS(self, IP):
@@ -100,18 +102,21 @@ class Scrubber:
 					# Send the chunk server a SANITIZE message with the chunk handle
 					# so it knows which chunk it is deleting
 					fL.send(self.s, 'SANITIZE|' + str(chunkHandle))
+					logging.debug('Sent SANITIZE message to chunkserver')
 					# Wait for a response back from the chunk server to verify that
 					# the chunk was removed
 					data = fL.recv(self.s)
+					logging.debug('Received response from chunkserver')
 					
 					# If the chunk server responds with a success message, DO SOMETHING!
 					if data == "SUCCESS":
+						logging.debug("Chunk successfully removed from chunkserver")
 						successDeleteFromCS += 1
 						
 					# If the chunk server responds with a failure message, DO SOMETHING ELSE!
 					elif data == "FAILED":
 						# WILL NEED IMPROVED HANDLING, MAYBE A RETRY
-						logging.error("Received failure message on chunk delete. Chunkhandle : " str(chunk.handle))
+						logging.error("Received failure message on chunk delete. Chunkhandle : " + str(chunk.handle))
 
 				# If the success counter is equal to the amount of all the IPs, then
 				# all the IPs successfully deleted that chunk, so increment the 
@@ -129,6 +134,7 @@ class Scrubber:
 				# Call the database sanitize function, which removes the key/value pair
 				# from the database.
 				db.Database.sanitizeFile(file)
+				logging.debug(str(file) + 'successfully sanitized')
 			else:
 				# Improve error handling to automatically resolve problem
 				logging.error("Not all chunk deletes were successful")
@@ -140,13 +146,14 @@ class Scrubber:
 
 #########################################################################
 
-#			MAIN														#
+#			MAIN					
 
 #########################################################################
 
-
-scrub = Scrubber()
-scrub.clean()
+if __name__ == "__main__":
+	# Create an instance of the Scrubber object, and initiate it.
+	scrub = Scrubber()
+	scrub.clean()
 
 
 
