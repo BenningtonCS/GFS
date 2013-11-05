@@ -134,6 +134,59 @@ class Database:
 				self.data[fileName].chunks[chunk].locations.append(IP)
 
 
+	# createNewFile adds a new file key and file object to the database, but does not
+	# create any chunks associated with that file.
+	def createNewFile(self, fileName):
+		# Check to see if the fileName already exists
+		if fileName in self.data:
+			# Return -1 to the master, signifying that the fileName already exists,
+			# so the master can alert the client.
+			return -1
+
+		else: 
+			# Create a new instance of the File object
+			file = File(fileName)
+			# Add the file object, keyed to the file name, to the database
+			self.data[fileName] = file
+
+	# createNewChunk is given a file name and a triggering chunk. It checks to see if a 
+	# new chunk has already been created, and if it hasn't, it creates one and returns
+	# its chunkhandle. In the event that a new chunk altrady exists, that chunk's handle
+	# is returned instead.
+	def createNewChunk(self, fileName, handleOfFullChunk):
+		# Check to see if the specified filename exists in the database
+		if fileName not in self.data:
+			# Return an error flag to be parsed by the master, so it can alert the client
+			# that the file name does not exist
+			return -2
+
+		else:
+			# Get a list of all the chunkHandles associated with the file
+			associatedChunks = self.data[fileName].chunks.keys()
+			# Create an empty list that will contain the chunkHandles as integers
+			keyValues = []
+			# Convert the chunkHandles into integers
+			for item in associatedChunks:
+				keyValues.append(int(item))
+
+			# Check to see if the triggering chunk is in the list of chunk handles associated
+			# with that file. If it is, that means a new chunk must be created
+			if handleOfFullChunk == str(max(keyValues)) or handOfFullChunk == -1:
+				# Create a new instance of the Chunk object
+				chunk = Chunk()
+				# Get a new chunkHandle
+				chunkHandle = fL.handleCounter()
+				# Add the chunk to the file object, keyed to its new chunkHandle
+				self.data[fileName].chunks[chunkHandle] = chunk
+				# Get the three locations where the chunk will be stored
+				locations = fL.chooseHosts().split()
+
+				# Append the chunkserver locations to the chunk's location list
+				for location in locations:
+					self.data[fileName].chunks[chunkHandle].locations.append(location)
+
+			else:
+				return -1
 
 
 
