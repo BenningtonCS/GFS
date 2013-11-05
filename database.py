@@ -4,13 +4,13 @@
 #________________________________________________________________________________
 #                                                                              
 # Authors:      Erick Daniszewski 
-#				Klemente Gilbert-Espada                                             
+#		Klemente Gilbert-Espada                                             
 #                                                                              
 # Date:         5 November 2013                                                
 # File:         database.py                                                   
 #                                                                              
 # Summary:      database.py creates and maintains the metadata for all the 
-#				chunks in the file system. 
+#		chunks in the file system. 
 #                                        
 #################################################################################
 
