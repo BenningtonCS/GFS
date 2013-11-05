@@ -85,8 +85,12 @@ class Scrubber:
 		for file in self.data:
 			# Get all of the chunk handles associated with a file
 			chunkHandles = db.Database.data[file].chunks.keys()
+			# Create a counter for successful chunk deletions
+			successfulChunkDelete = 0
 			# For each of those chunk handles
 			for handle in chunkHandles:
+				# Create a counter for successful deletions from a chunkserver
+				successDeleteFromCS = 0
 				# Find the locations where the chunks are being kept
 				locations = db.Database.data[file].chunks[handle].locations
 				# For each location the chunk is stored on
@@ -99,20 +103,35 @@ class Scrubber:
 					# Wait for a response back from the chunk server to verify that
 					# the chunk was removed
 					data = fL.recv(self.s)
-
-
-					# NEED TO FIGURE OUT PROCEDURE FOR WHAT TO DO WITH FAILURES!
-					# -- ALL LOCATIONS MUST NOT FAIL FOR A CHUNK TO BE DELETED
-					# -- ALL CHUNKS MUST BE DELETED FOR A FILE TO BE DELETED
 					
 					# If the chunk server responds with a success message, DO SOMETHING!
 					if data == "SUCCESS":
-						successCount += 1
+						successDeleteFromCS += 1
 						
 					# If the chunk server responds with a failure message, DO SOMETHING ELSE!
 					elif data == "FAILED":
 						# WILL NEED IMPROVED HANDLING, MAYBE A RETRY
 						logging.error("Received failure message on chunk delete. Chunkhandle : " str(chunk.handle))
+
+				# If the success counter is equal to the amount of all the IPs, then
+				# all the IPs successfully deleted that chunk, so increment the 
+				# successfulChunkDelete counter
+				if len(locations) == successDeleteFromCS:
+					successfulChunkDelete += 1
+				else:
+					# Improve error handling to maybe automatically retry
+					logging.error("Not all chunk location deletes were successful")
+
+			# If the number of successful chunk deletes is equal to the number of chunks
+			# associated with the file, then all the chunks for that file have been deleted,
+			# so the file entry can be deleted
+			if len(chunkHandles) == successfulChunkDelete:
+				# Call the database sanitize function, which removes the key/value pair
+				# from the database.
+				db.Database.sanitizeFile(file)
+			else:
+				# Improve error handling to automatically resolve problem
+				logging.error("Not all chunk deletes were successful")
 
 
 
