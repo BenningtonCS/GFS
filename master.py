@@ -331,8 +331,16 @@ class handleCommand(threading.Thread):
 
 	# Function that executes the protocol when a READ message is received
 	def read(self):
-		byteOffset = int(self.msg[2])
-		bytesToRead = int(self.msg[3])
+		# Get the byte offset and bytes to read from the received message
+		try:
+			byteOffset = int(self.msg[2])
+			bytesToRead = int(self.msg[3])
+		# If there is an index error (the values do not exist in the message)
+		# alert the client and end the read function.
+		except IndexError:
+			fL.send(self.s, "READ command not given proper parameters")
+			return
+
 		logging.debug('parsed byte offset and bytes to read')
 		# With the byte offSet, we want to modulo it with the chunkSize in the config
 		# so we will know what chunk sequence the start of the read will be 
@@ -375,56 +383,40 @@ class handleCommand(threading.Thread):
 		# and the read-end chunk, get the file's chunk with the appropriate sequence number,
 		# and append to the response message, a location it is stored at, its chunk handle, 
 		# and the byte offset from within that chunk to begin reading from.
-		logging.debug('beginning for loop in read function. Looking for file:' + self.fileName + 'between sequence number ' + str(startSequence + 1) + ' and ' + str(endSequence + 1))
 		for sequence in range(startSequence, (endSequence + 1)):
 			try:
-				seq = sequence + 1 # I know I know I'll fix it soon
-				for chunk in database.data:
-					logging.debug('checking if statement in for loop: chunk = ' + str(chunk.handle) + ', file name =' + chunk.fileName + 'and sequence = ' + str(seq))
-					# If the chunk fileName and sequence number match up, we have the chunk we're looking for
-					logging.debug('chunk.sequenceNumber == ' + str(chunk.sequenceNumber))
-					logging.debug('seq == ' + str(seq))
-					if chunk.fileName.strip() == self.fileName.strip() and chunk.sequenceNumber == seq:
-						logging.debug('if statement let us in')
-						targetChunk = chunk
-						logging.debug('a target chunk has been found')
-						# Append a location where the chunk is stored (0th element in the locations list)
-						responseMessage += "|" + str(targetChunk.location[0].strip())
-						logging.debug('location == ' + str(targetChunk.location))
-						# Append the chunk handle
-						responseMessage += "*" + str(targetChunk.handle)
-						logging.debug('chunk handle == ' + str(targetChunk.handle))
-						# Append the byte offset to start reading from
-						responseMessage += "*" + str(chunkByteOffset)
-						logging.debug('byte offset == ' + str(chunkByteOffset))
+				# Get the chunkHandles associated with the given file, and sort the chunkHandles from
+				# least to greatest in the list. This will put them in their sequence order where the 
+				# 0th element is now the 0th sequence, 1st element the 1st sequence, etc.
+				associatedChunkHandles = db.Database.data[self.fileName].chunks.keys().sort()
 
-						# Check to see if the READ will take place in the same chunk. If it does, append the 
-						# endOffset to the message so the client will know where to end reading
-						if startSequence == endSequence:
-							responseMessage += "*" + str(endOffset)
-						# If the READ takes place over multiple chunks, write the end of read for the current
-						# chunk to be the end of the chunk, and then increase the sequence number so when the 
-						# metadata for the last chunk is processed, it will be caught by the if statement above
-						# and send the appropriate ending offset.
-						elif startSequence < endSequence:
-							responseMessage += "*" + maxChunkSize
-							startSequence += 1
+				# Append a location of where the start-sequence chunk is stored to the message
+				responseMessage += "|" + str(db.Database.data[self.fileName].chunks[associatedChunkHandles[sequence]].locations[0])
 
-						# If the read request spans over more than one chunk, we will start reading
-						# the second chunk from where the first chunk left off, that is to say, at the 
-						# beginning of the second chunk (and this would be true if for whatever reason
-						# we read through the end of the second chunk into a third chunk), so we much now
-						# change the byteOffset to be zero so we start reading additional chunks in the 
-						# correct place.
-						chunkByteOffset = 0
-						logging.debug('reset chunk byte offset')
-					else:
-						logging.error('Chunk ' + str(chunk.handle) + ' not found in database')
+				# Append the chunk handle to the message
+				responseMessage += "*" + str(associatedChunkHandles[sequence])
+
+				# Append the byte offset to start reading from to the message
+				responseMessage += "*" + str(chunkByteOffset)
+
+				# If there are multiple chunks that will be read over, the next chunk will start
+				# the read from the beginning
+				chunkByteOffset = 0
+
+				# Check to see if the READ will take place in the same chunk. If it does, append the 
+				# endOffset to the message so the client will know where to end reading
+				if startSequence == endSequence:
+					responseMessage += "*" + str(endOffset)
+				# If the READ takes place over multiple chunks, write the end of read for the current
+				# chunk to be the end of the chunk, and then increase the start sequence number so when the 
+				# metadata for the last chunk is processed, it will be caught by the if statement above
+				# and send the appropriate ending offset.
+				elif startSequence < endSequence:
+					responseMessage += "*" + maxChunkSize
+					startSequence += 1
 
 			except:
-				# If the specific file can not be found in the database, let it be known!
-				# Should also send an error message to client so their protocol terminates.
-				logging.error("Specified file "  +str(self.fileName) + " does not exist in database")
+				logging.error("Unable to generate proper READ response message.")
 
 
 		logging.debug('RESPONSE MESSAGE == ' + str(responseMessage))
