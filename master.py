@@ -342,8 +342,6 @@ class handleCommand(threading.Thread):
 			return
 
 		logging.debug('parsed byte offset and bytes to read')
-		# With the byte offSet, we want to modulo it with the chunkSize in the config
-		# so we will know what chunk sequence the start of the read will be 
 
 		# Get the size of a chunk from the config file
 		maxChunkSize = config.chunkSize
@@ -356,10 +354,6 @@ class handleCommand(threading.Thread):
 
 		logging.debug('start sequence # == ' + str(startSequence))
 		logging.debug('chunk byte offset == ' + str(chunkByteOffset))
-
-		# With the bytesToRead, we want to add it to the byte offset, then modulo that 
-		# number to see if it is in the same chunk seqence. If not, then we will have to
-		# return multiple locations and chunkHandles
 
 		# To find where the user wants to read ending, add the number of bytes they want
 		# to read to their starting point, the byteOffest. This will give the byte offset
@@ -382,7 +376,8 @@ class handleCommand(threading.Thread):
 		# For each sequence number that exists between (and including) the read-start chunk
 		# and the read-end chunk, get the file's chunk with the appropriate sequence number,
 		# and append to the response message, a location it is stored at, its chunk handle, 
-		# and the byte offset from within that chunk to begin reading from.
+		# the byte offset from within that chunk to begin reading from, and the byte offset
+		# to end reading from
 		for sequence in range(startSequence, (endSequence + 1)):
 			try:
 				# Get the chunkHandles associated with the given file, and sort the chunkHandles from
@@ -482,9 +477,9 @@ class handleCommand(threading.Thread):
 	def run(self):
 		# Parse the input into the msg variable
 		self.msg = self.handleInput(self.data)
-		# Define the first item in the list to be the operation name
+		# The zeroth item in the list of received data should always be the operation
 		self.op = self.msg[0]
-		# Define the second item in the list to be the file name
+		# The first item in the list of received data should always be the file name
 		self.fileName = self.msg[1]
 		# Visual confirmation for debugging: confirm connection
 		logging.debug('Connection from: ' + str(self.ip) + " on port " + str(self.port))
