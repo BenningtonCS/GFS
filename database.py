@@ -109,8 +109,7 @@ class Database:
 			# as opposed to marked for deletion, then remove the metadata for the file and
 			# associated chunks from the database
 			elif lineData[0] == "SANITIZED":
-				# Delete the specified key/value pair
-				del self.data[lineData[2]]
+				self.sanitizeFile(lineData[2])
 
 
 
@@ -220,6 +219,11 @@ class Database:
 		self.data[fileName].delete = False
 		# Remove the file name from the list of files to be deleted
 		self.toDelete.remove(fileName)
+
+
+	def sanitizeFile(self, fileName):
+		# Delete the specified key/value pair
+		del self.data[fileName]
 
 
 
