@@ -18,7 +18,7 @@
 #################################################################################
 
 import socket, config, logging, sys
-import database
+import database as db
 import functionLibrary as fL
 
 
@@ -57,8 +57,9 @@ else:
 
 class Scrubber:
 
-	def __init__(self, data):
-		self.data = data
+	def __init__(self):
+		# Get the data from the database's toDelete list
+		self.data = db.Database.toDelete
 		self.port = config.port
 
 	def connectToCS(self, IP):
@@ -79,34 +80,33 @@ class Scrubber:
 
 	def clean(self):
 		logging.debug("Commencing Clean")
-		# Go through all the chunks stored in the master database
-		for chunk in self.data:
-			# If the chunk's delete flag is set to True
-			if chunk.delete == True:
-				# Get a list of all the locations where the chunk is stored in the 
-				# file system
-				locations = chunk.location
-				# Get the chunk's identifying chunk handle
-				chunkHandle = chunk.handle
-				# Create a counter for successful chunk sanitizations from chunkserver
-				successCount = 0
-				# Send a message to all locations holding the chunk instructing it 
-				# to delete the specified chunk
-				for IP in locations:
+
+		# For all of the files in the toDelete list
+		for file in self.data:
+			# Get all of the chunk handles associated with a file
+			chunkHandles = db.Database.data[file].chunks.keys()
+			# For each of those chunk handles
+			for handle in chunkHandles:
+				# Find the locations where the chunks are being kept
+				locations = db.Database.data[file].chunks[handle].locations
+				# For each location the chunk is stored on
+				for location in locations:
 					# Connect to the chunk server
-					self.connectToCS(IP)
+					self.connectToCS(location)
 					# Send the chunk server a SANITIZE message with the chunk handle
 					# so it knows which chunk it is deleting
 					fL.send(self.s, 'SANITIZE|' + str(chunkHandle))
-					logging.debug("Sent Sanitize Request")
 					# Wait for a response back from the chunk server to verify that
 					# the chunk was removed
 					data = fL.recv(self.s)
-					logging.debug("Received ACK")
+
+
+					# NEED TO FIGURE OUT PROCEDURE FOR WHAT TO DO WITH FAILURES!
+					# -- ALL LOCATIONS MUST NOT FAIL FOR A CHUNK TO BE DELETED
+					# -- ALL CHUNKS MUST BE DELETED FOR A FILE TO BE DELETED
+					
 					# If the chunk server responds with a success message, DO SOMETHING!
 					if data == "SUCCESS":
-						logging.debug("Chunk Successfully Deleted")
-						# If the chunk was successfully deleted, increment the success counter
 						successCount += 1
 						
 					# If the chunk server responds with a failure message, DO SOMETHING ELSE!
@@ -114,17 +114,7 @@ class Scrubber:
 						# WILL NEED IMPROVED HANDLING, MAYBE A RETRY
 						logging.error("Received failure message on chunk delete. Chunkhandle : " str(chunk.handle))
 
-				logging.debug("Commence final check if delete is permissible")
-				# Check to see if the number of success messages received equals the
-				# number of chunkservers that were asked to sanitize.
-				if successCount == len(locations):
-					logging.debug("All ACKs of success, removing the chunk from the database")
-					# Remove the chunk from the database
-					database.data.remove(chunk)
-				else:
-					# WILL NEED IMPROVED ERROR HANDLING FOR THIS AND ASM PROTOCOL
-					# Alert that a chunk was not able to be deleted from a chunk server
-					logging.error("Not all chunks were deleted from chunkservers. Chunkhandle : " + str(chunk.handle))
+
 
 
 
@@ -136,7 +126,7 @@ class Scrubber:
 #########################################################################
 
 
-scrub = Scrubber(database.data)
+scrub = Scrubber()
 scrub.clean()
 
 
