@@ -1,159 +1,153 @@
-#########################################################
-
-#		DATABASE CODE			#
-
-#########################################################
-
 import functionLibrary as fL
 import config, logging
 
-#we define our class for Chunk Metadata
-class Chunk:
-        def __init__(self, hand):
-                #chunks have a filename associated with them
-                #self.fileName = fileN
-                #as well as a unique chunkhandle
-                self.handle = hand
-                #as well as a list of chunkservers the chunk is currently being stored on
-                self.location = []
-                #as well as a flag for deletion
-                self.delete = False
+###############################################################################
 
-#files are just objects that store a list of chunks associated with them.
+#               Verbose (Debug) Handling                        
+
+###############################################################################
+
+
+# Setup for having a verbose mode for debugging:
+# USAGE: When running program, $python database.py , no debug message will show up
+# Instead, the program should be run in verbose, $python database.py -v , for debug 
+# messages to show up
+
+# Get a list of command line arguments
+args = sys.argv
+# Check to see if the verbose flag was one of the command line arguments
+if "-v" in args:
+        # If it was one of the arguments, set the logging level to debug 
+        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
+else:
+        # If it was not, set the logging level to default (only shows messages with level
+        # warning or higher)
+        logging.basicConfig(filename='masterLog.txt', format='%(asctime)s DATABASE %(levelname)s : %(message)s')
+
+
+###############################################################################
+
+#               OBJECT DEFINITIONS                
+
+###############################################################################
+
 class File:
 	def __init__(self, name):
-		#they also have individual names
-		self.name = name
-		self.chunk = []
+		self.fileName = name
+		self.chunks = {}
+		self.delete = False
+
+class Chunk:
+	def __init__(self):
+		self.location = []
+
+
 
 class Database:
-		
-		
-        #create an empty database list
-        data = []
+	# Create an empty dictionary to store the chunks, keyed to the file name
+	data = {}
 
-        #the initialize code should be run when the master boots up,
-        #it uses the opp log to create a database, and then updates
-        #the locations of the chunks in that database by querying the
-        #chunkservers
-        def initialize(self):
-        	# Visual confirmation for debugging: confirm init of Database
-		logging.debug('Initializing Database instance')
-        	logging.debug('opening opp log')
-		oppLog = open(OPLOG)
+	# Create an empty dictionary to be used as a chunk --> fileName lookup
+	lookup = {}
+
+	def initialize(self):
+
+		########### BREAK THIS INTO A READ FROM OPLOG FUNCTION LATER ##########
+		with open(OPLOG, 'r') as oplog:
+			opLog = oplog.read().splitlines()
+
+		# For every entry in the opLog
+		for line in opLog:
+			# Separate the string by pipe into a list where the list should be formatted:
+			# 		[<OPERATION>, <CHUNKHANDLE>, <FILENAME>]
+			#		[ 	   0    ,       1      ,      2    ]
+			lineData = line.split("|")
 
 
-                #We build the initial structure of the database from the oppLog
-		for line in oppLog:
-                     	#we split on pipe, the opp log should be formatted as:
-                        #       Operation|Handle|File Name
-                        #on each line
-                        
-			logging.debug("line read from opp log: " + str(line))
+			# If the operation was to create a file, create a new file object and 
+			# add it to the database dictionary
+			if lineData[0] == 'CREATEFILE':
+				# Create a new instance of the File object, taking its file name as
+				# a parameter
+				file = File(lineData[2])
+				# Create a new entry in the database, where the file name is the key
+				# and the file object is the value
+				self.data[lineData[2]] = file
 
-			#we create a list out of each line in the opp log
-			lineData = line.split('|')
-            
-                        #we only adjust the metadata on a create.
-                        #once delete is implemented, handling for that should be added here.
-			if lineData[0] == 'CREATE':
-                                #we initialize a new file with the data from the opp log
-               		 	logging.debug("read : " + str(lineData[0]))
-               	#the third argument we're passed should become the name of our new file.
-				newFile = File(lineData[2])
-				newChunk = Chunk(lineData[1])
-                                #and we append that chunk to our database list
-                self.data.append(newFile)
-				self.data[-1].chunk.append(newChunk)
+			# If the operation was to create a chunk, create a new chunk object and 
+			# add it to the database
+			elif lineData[0] == 'CREATECHUNK':
+				# Create a new instance of the Chunk object
+				chunk = Chunk()
+				# In the file object associated with the file name the chunk belongs to,
+				# add the newly created chunk to the chunk dictionary, where the chunk
+				# object is the value and the chunk handle is the key
+				self.data[lineData[2]].chunks[lineData[1]] = chunk
+				# Update the lookup dictionary
+				self.lookup[lineData[1]] = lineData[2]
 
-                #Then we ping each chunkserver to figure out what chunks they have on them.
+			# If the operation was to delete a file, change the file object's delete attribute
+			# to True, so the scrubber will recognize it as marked for deletion.
+			elif lineData[0] == 'DELETE':
+				# Flag the given file for deletion
+				self.data[lineData[2]].delete = True
 
-                #first we open the hostfile
+			# If the operation was to undelete a file, change the file object's delete attribute
+			# back to False, so the scrubber will not delete it.
+			elif lineData[0] == "UNDELETE":
+				# Unflag the given file for deletion
+				self.data[lineData[2]].delete = False
+
+			# If the operation was to sanitize, that is, the chunks were actually deleted,
+			# as opposed to marked for deletion, then remove the metadata for the file and
+			# associated chunks from the database
+			elif lineData[0] == "SANITIZED":
+				# Delete the specified key/value pair
+				del self.data[lineData[2]]
+
+
+
+		########### BREAK THIS INTO A CHUNKSERVER INTERROGATION FUNCTION LATER ##########
 		hostFile = open(ACTIVEHOSTSFILE)
-		logging.debug(str(hostFile))
-		#and go through it line by line
-		for line in hostFile:
-			logging.debug("going through hostfile")
-		    	#new socket
+
+		with open(ACTIVEHOSTSFILE, "r") as hosts:
+			hostList = hosts.read().splitlines()
+
+		for IP in hostList:
+			# COULD USE A TRY/EXCEPT IN HERE PROBABLY IN CASE THE CONNECTION DOES NOT WORK
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		#turn on reuseaddr to preempt address already in use error
 			s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		        #connect to a listening chunkserver
-			logging.debug(str(line))
-			s.connect((line, chunkPort))
-			logging.debug("Connected to " + str(line) + " through " + str(chunkPort))
-			#send the message that audits the chunkserver
+			s.connect((IP, chunkPort))
 			fL.send(s, 'CONTENTS?')
-			logging.debug("sent 'Contents?' to : " + str(line))
-		        #recieve their reply, which is formatted as chunkhandle1|chunkhandle2|chunkhandle3|...
-		        #to make sure we get all data, even if it exceeds the buffer size, we can
-		        #loop over the receive and append to a string to get the whole message
-			# Define a string that will hold all of the received data
 			data = fL.recv(s)
 
-			logging.debug("Received " + str(data) + " from " + str(line))
-		        #make a list of all the chunkhandles on the chunkserver
 			chunkData = data.split('|')
-		        #compare each chunkhandle in our database to the chunkhandles on the server
-			for GFSfile in self.data:
-				for chunk in GFSfile.chunk
-					if chunk in chunkData:
-				 #if they overlap, append the current address to the overlap
-						chunk.location.append(line)
-		        	#close our connection, for cleanliness
-			s.close()
-		# Visual confirmation for debugging: confirm successful init of Database
-		logging.debug('Database initialization successful!')
 
-		def createNewFile(self, fileName):
-			self.data.append(File(fileName))
-			appendNewChunk(fileName, -1)
+			for chunk in chunkData:
+				# ADD SOME ERROR HANDLING HERE -- IF THE CHUNK DOES NOT EXIST IN THE 
+				# LOOKUP SOMETHING WENT TERRIBLY WRONG!
+				fileName = lookup[chunk]
 
-		#appendNewChunk is given a file Name and a triggering chunk,
-		#it checks to see if a new chunk has already been created, 
-		#and if it hasn't it creates one and return's it's chunkhandle.
-		#in the event that a new chunk already exists, that chunk's handle
-		#is returned instead.
-		def appendNewChunk(self, fileName, handleOfFullChunk):
-			#we find our file
-			for dataFile in self.data:
-				#if our file actually exists(it should)
-				if dataFile.name == fileName:
-					if dataFile.chunk[-1].handle == handleOfFullChunk or handleOfFullChunk == -1:
-						#we create a new chunk, with a fresh handle
-						newChunk = Chunk(fL.handleCounter())
-						#we give it three new chunkservers to live on
-						locations = fL.chooseHosts().split
+				# From the file name we found the chunk to be associated with in the
+				# lookup, we can append the current IP to the list of chunk locations
+				# in the chunk object within the file object dictionary.
+				self.data[fileName].chunks[chunk].locations.append(IP)
 
-						#append those chunkservers to our chunk's location list
-						for location in locations:
-							newChunk.location.append(location)
-						dataFile.chunk.append(newChunk)
-						#give our chunkHandle back to the top 
-						return newChunk.handle
-					else:
-						logging.debug('chunk given to appendNewChunk not most' + 
-							' recent chunk in file')
-						return -1
 
-			#if we get this far, we never found the fileName.
-			logging.debug('failed to find ' + fileName + 
-				' in database, appendNewChunk() failed')
-			return -1
 
-		def getChunkLocations(self, chunkHandle):
-			for dataFile in self.data:
-				for chunk in datafile.chunk
-					if chunk.handle == chunkHandle:
-						return chunk.location
-			return -1
 
-		def findLatestChunk(self, fileName):
-			for dataFile in self.data
-				if dataFile.name == fileName:
-					return dataFile.chunk[-1].handle
-			return -1
 
-		def appendRecord(self, fileName):
 
-		def read(self, fileName, byteOffset, amountToRead):
+
+
+
+
+
+
+
+
+
+
+
+
+
