@@ -10,10 +10,10 @@
 # File:		scrubber.py 									
 #																
 # Summary:	scrubber.py goes through the master file system database and checks
-#			each file, and thus the chunks associated with them, to see if the 
-#			the file/its chunks have been flagged for deletion. Once it knows 
-#			which files/associated chunks are to be deleted, it issues delete 
-#			commands to the chunkservers containing the condemned chunks. 
+#		each file, and thus the chunks associated with them, to see if the 
+#		the file/its chunks have been flagged for deletion. Once it knows 
+#		which files/associated chunks are to be deleted, it issues delete 
+#		commands to the chunkservers containing the condemned chunks. 
 #																		
 #################################################################################
 
