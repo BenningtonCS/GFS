@@ -22,7 +22,7 @@ if "-v" in args:
 else:
         # If it was not, set the logging level to default (only shows messages with level
         # warning or higher)
-        logging.basicConfig(filename='masterLog.txt', format='%(asctime)s DATABASE %(levelname)s : %(message)s')
+        logging.basicConfig(filename='masterLog.log', format='%(asctime)s DATABASE %(levelname)s : %(message)s')
 
 
 ###############################################################################
