@@ -39,7 +39,7 @@ class File:
 
 class Chunk:
 	def __init__(self):
-		self.location = []
+		self.locations = []
 
 
 
@@ -161,17 +161,11 @@ class Database:
 			return -2
 
 		else:
-			# Get a list of all the chunkHandles associated with the file
-			associatedChunks = self.data[fileName].chunks.keys()
-			# Create an empty list that will contain the chunkHandles as integers
-			keyValues = []
-			# Convert the chunkHandles into integers
-			for item in associatedChunks:
-				keyValues.append(int(item))
+			latestChunk = self.findLatestChunk(fileName)
 
 			# Check to see if the triggering chunk is in the list of chunk handles associated
 			# with that file. If it is, that means a new chunk must be created
-			if handleOfFullChunk == str(max(keyValues)) or handOfFullChunk == -1:
+			if handleOfFullChunk == latestChunk or handOfFullChunk == -1:
 				# Create a new instance of the Chunk object
 				chunk = Chunk()
 				# Get a new chunkHandle
@@ -189,9 +183,23 @@ class Database:
 				return -1
 
 
+	def getChunkLocations(self, chunkHandle):
+		# Find the file name associated with the chunk
+		fileName = lookup[chunkHandle]
+		# Return the list of locations belonging to that chunk
+		return self.data[fileName].chunks[chunkHandle].locations
 
 
-
+	def findLatestChunk(self, fileName):
+		# Get a list of all the chunkHandles associated with the file
+		associatedChunks = self.data[fileName].chunks.keys()
+		# Create an empty list that will contain the chunkHandles as integers
+		keyValues = []
+		# Convert the chunkHandles into integers
+		for item in associatedChunks:
+			keyValues.append(int(item))
+		# Return the highest chunk number as a string
+		return str(max(keyValues))
 
 
 
