@@ -72,16 +72,26 @@ class Database:
 	toDelete = []
 
 
+
+
 	def initialize(self):
+		logging.debug('Initializing database')
+
 		self.readFromOpLog()
 		self.interrogateChunkServers()
 
+		logging.debug('Database initialized')
+
+
+
 
 	def readFromOpLog(self):
+		logging.debug('Initialize readFromOpLog()')
 		# Read the contents of the oplog into a list
 		with open(OPLOG, 'r') as oplog:
 			opLog = oplog.read().splitlines()
 
+		logging.debug('Got contents of opLog')
 		# For every entry in the opLog
 		for line in opLog:
 			# Separate the string by pipe into a list where the list should be formatted:
@@ -99,6 +109,7 @@ class Database:
 				# Create a new entry in the database, where the file name is the key
 				# and the file object is the value
 				self.data[lineData[2]] = file
+				logging.debug('CREATEFILE ==> new file, ' + str(lineData[2]) + ', added to database')
 
 			# If the operation was to create a chunk, create a new chunk object and 
 			# add it to the database
@@ -109,28 +120,36 @@ class Database:
 				# add the newly created chunk to the chunk dictionary, where the chunk
 				# object is the value and the chunk handle is the key
 				self.data[lineData[2]].chunks[lineData[1]] = chunk
-				# Update the lookup dictionary
+				# Update the lookup dictionary with the chunk/fileName pair
 				self.lookup[lineData[1]] = lineData[2]
+				logging.debug('CREATECHUNK ==> new chunk, ' + str(lineData[1]) + ', added to database')
 
 			# If the operation was to delete a file, change the file object's delete attribute
 			# to True, so the scrubber will recognize it as marked for deletion.
 			elif lineData[0] == 'DELETE':
 				self.flagDelete(lineData[2])
+				logging.debug('DELETE ==> ' + str(lineData[2]) + ' marked True for delete')
 
 			# If the operation was to undelete a file, change the file object's delete attribute
 			# back to False, so the scrubber will not delete it.
 			elif lineData[0] == "UNDELETE":
 				self.flagUndelete(lineData[2])
+				logging.debug('UNDELETE ==> ' + str(lineData[2]) + ' marked False for delete')
 
 			# If the operation was to sanitize, that is, the chunks were actually deleted,
 			# as opposed to marked for deletion, then remove the metadata for the file and
 			# associated chunks from the database
 			elif lineData[0] == "SANITIZED":
 				self.sanitizeFile(lineData[2])
+				logging.debug('SANITIZED ==> ' + str(lineData[2]) + ' cleansed from chunkservers')
+
+		logging.debug('readFromOpLog() complete')
+
 
 
 
 	def interrogateChunkServers(self):
+		logging.debug('Initialize interrogateChunkServers()')
 		# Read the contents of the activehosts file into a list
 		with open(ACTIVEHOSTSFILE, "r") as hosts:
 			hostList = hosts.read().splitlines()
@@ -140,9 +159,11 @@ class Database:
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			s.connect((IP, chunkPort))
+			logging.debug('Connection Established: ' + str(IP) + ' on port ' + str(chunkPort))
 			fL.send(s, 'CONTENTS?')
+			logging.debug('Sent chunkserver a CONTENTS? message')
 			data = fL.recv(s)
-
+			logging.debug('Received response from chunkserver')
 			chunkData = data.split('|')
 
 			for chunk in chunkData:
@@ -154,6 +175,9 @@ class Database:
 				# lookup, we can append the current IP to the list of chunk locations
 				# in the chunk object within the file object dictionary.
 				self.data[fileName].chunks[chunk].locations.append(IP)
+				logging.debug('Appended location to chunk ' + str(chunk) + ' location list')
+
+		logging.debug('interrogateChunkServers() complete')
 
 
 	# createNewFile adds a new file key and file object to the database, but does not
@@ -161,6 +185,7 @@ class Database:
 	def createNewFile(self, fileName):
 		# Check to see if the fileName already exists
 		if fileName in self.data:
+			logging.error('file name already exists in database')
 			# Return -1 to the master, signifying that the fileName already exists,
 			# so the master can alert the client.
 			return -1
@@ -170,6 +195,7 @@ class Database:
 			file = File(fileName)
 			# Add the file object, keyed to the file name, to the database
 			self.data[fileName] = file
+			logging.debug('createNewFile() ==> new file successfully added to database')
 
 	# createNewChunk is given a file name and a triggering chunk. It checks to see if a 
 	# new chunk has already been created, and if it hasn't, it creates one and returns
@@ -178,6 +204,7 @@ class Database:
 	def createNewChunk(self, fileName, handleOfFullChunk):
 		# Check to see if the specified filename exists in the database
 		if fileName not in self.data:
+			logging.error('createNewChunk() ==> file for new chunk does not exist')
 			# Return an error flag to be parsed by the master, so it can alert the client
 			# that the file name does not exist
 			return -2
@@ -192,20 +219,24 @@ class Database:
 				chunk = Chunk()
 				# Get a new chunkHandle
 				chunkHandle = fL.handleCounter()
+				logging.debug('Got new chunk handle')
 				# Add the chunk to the file object, keyed to its new chunkHandle
 				self.data[fileName].chunks[chunkHandle] = chunk
 				# Get the three locations where the chunk will be stored
 				locations = fL.chooseHosts().split()
+				logging.debug('Got new locations')
 
 				# Append the chunkserver locations to the chunk's location list
 				for location in locations:
 					self.data[fileName].chunks[chunkHandle].locations.append(location)
+					logging.debug('Appending locations to chunk ' + str(chunkHandle) + ' locations list')
 
 			else:
 				return -1
 
 
 	def getChunkLocations(self, chunkHandle):
+		logging.debug('Initialize getChunkLocations()')
 		# Find the file name associated with the chunk
 		fileName = lookup[chunkHandle]
 		# Return the list of locations belonging to that chunk
@@ -213,6 +244,7 @@ class Database:
 
 
 	def findLatestChunk(self, fileName):
+		logging.debug('Initialize findLatestChunk()')
 		# Get a list of all the chunkHandles associated with the file
 		associatedChunks = self.data[fileName].chunks.keys()
 		# Create an empty list that will contain the chunkHandles as integers
@@ -220,27 +252,33 @@ class Database:
 		# Convert the chunkHandles into integers
 		for item in associatedChunks:
 			keyValues.append(int(item))
+		logging.debug('Latest Chunk found')
 		# Return the highest chunk number as a string
 		return str(max(keyValues))
 
 
 	def flagDelete(self, fileName):
+		logging.debug('Initialize flagDelete()')
 		# Flag the given file for deletion
 		self.data[fileName].delete = True
 		# Add the file name to the list of files to be deleted
 		self.toDelete.append(fileName)
+		logging.debug('Delete flag updated')
 
 
 	def flagUndelete(self, fileName):
+		logging.debug('Initialize flagUndelete()')
 		# Unflag the given file for deletion
 		self.data[fileName].delete = False
 		# Remove the file name from the list of files to be deleted
 		self.toDelete.remove(fileName)
+		logging.debug('Delete flag updated')
 
 
 	def sanitizeFile(self, fileName):
 		# Delete the specified key/value pair
 		del self.data[fileName]
+		logging.debug('sanitizeFile() success')
 
 
 
