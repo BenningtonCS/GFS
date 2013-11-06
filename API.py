@@ -154,7 +154,7 @@ class API():
                         location = self.splitdata[n]
 	                #send this data to chunk servers
 			try:
-				self.s.connect((location,TCP_PORT))
+				s.connect((location,TCP_PORT))
                 	except:
 				print "ERROR: COULD NOT CONNECT TO CHUNK SERVER AT ", location
 			fL.send(s, "APPEND")
@@ -171,7 +171,7 @@ class API():
                         	print "did not receive a continue from chunk servers. exiting..."
                         	exit(0)
                 	elif dat == "CONTINUE":
-                        	fL.send(self.s, self.newData)
+                        	fL.send(s, self.newData)
                         	print self.newData
                        
 		s.close()
