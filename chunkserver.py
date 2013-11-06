@@ -155,7 +155,7 @@ class workerThread(connThread):
 		elif command == "CONTENTS?":
 			try:
 				files = []
-	            		for filenames in os.walk(self.path): # read every file
+				for filenames in os.walk(self.path): # read every file
 	            			files.append(filenames)      # append each one to a list
 	        			output = str( '|'.join(files[0][2])) # turn the list into a string
 				if output == "":		     # if there is nothing in the dir
