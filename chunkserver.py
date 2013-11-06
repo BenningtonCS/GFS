@@ -145,9 +145,9 @@ class workerThread(connThread):
 
 		elif command == "CONTENTS?":
 			files = []
-            for filenames in os.walk(self.path): # read every file
-            	files.append(filenames)      # append each one to a list
-                output = str( '|'.join(files[0][2])) # turn the list into a string
+            		for filenames in os.walk(self.path): # read every file
+            			files.append(filenames)      # append each one to a list
+        			output = str( '|'.join(files[0][2])) # turn the list into a string
 			if output == "":		     # if there is nothing in the dir
 				fL.send(self.connection, " ")    # send an empty string
 				logging.debug("Sent an empty string which should be the output")
@@ -158,9 +158,9 @@ class workerThread(connThread):
 		elif command == "CREATE":
 			fL.send(self.connection, "CONTINUE")
 			logging.debug("Sent continue")
-            chunkHandle = fL.recv(self.connection) # get the name of the chunk
+                	chunkHandle = fL.recv(self.connection) # get the name of the chunk
 			logging.debug("recieved name of the chunk")
-            open(chunkPath+"/"+chunkHandle, 'w').close() # create the file
+                	open(chunkPath+"/"+chunkHandle, 'w').close() # create the file
 
 		elif command == "APPEND":
 			fL.send(self.connection, "CONTINUE")
@@ -171,8 +171,8 @@ class workerThread(connThread):
 			logging.debug("Sent continue #2") 
 			data = fL.recv(self.connection)    # data being added
 			logging.debug("Recieved the data to be added")
-                with open(config.chunkPath+"/"+chunkHandle, 'a') as a: # open the chunk
-                        a.write(data) 			 # add the data to it
+                	with open(config.chunkPath+"/"+chunkHandle, 'a') as a: # open the chunk
+                        	a.write(data) 			 # add the data to it
 
  		else:
  			error = "Received invalid command: " + command
