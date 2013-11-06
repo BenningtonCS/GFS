@@ -96,6 +96,8 @@ def recv(connection):
 
 		logging.debug('End of transmission character not found. Continue receiving.')
 
+	
+	connection.send("ack " + data)
 	# In the received data, remove the end of transmission character
 	data = data.replace(eot, "")
 	logging.debug('Data Parsed Successfully!')
@@ -110,8 +112,37 @@ def recv(connection):
 
 ###############################################################################
 
-def send(conn, message):
-	conn.send(message + eot)
+def send(connection, message):
+	connection.send(message + eot)
+
+	#then we wait on an acknowledgment
+	while 1:
+		# Receive the data
+		d = connection.recv(1024)
+		logging.debug('data has been received')
+		# Append the received data to the data string
+		data += d
+		# Create a string from the received data string which contains the last 
+		# character. Creating this small string should reduce the omputational load 
+		# of parsing through what could be a long string.
+		try:
+			ending = d[-1]
+		except IndexError:
+			logging.error('No data received')
+			exit()
+		# Check the ending of the received data to see if it contains an end of
+		# transmission character, and if it does, break out of the loop since 
+		# no more data should be sent.
+		if eot in ending:
+			logging.debug('End of transmission character found. No longer receiving.')
+			break
+
+		logging.debug('End of transmission character not found. Continue receiving.')
+	if data == "ack " + message + eot:
+		logging.debug("received ack " + data)
+	else:
+		logging.error("recieved incorrect message while waiting for acknowledgement: "
+		 + data + "instead of " + message)
 
 
 
