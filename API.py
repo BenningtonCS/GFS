@@ -103,7 +103,7 @@ class API():
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		s.connect((MASTER_ADDRESS, TCP_PORT))
 
-		opLog = updateOpLog("OPLOG|CREATEFILE|"+cH+"|"+filename)
+		opLog = updateOpLog("OPLOG|CREATECHUNK|"+cH+"|"+filename)
 		opLog.start()
 	
 	#appends to an existing file by first prompting the client for what 
