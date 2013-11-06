@@ -71,14 +71,17 @@ class Database:
 	# the scrubber does not need to waste resources parsing through the data dictionary
 	toDelete = []
 
+	# Create a counter for the chunkHandle
+	chunkHandle = 0
 
-
+	
 
 	def initialize(self):
 		logging.debug('Initializing database')
 
 		self.readFromOpLog()
 		self.interrogateChunkServers()
+		self.updateChunkCounter()
 
 		logging.debug('Database initialized')
 
@@ -180,9 +183,16 @@ class Database:
 		logging.debug('interrogateChunkServers() complete')
 
 
+
+
+	def updateChunkCounter(self):
+		self.chunkHandle = int(max(self.lookup.keys()))
+
+
+
 	# createNewFile adds a new file key and file object to the database, but does not
 	# create any chunks associated with that file.
-	def createNewFile(self, fileName):
+	def createNewFile(self, fileName, cH):
 		# Check to see if the fileName already exists
 		if fileName in self.data:
 			logging.error('file name already exists in database')
@@ -195,13 +205,14 @@ class Database:
 			file = File(fileName)
 			# Add the file object, keyed to the file name, to the database
 			self.data[fileName] = file
+			self.createNewChunk(fileName, -1, cH)
 			logging.debug('createNewFile() ==> new file successfully added to database')
 
 	# createNewChunk is given a file name and a triggering chunk. It checks to see if a 
 	# new chunk has already been created, and if it hasn't, it creates one and returns
 	# its chunkhandle. In the event that a new chunk altrady exists, that chunk's handle
 	# is returned instead.
-	def createNewChunk(self, fileName, handleOfFullChunk):
+	def createNewChunk(self, fileName, handleOfFullChunk, cH):
 		# Check to see if the specified filename exists in the database
 		if fileName not in self.data:
 			logging.error('createNewChunk() ==> file for new chunk does not exist')
@@ -218,7 +229,7 @@ class Database:
 				# Create a new instance of the Chunk object
 				chunk = Chunk()
 				# Get a new chunkHandle
-				chunkHandle = fL.handleCounter()
+				chunkHandle = cH
 				logging.debug('Got new chunk handle')
 				# Add the chunk to the file object, keyed to its new chunkHandle
 				self.data[fileName].chunks[chunkHandle] = chunk
@@ -233,6 +244,12 @@ class Database:
 
 			else:
 				return -1
+
+
+
+	def getChunkHandle(self):
+		self.chunkHandle += 1
+		return self.chunkHandle - 1
 
 
 	def getChunkLocations(self, chunkHandle):

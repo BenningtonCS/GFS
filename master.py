@@ -1,19 +1,20 @@
 #!/usr/bin/env python
+
 #################################################################################
-#                                                                               #
-#               GFS Distributed File System Master		                #
-#_______________________________________________________________________________#
-#                                                                               #
-# Authors:      Erick Daniszewski                                               #
-#		Rohail Altaf							#
-#		Klemente Gilbert-Espada                                        	#
-#										#
-# Date:         21 October 2013                                                 #
-# File:         master.py	                                                #
-#                                                                               #
-# Summary:      Manages chunk metadata in an in-memory database,     #
-#		maintains an operations log, and executes API commands					#
-#                                                                               #
+#                                                                             
+#               GFS Distributed File System Master		              
+#________________________________________________________________________________
+#                                                                          
+# Authors:      Erick Daniszewski                                            
+#		Rohail Altaf							
+#		Klemente Gilbert-Espada                            
+#										
+# Date:         21 October 2013                                        
+# File:         master.py	                                           
+#                                                                      
+# Summary:      Manages chunk metadata in an in-memory database,     
+#		maintains an operations log, and executes API commands					
+#                                                                               
 #################################################################################
 
 
@@ -22,9 +23,11 @@ import functionLibrary as fL
 import database as db
 
 
+
+
 ###############################################################################
 
-#               Verbose (Debug) Handling                                      #
+#               Verbose (Debug) Handling               
 
 ###############################################################################
 
@@ -49,175 +52,9 @@ else:
 
 
 
-#########################################################
-
-#		DATABASE CONSTRUCTOR			#
-
-#########################################################
-
-
-
-
-
-#we define our class for Chunk Metadata
-class Chunk:
-        def __init__(self, hand, fileN, sequence):
-                #chunks have a filename associated with them
-                self.fileName = fileN
-                #as well as a unique chunkhandle
-                self.handle = hand
-                #and a sequence number for putting them together in one file
-                self.sequenceNumber = sequence
-                #as well as a list of chunkservers the chunk is currently being stored on
-                self.location = []
-                #as well as a flag for deletion
-                self.delete = False
-
-class Database:
-		
-		
-        #create an empty database list
-        data = []
-
-        #the initialize code should be run when the master boots up,
-        #it uses the opp log to create a database, and then updates
-        #the locations of the chunks in that database by querying the
-        #chunkservers
-        def initialize(self):
-        	# Visual confirmation for debugging: confirm init of Database
-		logging.debug('Initializing Database instance')
-        	logging.debug('opening opp log')
-		oppLog = open(OPLOG)
-
-
-                #We build the initial structure of the database from the oppLog
-		for line in oppLog:
-                     	#we split on pipe, the opp log should be formatted as:
-                        #       Operation|Handle|File Name
-                        #on each line
-
-                        #we create a list out of each line in the opp log
-			logging.debug("line read: " + str(line))
-			lineData = line.split('|')
-                        #we only adjust the metadata on a create as of version 1
-			if lineData[0] == 'CREATE':
-                                #we initialize a new chunk with the data from the opp log
-                                #and we determine the sequence number based on the highest
-                                #existing sequence number currently in the file
-               		 	logging.debug("read : " + str(lineData[0]))
-				sequence = self.findHighestSequence(lineData[2]) + 1
-				newChunk = Chunk(lineData[1], lineData[2], sequence)
-                                #and we append that chunk to our database list
-				self.data.append(newChunk)
-
-                #Then we ping each chunkserver to figure out what chunks they have on them.
-
-                #first we open the hostfile
-		hostFile = open(ACTIVEHOSTSFILE)
-		logging.debug(str(hostFile))
-		#and go through it line by line
-		for line in hostFile:
-			logging.debug("going through hostfile")
-		    	#new socket
-			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		#turn on reuseaddr to preempt address already in use error
-			s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		        #connect to a listening chunkserver
-			logging.debug(str(line))
-			s.connect((line, chunkPort))
-			logging.debug("Connected to " + str(line) + " through " + str(chunkPort))
-			#send the message that audits the chunkserver
-			fL.send(s, 'CONTENTS?')
-			logging.debug("sent 'Contents?' to : " + str(line))
-		        #recieve their reply, which is formatted as chunkhandle1|chunkhandle2|chunkhandle3|...
-		        #to make sure we get all data, even if it exceeds the buffer size, we can
-		        #loop over the receive and append to a string to get the whole message
-			# Receive data
-			data = fL.recv(s)
-
-			logging.debug("Received " + str(data) + " from " + str(line))
-		        #make a list of all the chunkhandles on the chunkserver
-			chunkData = data.split('|')
-		        #compare each chunkhandle in our database to the chunkhandles on the server
-			for chunk in self.data:
-				if chunk.handle in chunkData:
-				 #if they overlap, append the current address to the overlappe
-					chunk.location.append(line)
-		        	#close our connection, for cleanliness
-			s.close()
-		# Visual confirmation for debugging: confirm successful init of Database
-		logging.debug('Database initialization successful!')
-
-
-	#update() is run when a new chunk is created and the master is already running
-        def update(self, chunkHandle, fileN, sequence, location):
-        	# Visual confirmation for debugging: confirm init of update()
-		logging.debug('Initializing Update')
-
-                #we create a new chunk with the data passed into the function
-                sequence = self.findHighestSequence(fileN) + 1
-                newChunk = Chunk(chunkHandle, fileN, sequence)
-                #and update it's location data
-                newChunk.location = location
-                #then add that chunk to the database list
-                self.data.append(newChunk)
-                # Visual confirmation for debugging: confirm successful update
-		logging.debug('Database initialization successful!')
-
-        #locate() is run when the API wants to know the locations of a specific chunk
-        #it returns a list of location IP's
-        def locate(self, chunkHandle):
-        	# Visual confirmation for debugging: confirm init of locate()
-		logging.debug('Initializing Locate')
-                #we go through all the chunks in the database
-                for chunk in self.data:
-                        #If the chunkhandle they're looking for exists
-
-                        if int(chunk.handle) == int(chunkHandle):
-                                #return that chunk's locations
-                                print chunk.location                              
-                                return chunk.location
-				print "chunk with handle", chunkHandle, "not found"
-		# Visual confirmation for debugging: confirm success of locate()
-		logging.debug('Locate Successful')
-
-        def findHighestSequence(self, fileName):
-        	# Visual confirmation for debugging: confirm init of findHighestSequence()
-		logging.debug('Initializing Find Highest Sequence')
-        	highestSequence = 0
-			#we go through all the chunks in the database, and figure out which chunk
-			#with the given filename has the highest sequence number
-		for chunk in self.data:
-			#print "hey, I'm being called"
-			#print chunk.sequenceNumber
-			
-			if chunk.sequenceNumber > highestSequence and chunk.fileName.strip() == fileName.strip():
-				#we set highest sequence to whichever chunk is the highest,
-				#and we set targetChunk to the chunk we need
-				#print chunk.sequenceNumber
-				highestSequence = chunk.sequenceNumber
-				#print highestSequence
-		return highestSequence
-		# Visual confirmation for debugging: confirm success of findHighestSequence()
-		logging.debug('Highest Sequence Number Found!')
-
-	# returns the file matrix
-	def returnData(self):
-		# make a list to hold the data
-		list = ''
-		# for each chunk, add an entry to the list
-		for chunk in self.data:
-			list += str(chunk.fileName).strip("\n") + "|"
-			list += str(chunk.handle)
-			list += "@"
-		# return that list
-		return list
-
-
-
 #################################################################
 
-#			API HANDLER OBJECT CREATOR							#
+#			API HANDLER OBJECT CREATOR		
 
 #################################################################
 
@@ -236,7 +73,7 @@ class handleCommand(threading.Thread):
 		# Visual confirmation for debugging: see what data was received
 		logging.debug('DATA ==> ' + data)
 		# Visual confirmation for debugging:confirm that init was successful 
-		#and new thread was made
+		# and new thread was made
 		logging.debug("Started new thread for " + str(ip) + " on port " + str(port))
 
 	# Funtion to parse input into usable data by splitting at a pipe character
@@ -258,24 +95,23 @@ class handleCommand(threading.Thread):
 		# Acquire a lock so the chunk handle counter can not be accessed simultaneously
 		self.lock.acquire()
 		# Get a new chunkhandle
-		chunkHandle = fL.handleCounter()
+		chunkHandle = database.getChunkHandle()
 		# Release the lock so others can access the chunk handle counter
 		self.lock.release()
-		# Choose which chunkserver it will be stored on
-		hosts = fL.chooseHosts()
-		# Split the list of locations by pipe
-		createLocations = hosts.split('|')
-		# Update the database to now include the newly created chunk
-		################################################################
-		#Should probably later be intergrated better with oplog updates#
-		################################################################
-		sequence = database.findHighestSequence(self.fileName) + 1
-		database.update(chunkHandle, self.fileName, sequence, createLocations)
+
+		database.createNewFile(self.fileName, chunkHandle)
+
+		locations = database.data[fileName].chunks[chunkHandle].locations
+
+		hosts = ""
+		for item in locations:
+			hosts += item + "|"
+
 		# Visual confirmation for debugging: confirm success of create()
 		logging.debug('Chunk metadata successfully created')
 		try:
 			# Send the API a string containing the location and chunkHandle information
-			fL.send(self.s, str(hosts) + "|" + str(chunkHandle))
+			fL.send(self.s, str(hosts) + str(chunkHandle))
 		except socket.error:
 			logging.warning('Socket Connection Broken')
 		# Visual confirmation for debugging: confirm send of a list of storage hosts and chunk handle
@@ -290,41 +126,25 @@ class handleCommand(threading.Thread):
 		#in the case of an append, we need to locate the last chunk in a file
 		#so we set a Highest Sequence counter to keep track of which chunk
 		#is the newest
-		targetSequence = database.findHighestSequence(self.fileName)
-		# Visual confirmation for debugging: confirm the target sequence
-		logging.debug('TARGET SEQUENCE ==> ' + str(targetSequence))
 
-		targetChunk = Chunk(00, 'test', -2)
-		for chunk in database.data:
-			#print chunk.fileName
-			#print fileName
-			#print chunk.sequenceNumber
-			#print targetSequence
-			if chunk.fileName.strip() == self.fileName.strip() and chunk.sequenceNumber == targetSequence:
-				targetChunk = chunk
-		#then we find the locations of the targetChunk
+		latestChunkHandle = database.findLatestChunk(self.fileName)
+		locations = database.getChunkLocations(self.fileName)
 
-		###########################################################################
-		#IF TARGETCHUNK IS NOT FOUND, A MAJOR ERROR WILL BE THROWN. NEEDS HANDLING#
-		###########################################################################
-		print "targetChunk handle ==", targetChunk.handle
-		locations = database.locate(targetChunk.handle)
-		print locations
-		#We create an empty message to append our locations to
 		appendMessage = ''
-		#we prepare to send the locations and chunkhandle to the API
+
 		for item in locations:
-			print "adding", item, "to append message"
-			#add the location plus a pipe
-			appendMessage += item.strip() + '|'
-		#append the chunkhandle to our message
-		appendMessage += str(targetChunk.handle)
+			appendMessage += item + '|'
+
+		appendMessage += str(latestChunkHandle)
+
 		#send our message
 		fL.send(self.s, appendMessage)
 		# Visual confirmation for debugging: confirm send of a list of storage hosts and chunk handle
 		logging.debug('SENT == ' + str(appendMessage))
 		# Visual confirmation for debugging: confirm success of append()
 		logging.debug('Append successfully handled')
+
+
 
 
 
@@ -383,10 +203,10 @@ class handleCommand(threading.Thread):
 				# Get the chunkHandles associated with the given file, and sort the chunkHandles from
 				# least to greatest in the list. This will put them in their sequence order where the 
 				# 0th element is now the 0th sequence, 1st element the 1st sequence, etc.
-				associatedChunkHandles = db.Database.data[self.fileName].chunks.keys().sort()
+				associatedChunkHandles = database.data[self.fileName].chunks.keys().sort()
 
 				# Append a location of where the start-sequence chunk is stored to the message
-				responseMessage += "|" + str(db.Database.data[self.fileName].chunks[associatedChunkHandles[sequence]].locations[0])
+				responseMessage += "|" + str(database.data[self.fileName].chunks[associatedChunkHandles[sequence]].locations[0])
 
 				# Append the chunk handle to the message
 				responseMessage += "*" + str(associatedChunkHandles[sequence])
@@ -428,7 +248,7 @@ class handleCommand(threading.Thread):
 	def delete(self):
 		logging.debug('Begin updating delete flag to True')
 
-		db.Database.flagDelete(self.fileName)
+		database.flagDelete(self.fileName)
 
 		logging.debug('Delete Flags Updated')
 
@@ -438,7 +258,7 @@ class handleCommand(threading.Thread):
 	def undelete(self):
 		logging.debug('Begin updating delete flag to False')
 
-		db.Database.flagUndelete(self.fileName)
+		database.flagUndelete(self.fileName)
 
 		logging.debug('Delete flag updated')
 
@@ -534,7 +354,7 @@ class handleCommand(threading.Thread):
 
 #################################################################
 
-#                       OPLOG OBJECT CREATOR                    #
+#                       OPLOG OBJECT CREATOR       
 
 #################################################################
 
@@ -584,7 +404,7 @@ def worker():
 
 #######################################################################
 
-#                       MAIN 						                  #
+#                       MAIN 			
 
 #######################################################################
 
@@ -605,7 +425,7 @@ q = Queue.Queue(maxsize=0)
 WORKERS = 5
 
 # Make sure the database initializes before anything else is done
-database = Database()
+database = db.Database()
 database.initialize()
 
 
