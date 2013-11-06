@@ -47,12 +47,19 @@ EOT = config.eot
 
 ###############################################################################
 
+# This is the object that is stored in the data dictionary. It's key will be the
+# fileName. The object holds its fileName, a delete flag, and a dictionary of 
+# the chunks associated with it, where the chunk handle is the key, and the 
+# chunk object is the value.
 class File:
 	def __init__(self, name):
 		self.fileName = name
 		self.chunks = {}
 		self.delete = False
 
+# The chunk object is stored in the chunk library of the File object, keyed to 
+# its chunk handle. The chunk object stores the locations where the chunks are 
+# being stored.
 class Chunk:
 	def __init__(self):
 		self.locations = []
@@ -60,10 +67,10 @@ class Chunk:
 
 
 class Database:
-	# Create an empty dictionary to store the chunks, keyed to the file name
+	# Create an empty dictionary to store the chunks, keyed to the file name, eg. {"file1": fileObject}
 	data = {}
 
-	# Create an empty dictionary to be used as a chunk --> fileName lookup
+	# Create an empty dictionary to be used as a chunk --> fileName lookup, eg. {"127":"file3"}
 	lookup = {}
 
 	# Create an empty list that will hold fileNames of files flagged for deletion, so
@@ -74,25 +81,32 @@ class Database:
 	chunkHandle = 0
 
 	
-
+	# Initialization function that will set up the database from the opLog and data
+	# from the chunkservers
 	def initialize(self):
 		logging.debug('Initializing database')
-
+		# Populate the database by parsing the operations log
 		self.readFromOpLog()
+		# Get/update the locations of all the chunks from the chunkservers
 		self.interrogateChunkServers()
+		# Now that the database is setup, go through the used chunkhandles and 
+		# set the chunk handle counter to the next unused number
 		self.updateChunkCounter()
 
+
+		####### DEBUG MESSAGES TO MAKE SURE THINGS INITIALIZED AS EXPECTED #######
 		print self.data
 		print self.lookup
 		print self.toDelete
 		print self.chunkHandle
-		print self.data["/fox/faux"].chunks['1'].locations
+		##########################################################################
 
 		logging.debug('Database initialized')
 
 
 
-
+	# This function gets the data from the opLog and parses it to populate the database
+	# so it can return to where it left off (convert data in a hard state to soft state, essentially)
 	def readFromOpLog(self):
 		logging.debug('Initialize readFromOpLog()')
 		# Read the contents of the oplog into a list
@@ -155,7 +169,8 @@ class Database:
 
 
 
-
+	# Communicates with all the chunkservers and requests the chunkhandles of all the chunks
+	# residing on them. It then appends the locations of a chunk into the appropriate chunk object.
 	def interrogateChunkServers(self):
 		logging.debug('Initialize interrogateChunkServers()')
 		# Read the contents of the activehosts file into a list
@@ -173,13 +188,20 @@ class Database:
 			data = fL.recv(s)
 			s.close()
 			logging.debug('Received response from chunkserver')
+
+			# If the chunkserver has nothing on it, it should return whitespace. If this is the case, 
+			# then nothing in the database can be updated, so it will continue onto the next IP.
+			# If the chunkserver returns something other than whitespace (a message formatted chunk1|chunk2|... )
+			# then the data can be processed.
 			if data != " ":
-					
+				# Convert the pipe separated string into a list
 				chunkData = data.split('|')
 
+				# For every chunk handle in that list, update that chunk objects locations list
 				for chunk in chunkData:
 					# ADD SOME ERROR HANDLING HERE -- IF THE CHUNK DOES NOT EXIST IN THE 
 					# LOOKUP SOMETHING WENT TERRIBLY WRONG!
+					# Find which file the chunk is associated with in the lookup dictionary
 					fileName = self.lookup[chunk]
 
 					# From the file name we found the chunk to be associated with in the
@@ -192,7 +214,8 @@ class Database:
 
 
 
-
+	# Gets a list of all the chunkhandles currently in use, then updates the chunkhandle
+	# counter to the next unused number.
 	def updateChunkCounter(self):
 		# If the lookup is empty (no files/chunks in the file system), set the chunkHandle to 0
 		if self.lookup.keys() == []:
@@ -236,7 +259,15 @@ class Database:
 			return -2
 
 		else:
+			# Define the latest chunk to be less than the possible chunkhandles so it will 
+			# fail the handleOfFullChunk == latestChunk below. This way, if the message for 
+			# handleOfFullChunk that we get is not -1 (the flag for a file created), then 
+			# it will not erroneously make a chunk.
 			latestChunk = -2
+
+			# If the handleOfFullChunk is not the flag for a file create (where no latest
+			# chunk would exist), then find the chunk with the highest chunk handle (the 
+			# chunk with the highest sequence number)
 			if handleOfFullChunk != -1:
 				latestChunk = self.findLatestChunk(fileName)
 
@@ -261,8 +292,14 @@ class Database:
 
 				logging.debug('file: ' + fileName + ' chunk: ' + str(self.data[fileName].chunks[chunkHandle]))
 
+				#If this completed successfully, return a 1.
+				return 1
+				
+			# The full chunk is not the latest chunk, so a new chunk has already been created for 
+			# the file. We dont want to branch a file into multiple chunks, so we let the master know
+			# that a new chunk already exists to append to.
 			else:
-				return -1
+				return -3
 
 
 

@@ -99,11 +99,23 @@ class handleCommand(threading.Thread):
 		# Release the lock so others can access the chunk handle counter
 		self.lock.release()
 
+		# Create a new file, and store the return flag
+		createFileFlag = database.createNewFile(self.fileName, chunkHandle)
+		
 
-		if database.createNewFile(self.fileName, chunkHandle) == -1:
-			logging.debug("Got a duplicate file name, sending FAIL to API")
+		# If the return flag was an error flag, alert the logger and API of the error
+		if createFileFlag == -1:
+			logging.error("Got a duplicate file name, sending FAIL to API")
 			fL.send(self.s, "FAIL")
 			return -1
+
+		elif createFileFlag == -2:
+			logging.error("No file exists for a chunk to be created for")
+			fL.send(self.s, "FAIL")
+
+		elif createFileFlag== -3:
+			logging.error("Chunk is not the latest chunk. New chunk has been created that can be appended to.")
+			fL.send(self.s, "FAIL")
 
 
 
