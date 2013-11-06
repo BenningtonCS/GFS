@@ -1,3 +1,4 @@
-CREATE|0|/fox/faux
-CREATE|0|fox/faux
-CREATE|1|/fox/faux
+CREATEFILE|0|/fox/faux
+CREATEFILE|0|fox/faux
+CREATECHUNK|1|/fox/faux
+CREATECHUNK|2|/fox/faux

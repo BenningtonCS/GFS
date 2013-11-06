@@ -154,14 +154,16 @@ class workerThread(connThread):
 
 		elif command == "CONTENTS?":
 			try:
-				files = []
-				for filenames in os.walk(config.chunkPath): # read every file
-	            			files.append(filenames)      # append each one to a list
-	        			output = str( '|'.join(files[0][2])) # turn the list into a string
+				output = ""
+				for files in os.walk(config.chunkPath): # read every file
+					output = str('|'.join(item for item in files[-1])) # turn the list into a string
+					print output
 				if output == "":		     # if there is nothing in the dir
+					print "output is empty"
 					fL.send(self.connection, " ")    # send an empty string
 					logging.debug("Sent an empty string which should be the output")
 				else:				     # otherwise
+					print "output is not empty"
 					fL.send(self.connection, output) # send everything as a string
 					logging.debug("sent the output")
 			except socket.error as e:

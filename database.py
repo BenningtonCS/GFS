@@ -82,6 +82,12 @@ class Database:
 		self.interrogateChunkServers()
 		self.updateChunkCounter()
 
+		print self.data
+		print self.lookup
+		print self.toDelete
+		print self.chunkHandle
+		print self.data["/fox/faux"].chunks['1'].locations
+
 		logging.debug('Database initialized')
 
 
