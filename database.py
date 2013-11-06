@@ -259,6 +259,8 @@ class Database:
 					self.data[fileName].chunks[chunkHandle].locations.append(location)
 					logging.debug('Appending locations to chunk ' + str(chunkHandle) + ' locations list')
 
+				logging.debug('file: ' + fileName + ' chunk: ' + str(self.data[fileName].chunks[chunkHandle]))
+
 			else:
 				return -1
 
