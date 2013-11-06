@@ -189,7 +189,7 @@ class workerThread(connThread):
 				logging.debug("Recieved the data to be added")
 	                	with open(config.chunkPath+"/"+chunkHandle, 'a') as a: # open the chunk
 	                        	a.write(data) 			 # add the data to it
-	                 except socket.error as e:
+	                except socket.error as e:
 				logging.error(e)
 
  		else:
