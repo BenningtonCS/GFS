@@ -91,3 +91,5 @@
 2013-11-05 21:07:38,911 FUNCTION LIBRARY ERROR : Could not connect to 10.10.117.12
 2013-11-05 21:08:28,598 FUNCTION LIBRARY ERROR : Could not connect to 10.10.117.12
 2013-11-05 21:53:37,244 FUNCTION LIBRARY ERROR : Could not connect to 10.10.117.10
+2013-11-05 22:34:48,952 FUNCTION LIBRARY ERROR : recieved incorrect message while waiting for acknowledgement: <3!instead of <3?
+2013-11-05 22:34:48,955 FUNCTION LIBRARY ERROR : No data received

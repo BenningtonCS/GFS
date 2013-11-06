@@ -119,6 +119,7 @@ def recv(connection):
 def send(connection, message):
 	connection.send(message + eot)
 
+	data = ""
 	#then we wait on an acknowledgment
 	while 1:
 		# Receive the data
