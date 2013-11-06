@@ -90,7 +90,7 @@ class API():
                 	fL.send(self.s, "CREATE")
                 	print "CREATE"
                 	dat = fL.recv(self.s)
-                	if dat == "continue":   
+                	if dat == "CONTINUE":   
                         	print self.cH
                         	fL.send(self.s, self.cH)
 			#thread = chunkConnectCreate(location, cH)
@@ -127,11 +127,11 @@ class API():
                 	fL.send(self.s, "APPEND")
                 	print "APPEND"
                 	dat = fL.recv(self.s)
-                	if dat == "continue":
+                	if dat == "CONTINUE":
                         	fL.send(self.s, self.cH)
                         	print self.cH
                 	dat = fL.recv(self.s)
-                	if dat == "continue":
+                	if dat == "CONTINUE":
                         	fL.send(self.s, self.newData)
                         	print self.newData
                         #thread = chunkConnectAppend(location, cH, newData)
@@ -171,15 +171,15 @@ class API():
                 	fL.send(self.s, "READ")
                 	print "READ"
                 	dat = fL.recv(self.s)
-                	if dat == "continue":
+                	if dat == "CONTINUE":
                         	fL.send(self.s, self.cH)
                         	print self.cH
                 	dat = fL.recv(self.s)
-                	if dat == "continue":
+                	if dat == "CONTINUE":
                         	fL.send(self.s, self.offSet)
                         	print self.offSet
                 	dat = fL.recv(self.s)
-                	if dat == "continue":
+                	if dat == "CONTINUE":
                         	fL.send(self.s, self.bytesToRead)
                         	print self.bytesToRead
                 	dat = fL.recv(self.s)
