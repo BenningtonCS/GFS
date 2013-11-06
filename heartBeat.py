@@ -47,7 +47,7 @@ if "-v" in args:
 else:
         # If it was not, set the logging level to default (only shows messages with level
         # warning or higher)
-        logging.basicConfig(filename='masterLog.txt', format=FORMAT)
+        logging.basicConfig(filename='masterLog.log', format=FORMAT)
 
 
 
@@ -135,7 +135,7 @@ class heartBeat:
 			# Connect to the chunkserver over the specified port
                         self.s.connect((IP, self.PORT))
 			# Send the chunk server a heart (ping)
-                        fl.send(self.s, "<3?")
+                        fL.send(self.s, "<3?")
 			# Get the chunk server response
                         data = fL.recv(self.s)
                         print data
