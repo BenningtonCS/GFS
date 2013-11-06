@@ -96,7 +96,7 @@ class workerThread(connThread):
 			logging.debug("Closed connection.")
 
 		elif command == "CHUNKSPACE?":
-			fL.send(self.connection, "continue") # after receiving the connection 
+			fL.send(self.connection, "CONTINUE") # after receiving the connection 
 							 # the thread confirms that it is 
 							 # ready to receive arguments
 			logging.debug("send a continue")
@@ -116,11 +116,11 @@ class workerThread(connThread):
 			logging.debug("Closed the connection")
 
 		elif command == "READ":
-			fL.send(self.connection, "continue") # confirms readiness for data
+			fL.send(self.connection, "CONTINUE") # confirms readiness for data
 			logging.debug("sent continue #1")
 			chunkHandle = fL.recv(self.connection) # listens for chunkHandle
 			logging.debug("recieved name of the chunkhandle: ", chunkHandle)
-			fL.send(self.connection, "continue") # confirms ready state
+			fL.send(self.connection, "CONTINUE") # confirms ready state
 			logging.debug("sent continue #2")
 			byteOffSet = int(fL.recv(self.connection)) # listens for a byte 
 								     # offset to read from 
@@ -128,7 +128,7 @@ class workerThread(connThread):
 								     # beginning of the 
 								     # given chunk)
 			logging.debug("recieved the byte offset number.")
-			fL.send(self.connection, "continue") # confirms the desire for EVEN MORE data
+			fL.send(self.connection, "CONTINUE") # confirms the desire for EVEN MORE data
 			logging.debug("sent continue #3") 
 			bytesToRead = int(fL.recv(self.connection)) # listens for the 
 								      # number of bytes to read
@@ -156,18 +156,18 @@ class workerThread(connThread):
 				logging.debug("sent the output")
 
 		elif command == "CREATE":
-			fL.send(self.connection, "continue")
+			fL.send(self.connection, "CONTINUE")
 			logging.debug("Sent continue")
             chunkHandle = fL.recv(self.connection) # get the name of the chunk
 			logging.debug("recieved name of the chunk")
             open(chunkPath+"/"+chunkHandle, 'w').close() # create the file
 
 		elif command == "APPEND":
-			fL.send(self.connection, "continue")
+			fL.send(self.connection, "CONTINUE")
 			logging.debug("sent continue #1")
 			chunkHandle = fL.recv(self.connection) # name of the chunk
 			logging.debug("Recieved name of the chunk")
-			fL.send(self.connection, "continue") 
+			fL.send(self.connection, "CONTINUE") 
 			logging.debug("Sent continue #2") 
 			data = fL.recv(self.connection)    # data being added
 			logging.debug("Recieved the data to be added")
