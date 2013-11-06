@@ -175,7 +175,7 @@ class workerThread(connThread):
 				logging.debug("Sent continue")
 	                	chunkHandle = fL.recv(self.connection) # get the name of the chunk
 				logging.debug("recieved name of the chunk")
-	                	open(config.chunkPath+"/"+chunkHandle, 'w').close() # create the file
+	                	open(config.chunkPath + "/" + chunkHandle, 'w').close() # create the file
 	                except socket.error as e:
 				logging.error(e)
 
