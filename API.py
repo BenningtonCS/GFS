@@ -109,7 +109,7 @@ class API():
 				exit(0)
 			elif dat == "CONTINUE":   
                         	print cH
-                        	fL.send(s, cH)https://github.com/BenningtonCS/GFS.git
+                        	fL.send(s, cH)
 
 		s.close()
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
