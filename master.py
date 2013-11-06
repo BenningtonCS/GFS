@@ -99,6 +99,7 @@ class handleCommand(threading.Thread):
 		# Release the lock so others can access the chunk handle counter
 		self.lock.release()
 
+
 		if database.createNewFile(self.fileName, chunkHandle) == -1:
 			logging.debug("Got a duplicate file name, sending FAIL to API")
 			fL.send(self.s, "FAIL")
@@ -285,10 +286,8 @@ class handleCommand(threading.Thread):
 	def oplog(self):
 		# Visual confirmation for debugging: confirm init of oplog()
 		logging.debug('Initializing oplog append')
-		# Create a new instance of an opLog object
-		self.oplog = opLog()
 		# Append to the OpLog the <ACTION>|<CHUNKHANDLE>|<FILENAME>
-		self.oplog.append(self.msg[1]+"|"+self.msg[2]+"|"+self.msg[3])
+		fL.appendToOpLog(self.msg[1]+"|"+self.msg[2]+"|"+self.msg[3])
 		# Visual confirmation for debugging: confirm success of oplog()
 		logging.debug('Oplog append successful')
 	
@@ -354,35 +353,6 @@ class handleCommand(threading.Thread):
 
 
 
-
-
-
-#################################################################
-
-#                       OPLOG OBJECT CREATOR       
-
-#################################################################
-
-# Define an opLog object
-class opLog:
-
-	# Open the opLog file. If it can't open, notify and exit.
-        def __init__(self):
-            	try:
-             		self.logFile = open(OPLOG, 'a')
-		except IOError:
-               		logging.error('Could not open: ' + OPLOG)
-               		exit()
-
-        # Define a function to append to the opLog
-        def append(self, data):
-        	try:
-               		# append the log of the operation to the oplog
-                	self.logFile.write(data + "\n")
-                	self.logFile.close()
-        	except IOError:
-                	logging.error('Could not write to: ' + OPLOG)
-                	exit()
 
 
 

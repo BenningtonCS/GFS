@@ -210,3 +210,23 @@ def chooseHosts():
 
 
 
+###############################################################################
+
+#               APPEND TO OPLOG
+
+###############################################################################
+
+
+def appendToOpLog(data):
+	try:
+		with open(OPLOG, 'a') as oplog:
+			oplog.write(data + "\n")
+
+	except IOError:
+		logging.error("Could not append to: " + OPLOG)
+
+
+
+
+
+

@@ -218,6 +218,8 @@ class Database:
 			file = File(fileName)
 			# Add the file object, keyed to the file name, to the database
 			self.data[fileName] = file
+			# Update the opLog that a new file was created
+			fL.appendToOpLog("CREATEFILE|-1|" + fileName)
 			self.createNewChunk(fileName, -1, cH)
 			logging.debug('createNewFile() ==> new file successfully added to database')
 
