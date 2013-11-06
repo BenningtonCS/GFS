@@ -54,7 +54,7 @@ class API():
 	#lets define some variables
 	global MASTER_ADDRESS
 	global TCP_PORT
-	MASTER_ADDRESS = '10.10.117.111'
+	MASTER_ADDRESS = config.masterip
 	TCP_PORT = config.port
 
 	#lets make the API able to send and recieve messages
