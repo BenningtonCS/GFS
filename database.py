@@ -165,21 +165,22 @@ class Database:
 			fL.send(s, 'CONTENTS?')
 			logging.debug('Sent chunkserver a CONTENTS? message')
 			data = fL.recv(s)
+			s.close()
 			logging.debug('Received response from chunkserver')
-			if data == " ":
-				return -1
-			chunkData = data.split('|')
+			if data != " ":
+					
+				chunkData = data.split('|')
 
-			for chunk in chunkData:
-				# ADD SOME ERROR HANDLING HERE -- IF THE CHUNK DOES NOT EXIST IN THE 
-				# LOOKUP SOMETHING WENT TERRIBLY WRONG!
-				fileName = self.lookup[chunk]
+				for chunk in chunkData:
+					# ADD SOME ERROR HANDLING HERE -- IF THE CHUNK DOES NOT EXIST IN THE 
+					# LOOKUP SOMETHING WENT TERRIBLY WRONG!
+					fileName = self.lookup[chunk]
 
-				# From the file name we found the chunk to be associated with in the
-				# lookup, we can append the current IP to the list of chunk locations
-				# in the chunk object within the file object dictionary.
-				self.data[fileName].chunks[chunk].locations.append(IP)
-				logging.debug('Appended location to chunk ' + str(chunk) + ' location list')
+					# From the file name we found the chunk to be associated with in the
+					# lookup, we can append the current IP to the list of chunk locations
+					# in the chunk object within the file object dictionary.
+					self.data[fileName].chunks[chunk].locations.append(IP)
+					logging.debug('Appended location to chunk ' + str(chunk) + ' location list')
 
 		logging.debug('interrogateChunkServers() complete')
 

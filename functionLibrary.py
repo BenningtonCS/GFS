@@ -80,7 +80,7 @@ def recv(connection):
 	while 1:
 		# Receive the data
 		d = connection.recv(1024)
-		logging.debug('data has been received')
+		logging.debug('data has been received: ' + str(d))
 		# Append the received data to the data string
 		data += d
 		# Create a string from the received data string which contains the last 
@@ -90,7 +90,7 @@ def recv(connection):
 			ending = d[-1]
 		except IndexError:
 			logging.error('No data received')
-			exit()
+			break
 		# Check the ending of the received data to see if it contains an end of
 		# transmission character, and if it does, break out of the loop since 
 		# no more data should be sent.
@@ -124,7 +124,7 @@ def send(connection, message):
 	while 1:
 		# Receive the data
 		d = connection.recv(1024)
-		logging.debug('data has been received')
+		logging.debug('data has been received: ' + str(data))
 		# Append the received data to the data string
 		data += d
 		# Create a string from the received data string which contains the last 

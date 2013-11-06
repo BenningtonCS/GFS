@@ -99,7 +99,12 @@ class handleCommand(threading.Thread):
 		# Release the lock so others can access the chunk handle counter
 		self.lock.release()
 
-		database.createNewFile(self.fileName, chunkHandle)
+		if database.createNewFile(self.fileName, chunkHandle) == -1:
+			logging.debug("Got a duplicate file name, sending FAIL to API")
+			fL.send(self.s, "FAIL")
+			return -1
+
+
 
 		locations = database.data[self.fileName].chunks[chunkHandle].locations
 
