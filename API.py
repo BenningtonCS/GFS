@@ -54,7 +54,7 @@ class API():
 	#lets define some variables
 	global MASTER_ADDRESS
 	global TCP_PORT
-	MASTER_ADDRESS = config.masterip
+	MASTER_ADDRESS = '10.10.117.109'
 	TCP_PORT = config.port
 
 	#lets make the API able to send and recieve messages
@@ -75,6 +75,9 @@ class API():
 		#creates a file and gives it to the master
 		fL.send(self.s, "CREATE|" + filename)
 		self.data = fL.recv(self.s)
+		if self.data == "FAIL":
+			print "THAT FILE EXISTS ALREADY... EXITING API"
+			exit(0)
 		#print self.data
 		#master sends back chunk handle and locations
 		self.splitdata = self.data.split("|")
@@ -85,19 +88,20 @@ class API():
 			self.s.close()
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			location = self.splitdata[n]
+			print location
 			#send this data to chunk servers
-			self.s.connect((self.location,TCP_PORT))
-                	fL.send(self.s, "CREATE")
+			s.connect((location,TCP_PORT))
+                	fL.send(s, "CREATE")
                 	print "CREATE"
-                	dat = fL.recv(self.s)
+                	dat = fL.recv(s)
                 	if dat == "CONTINUE":   
-                        	print self.cH
-                        	fL.send(self.s, self.cH)
+                        	print cH
+                        	fL.send(s, cH)
 			#thread = chunkConnectCreate(location, cH)
 			#thread.start()
-		self.s.close()
+		s.close()
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.s.connect((MASTER_ADDRESS, TCP_PORT))
+		s.connect((MASTER_ADDRESS, TCP_PORT))
 
 		opLog = updateOpLog("OPLOG|CREATE|"+cH+"|"+filename)
 		opLog.start()
@@ -120,25 +124,25 @@ class API():
 		#spawn threads that connect to the chunk servers
                 for n in range(0, dataLength-1):
 			self.s.close()
-			self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                         location = self.splitdata[n]
 	                #send this data to chunk servers
-			self.s.connect((self.location,TCP_PORT))
-                	fL.send(self.s, "APPEND")
+			self.s.connect((location,TCP_PORT))
+                	fL.send(s, "APPEND")
                 	print "APPEND"
-                	dat = fL.recv(self.s)
+                	dat = fL.recv(s)
                 	if dat == "CONTINUE":
-                        	fL.send(self.s, self.cH)
-                        	print self.cH
-                	dat = fL.recv(self.s)
+                        	fL.send(s, cH)
+                        	print cH
+                	dat = fL.recv(s)
                 	if dat == "CONTINUE":
                         	fL.send(self.s, self.newData)
                         	print self.newData
                         #thread = chunkConnectAppend(location, cH, newData)
                         #thread.start()
-		self.s.close()
+		s.close()
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.s.connect((MASTER_ADDRESS, TCP_PORT))
+                s.connect((MASTER_ADDRESS, TCP_PORT))
 
 	#reads an existing file by taking th filename, byte offset, and the number of bytes the client
 	#wants to read as args. This information is passed on to the master which sends back a list
@@ -165,34 +169,34 @@ class API():
 			print "cH = ", cH
 			offset = secondSplit[2]
 			print "offset = ", offset
-			self.s.close()
-			self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			self.s.connect((self.location,TCP_PORT))
-                	fL.send(self.s, "READ")
+			s.close()
+			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			s.connect((self.location,TCP_PORT))
+                	fL.send(s, "READ")
                 	print "READ"
-                	dat = fL.recv(self.s)
+                	dat = fL.recv(s)
                 	if dat == "CONTINUE":
-                        	fL.send(self.s, self.cH)
-                        	print self.cH
-                	dat = fL.recv(self.s)
+                        	fL.send(s, cH)
+                        	print cH
+                	dat = fL.recv(s)
                 	if dat == "CONTINUE":
-                        	fL.send(self.s, self.offSet)
+                        	fL.send(s, self.offSet)
                         	print self.offSet
-                	dat = fL.recv(self.s)
+                	dat = fL.recv(s)
                 	if dat == "CONTINUE":
-                        	fL.send(self.s, self.bytesToRead)
+                        	fL.send(s, self.bytesToRead)
                         	print self.bytesToRead
-                	dat = fL.recv(self.s)
+                	dat = fL.recv(s)
                 	print dat
 			#thread = chunkConnectRead(location, cH, offset, bytesToRead)
 			#thread.start()	
-               	self.s.close()
+               	s.close()
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.s.connect((MASTER_ADDRESS, TCP_PORT))
+                s.connect((MASTER_ADDRESS, TCP_PORT))
 
 	def fileList(self):
 		fL.send(self.s, "FILELIST|x")
-		self.data = fL.recv(self.s)
+		self.data = fL.recv(s)
 		return self.data
 
 #thread for create
