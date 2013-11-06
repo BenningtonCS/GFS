@@ -198,7 +198,8 @@ class Database:
 		if self.lookup.keys() == []:
 			self.chunkHandle = 0
 		else:
-			self.chunkHandle = int(max(self.lookup.keys()))
+			# Get the max chunk handle from the database, and add one to get the new chunkhandle
+			self.chunkHandle = int(max(self.lookup.keys())) + 1
 
 
 
