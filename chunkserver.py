@@ -88,91 +88,109 @@ class workerThread(connThread):
 		# through
 
 		if command == "<3?":
-			# in this and each other if/elif statement the correct 
-			# worker thread is started for a given command
-			fL.send(self.connection, "<3!")
-			logging.debug("Send heart beat back")
-			self.connection.close()
-			logging.debug("Closed connection.")
+			try:
+				# in this and each other if/elif statement the correct 
+				# worker thread is started for a given command
+				fL.send(self.connection, "<3!")
+				logging.debug("Send heart beat back")
+				self.connection.close()
+				logging.debug("Closed connection.")
+			except socket.error as e:
+				logging.error(e)
 
 		elif command == "CHUNKSPACE?":
-			fL.send(self.connection, "CONTINUE") # after receiving the connection 
-							 # the thread confirms that it is 
-							 # ready to receive arguments
-			logging.debug("send a continue")
-			chunkHandle = fL.recv(self.connection) # it listens on its 
-								 # connection for a chunkhandle
-			logging.debug("recieved name of the chunkhandle: ", chunkHandle)
-			emptySpace = mg64 - os.stat(chunkHandle).st_size # then checks the 
-								         # difference 
-								         # between the 
-								         # file's size and 
-								         # 64mg (the max 
-								         # chunk size)
-			fL.send(self.connection, emptySpace) # and returns the amount of space 
-							 # left to the API
-			logging.debug("Send the spaec remaining")
-			self.connection.close() # closes the connection
-			logging.debug("Closed the connection")
+			try:
+				fL.send(self.connection, "CONTINUE") # after receiving the connection 
+								 # the thread confirms that it is 
+								 # ready to receive arguments
+				logging.debug("send a continue")
+				chunkHandle = fL.recv(self.connection) # it listens on its 
+									 # connection for a chunkhandle
+				logging.debug("recieved name of the chunkhandle: ", chunkHandle)
+				emptySpace = mg64 - os.stat(chunkHandle).st_size # then checks the 
+									         # difference 
+									         # between the 
+									         # file's size and 
+									         # 64mg (the max 
+									         # chunk size)
+				fL.send(self.connection, emptySpace) # and returns the amount of space 
+								 # left to the API
+				logging.debug("Send the spaec remaining")
+				self.connection.close() # closes the connection
+				logging.debug("Closed the connection")
+			except socket.error as e:
+				logging.error(e)
 
 		elif command == "READ":
-			fL.send(self.connection, "CONTINUE") # confirms readiness for data
-			logging.debug("sent continue #1")
-			chunkHandle = fL.recv(self.connection) # listens for chunkHandle
-			logging.debug("recieved name of the chunkhandle: ", chunkHandle)
-			fL.send(self.connection, "CONTINUE") # confirms ready state
-			logging.debug("sent continue #2")
-			byteOffSet = int(fL.recv(self.connection)) # listens for a byte 
-								     # offset to read from 
-								     # (relative to the 
-								     # beginning of the 
-								     # given chunk)
-			logging.debug("recieved the byte offset number.")
-			fL.send(self.connection, "CONTINUE") # confirms the desire for EVEN MORE data
-			logging.debug("sent continue #3") 
-			bytesToRead = int(fL.recv(self.connection)) # listens for the 
-								      # number of bytes to read
-			logging.debug("recieved the number of bytes to read")
-			chunk = open(config.chunkPath+"/"+chunkHandle) # opens the designated chunk to read from
-			chunk.seek(byteOffSet) # goes to the specified byte offset
-			fileContent = chunk.read(bytesToRead) # stuffs all the stuff to be 
-							      # read into a variable
-			fL.send(self.connection, fileContent)
-			logging.debug("send the file content")
-			chunk.close() # closes the chunk
-			logging.debug("closed the connection")
-			self.connection.close() # closes the connection
+			try:
+				fL.send(self.connection, "CONTINUE") # confirms readiness for data
+				logging.debug("sent continue #1")
+				chunkHandle = fL.recv(self.connection) # listens for chunkHandle
+				logging.debug("recieved name of the chunkhandle: ", chunkHandle)
+				fL.send(self.connection, "CONTINUE") # confirms ready state
+				logging.debug("sent continue #2")
+				byteOffSet = int(fL.recv(self.connection)) # listens for a byte 
+									     # offset to read from 
+									     # (relative to the 
+									     # beginning of the 
+									     # given chunk)
+				logging.debug("recieved the byte offset number.")
+				fL.send(self.connection, "CONTINUE") # confirms the desire for EVEN MORE data
+				logging.debug("sent continue #3") 
+				bytesToRead = int(fL.recv(self.connection)) # listens for the 
+									      # number of bytes to read
+				logging.debug("recieved the number of bytes to read")
+				chunk = open(config.chunkPath+"/"+chunkHandle) # opens the designated chunk to read from
+				chunk.seek(byteOffSet) # goes to the specified byte offset
+				fileContent = chunk.read(bytesToRead) # stuffs all the stuff to be 
+								      # read into a variable
+				fL.send(self.connection, fileContent)
+				logging.debug("send the file content")
+				chunk.close() # closes the chunk
+				logging.debug("closed the connection")
+				self.connection.close() # closes the connection
+			except socket.error as e:
+				logging.error(e)
 
 		elif command == "CONTENTS?":
-			files = []
-            		for filenames in os.walk(self.path): # read every file
-            			files.append(filenames)      # append each one to a list
-        			output = str( '|'.join(files[0][2])) # turn the list into a string
-			if output == "":		     # if there is nothing in the dir
-				fL.send(self.connection, " ")    # send an empty string
-				logging.debug("Sent an empty string which should be the output")
-			else:				     # otherwise
-				fL.send(self.connection, output) # send everything as a string
-				logging.debug("sent the output")
+			try:
+				files = []
+	            		for filenames in os.walk(self.path): # read every file
+	            			files.append(filenames)      # append each one to a list
+	        			output = str( '|'.join(files[0][2])) # turn the list into a string
+				if output == "":		     # if there is nothing in the dir
+					fL.send(self.connection, " ")    # send an empty string
+					logging.debug("Sent an empty string which should be the output")
+				else:				     # otherwise
+					fL.send(self.connection, output) # send everything as a string
+					logging.debug("sent the output")
+			except socket.error as e:
+				logging.error(e)
 
 		elif command == "CREATE":
-			fL.send(self.connection, "CONTINUE")
-			logging.debug("Sent continue")
-                	chunkHandle = fL.recv(self.connection) # get the name of the chunk
-			logging.debug("recieved name of the chunk")
-                	open(chunkPath+"/"+chunkHandle, 'w').close() # create the file
+			try:
+				fL.send(self.connection, "CONTINUE")
+				logging.debug("Sent continue")
+	                	chunkHandle = fL.recv(self.connection) # get the name of the chunk
+				logging.debug("recieved name of the chunk")
+	                	open(chunkPath+"/"+chunkHandle, 'w').close() # create the file
+	                except socket.error as e:
+				logging.error(e)
 
 		elif command == "APPEND":
-			fL.send(self.connection, "CONTINUE")
-			logging.debug("sent continue #1")
-			chunkHandle = fL.recv(self.connection) # name of the chunk
-			logging.debug("Recieved name of the chunk")
-			fL.send(self.connection, "CONTINUE") 
-			logging.debug("Sent continue #2") 
-			data = fL.recv(self.connection)    # data being added
-			logging.debug("Recieved the data to be added")
-                	with open(config.chunkPath+"/"+chunkHandle, 'a') as a: # open the chunk
-                        	a.write(data) 			 # add the data to it
+			try:
+				fL.send(self.connection, "CONTINUE")
+				logging.debug("sent continue #1")
+				chunkHandle = fL.recv(self.connection) # name of the chunk
+				logging.debug("Recieved name of the chunk")
+				fL.send(self.connection, "CONTINUE") 
+				logging.debug("Sent continue #2") 
+				data = fL.recv(self.connection)    # data being added
+				logging.debug("Recieved the data to be added")
+	                	with open(config.chunkPath+"/"+chunkHandle, 'a') as a: # open the chunk
+	                        	a.write(data) 			 # add the data to it
+	                 except socket.error as e:
+				logging.error(e)
 
  		else:
  			error = "Received invalid command: " + command
