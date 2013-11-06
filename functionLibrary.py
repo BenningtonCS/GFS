@@ -16,7 +16,7 @@
 #################################################################################
 
 
-import config, sys, logging, socket
+import config, sys, logging, socket, random
 
 
 ###############################################################################
@@ -28,6 +28,10 @@ import config, sys, logging, socket
 
 # From the config file, get the end of transmission character
 eot = config.eot
+HOSTSFILE = config.hostsfile
+ACTIVEHOSTSFILE = config.activehostsfile
+OPLOG = config.oplog
+chunkPort = config.port
 
 
 

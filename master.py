@@ -18,7 +18,7 @@
 #################################################################################
 
 
-import socket, threading, random, os, time, config, sys, logging
+import socket, threading, random, os, time, config, sys, logging, Queue
 import functionLibrary as fL
 import database as db
 
@@ -101,7 +101,7 @@ class handleCommand(threading.Thread):
 
 		database.createNewFile(self.fileName, chunkHandle)
 
-		locations = database.data[fileName].chunks[chunkHandle].locations
+		locations = database.data[self.fileName].chunks[chunkHandle].locations
 
 		hosts = ""
 		for item in locations:
@@ -115,7 +115,7 @@ class handleCommand(threading.Thread):
 		except socket.error:
 			logging.warning('Socket Connection Broken')
 		# Visual confirmation for debugging: confirm send of a list of storage hosts and chunk handle
-		logging.debug('SENT ==> ' + str(hosts) + "|" + str(chunkHandle))
+		logging.debug('SENT ==> ' + str(hosts) + str(chunkHandle))
 		
 
 

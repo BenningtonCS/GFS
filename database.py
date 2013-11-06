@@ -16,7 +16,7 @@
 
 
 import functionLibrary as fL
-import config, logging
+import config, logging, socket
 
 ###############################################################################
 
@@ -30,17 +30,16 @@ import config, logging
 # Instead, the program should be run in verbose, $python database.py -v , for debug 
 # messages to show up
 
-# Get a list of command line arguments
-args = sys.argv
-# Check to see if the verbose flag was one of the command line arguments
-if "-v" in args:
-        # If it was one of the arguments, set the logging level to debug 
-        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
-else:
-        # If it was not, set the logging level to default (only shows messages with level
-        # warning or higher)
-        logging.basicConfig(filename='masterLog.log', format='%(asctime)s DATABASE %(levelname)s : %(message)s')
+logging.basicConfig(level=logging.DEBUG, filename='masterLog.log', format='%(asctime)s DATABASE %(levelname)s : %(message)s')
 
+
+
+
+HOSTSFILE = config.hostsfile
+ACTIVEHOSTSFILE = config.activehostsfile
+OPLOG = config.oplog
+chunkPort = config.port
+EOT = config.eot
 
 ###############################################################################
 
@@ -167,12 +166,14 @@ class Database:
 			logging.debug('Sent chunkserver a CONTENTS? message')
 			data = fL.recv(s)
 			logging.debug('Received response from chunkserver')
+			if data == " ":
+				return -1
 			chunkData = data.split('|')
 
 			for chunk in chunkData:
 				# ADD SOME ERROR HANDLING HERE -- IF THE CHUNK DOES NOT EXIST IN THE 
 				# LOOKUP SOMETHING WENT TERRIBLY WRONG!
-				fileName = lookup[chunk]
+				fileName = self.lookup[chunk]
 
 				# From the file name we found the chunk to be associated with in the
 				# lookup, we can append the current IP to the list of chunk locations
@@ -186,7 +187,11 @@ class Database:
 
 
 	def updateChunkCounter(self):
-		self.chunkHandle = int(max(self.lookup.keys()))
+		# If the lookup is empty (no files/chunks in the file system), set the chunkHandle to 0
+		if self.lookup.keys() == []:
+			self.chunkHandle = 0
+		else:
+			self.chunkHandle = int(max(self.lookup.keys()))
 
 
 
@@ -221,11 +226,13 @@ class Database:
 			return -2
 
 		else:
-			latestChunk = self.findLatestChunk(fileName)
+			latestChunk = -2
+			if handleOfFullChunk != -1:
+				latestChunk = self.findLatestChunk(fileName)
 
 			# Check to see if the triggering chunk is in the list of chunk handles associated
 			# with that file. If it is, that means a new chunk must be created
-			if handleOfFullChunk == latestChunk or handOfFullChunk == -1:
+			if handleOfFullChunk == latestChunk or handleOfFullChunk == -1:
 				# Create a new instance of the Chunk object
 				chunk = Chunk()
 				# Get a new chunkHandle
@@ -255,7 +262,7 @@ class Database:
 	def getChunkLocations(self, chunkHandle):
 		logging.debug('Initialize getChunkLocations()')
 		# Find the file name associated with the chunk
-		fileName = lookup[chunkHandle]
+		fileName = self.lookup[chunkHandle]
 		# Return the list of locations belonging to that chunk
 		return self.data[fileName].chunks[chunkHandle].locations
 
