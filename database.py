@@ -95,9 +95,13 @@ class Database:
 
 
 		####### DEBUG MESSAGES TO MAKE SURE THINGS INITIALIZED AS EXPECTED #######
+		# The database dictionary
 		print self.data
+		# The lookup dictionary
 		print self.lookup
+		# The list of files to delete
 		print self.toDelete
+		# The current chunk handle
 		print self.chunkHandle
 		##########################################################################
 
@@ -294,7 +298,7 @@ class Database:
 
 				#If this completed successfully, return a 1.
 				return 1
-				
+
 			# The full chunk is not the latest chunk, so a new chunk has already been created for 
 			# the file. We dont want to branch a file into multiple chunks, so we let the master know
 			# that a new chunk already exists to append to.
@@ -302,12 +306,16 @@ class Database:
 				return -3
 
 
-
+	# This function is called to get and increment the current chunk handle from soft state
 	def getChunkHandle(self):
+		# Increment the chunk handle
 		self.chunkHandle += 1
+		# Return the current chunkhandle
 		return self.chunkHandle - 1
 
 
+	# This function is used to get the locations where a specified chunk is stored on
+	# the chunkservers
 	def getChunkLocations(self, chunkHandle):
 		logging.debug('Initialize getChunkLocations()')
 		# Find the file name associated with the chunk
@@ -316,6 +324,10 @@ class Database:
 		return self.data[fileName].chunks[chunkHandle].locations
 
 
+	# To find the most recent chunk, instead of maintaining a chunk counter, we rely on the 
+	# fact that chunk are created sequentially, meaning that a more recent chunk will have
+	# a higher chunk handle. This function looks at all the chunk handles associated with a 
+	# specified file and takes returns the highest number chunk handle it found.
 	def findLatestChunk(self, fileName):
 		logging.debug('Initialize findLatestChunk()')
 		# Get a list of all the chunkHandles associated with the file
@@ -330,6 +342,10 @@ class Database:
 		return str(max(keyValues))
 
 
+	# When the user wishes to delete a file, it will not be deleted automatically, instead
+	# it will be flagged for deletion. This function is called to change the file delete flag
+	# from False to True, and put it in the toDelete list, so garbage collection will know
+	# which files it must scrub.
 	def flagDelete(self, fileName):
 		logging.debug('Initialize flagDelete()')
 		# Flag the given file for deletion
@@ -339,6 +355,9 @@ class Database:
 		logging.debug('Delete flag updated')
 
 
+	# If the user accidentally flagged a file for deletion, there is a period of time between 
+	# the flag change and garbage collection in which the delete flag can be set back to False. 
+	# This function changes the flag back to false and removes the file from the toDelete list.
 	def flagUndelete(self, fileName):
 		logging.debug('Initialize flagUndelete()')
 		# Unflag the given file for deletion
@@ -348,6 +367,8 @@ class Database:
 		logging.debug('Delete flag updated')
 
 
+	# When the scrubber informs the master that all chunks associated with a file have been deleted
+	# from the chunkservers, this function will be called to remove the file from the database.
 	def sanitizeFile(self, fileName):
 		# Delete the specified key/value pair
 		del self.data[fileName]
