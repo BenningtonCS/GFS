@@ -143,6 +143,7 @@ def send(connection, message):
 			break
 
 		logging.debug('End of transmission character not found. Continue receiving.')
+		
 	if data == "ack " + message + eot:
 		logging.debug("received ack " + data)
 	else:

@@ -18,7 +18,7 @@
 #################################################################################
 
 import socket, config, logging, sys
-import database as db
+from master import database as database
 import functionLibrary as fL
 
 
@@ -55,12 +55,16 @@ else:
 #########################################################################
 
 
+# Object that will handle the garbage collection for the GFS implementation
+# by learning which files need to be deleted, informing the chunkservers which
+# chunks should be deleted, and informing the database when files no longer
+# exist in the system due to deletion.
 class Scrubber:
 
 	def __init__(self):
 		logging.debug("Initilizing Scrubber Instance")
 		# Get the data from the database's toDelete list
-		self.data = db.Database.toDelete
+		self.data = database.toDelete
 		# Get the port number from the config file
 		self.port = config.port
 
@@ -86,7 +90,7 @@ class Scrubber:
 		# For all of the files in the toDelete list
 		for file in self.data:
 			# Get all of the chunk handles associated with a file
-			chunkHandles = db.Database.data[file].chunks.keys()
+			chunkHandles = database.data[file].chunks.keys()
 			# Create a counter for successful chunk deletions
 			successfulChunkDelete = 0
 			# For each of those chunk handles
@@ -94,7 +98,7 @@ class Scrubber:
 				# Create a counter for successful deletions from a chunkserver
 				successDeleteFromCS = 0
 				# Find the locations where the chunks are being kept
-				locations = db.Database.data[file].chunks[handle].locations
+				locations = database.data[file].chunks[handle].locations
 				# For each location the chunk is stored on
 				for location in locations:
 					# Connect to the chunk server
@@ -133,7 +137,7 @@ class Scrubber:
 			if len(chunkHandles) == successfulChunkDelete:
 				# Call the database sanitize function, which removes the key/value pair
 				# from the database.
-				db.Database.sanitizeFile(file)
+				database.sanitizeFile(file)
 				logging.debug(str(file) + 'successfully sanitized')
 			else:
 				# Improve error handling to automatically resolve problem

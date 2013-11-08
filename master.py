@@ -407,64 +407,66 @@ def worker():
 
 #######################################################################
 
-# Define the paths of the host file, activehost file, and oplog from the config file, and
-# define the port to be used, also from the config file
-HOSTSFILE = config.hostsfile
-ACTIVEHOSTSFILE = config.activehostsfile
-OPLOG = config.oplog
-chunkPort = config.port
-EOT = config.eot
-# Define a thread lock to be used to get and increment chunk handles
-threadLock = threading.Lock()
+if __name__ == "__main__":
 
-# Define a queue
-q = Queue.Queue(maxsize=0)
+	# Define the paths of the host file, activehost file, and oplog from the config file, and
+	# define the port to be used, also from the config file
+	HOSTSFILE = config.hostsfile
+	ACTIVEHOSTSFILE = config.activehostsfile
+	OPLOG = config.oplog
+	chunkPort = config.port
+	EOT = config.eot
+	# Define a thread lock to be used to get and increment chunk handles
+	threadLock = threading.Lock()
 
-# Define the number of worker threads to be activated
-WORKERS = 5
+	# Define a queue
+	q = Queue.Queue(maxsize=0)
 
-# Make sure the database initializes before anything else is done
-database = db.Database()
-database.initialize()
+	# Define the number of worker threads to be activated
+	WORKERS = 5
 
-
-# Initiate the worker threads as daemon threads
-for i in range(WORKERS):
-	t = threading.Thread(target=worker)
-	t.daemon = True
-	t.start()
+	# Make sure the database initializes before anything else is done
+	database = db.Database()
+	database.initialize()
 
 
-# Create a server TCP socket and allow address re-use
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+	# Initiate the worker threads as daemon threads
+	for i in range(WORKERS):
+		t = threading.Thread(target=worker)
+		t.daemon = True
+		t.start()
 
 
-# Bind the listener-server 
-s.bind(('', chunkPort))
+	# Create a server TCP socket and allow address re-use
+	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-logging.info("Master successfully initialized!")
-# Main listening thread for API commands
-while 1:
-	try:
-		# Listen for API connections
-		s.listen(1)
-		print "Listening..."
-		# Accept the incoming connection
-		conn, addr = s.accept()
 
-		# Receive the data
-		data = fL.recv(conn)
-		# Put the data into a queue so the queue worker can hand the data off to 
-		# an instance of the handleCommand object.
-		q.put(data)
+	# Bind the listener-server 
+	s.bind(('', chunkPort))
 
-	# If someone ends the master through keyboard interrupt, break out of the loop
-	# to allow the threads to finsh before closing the main thread
-	except KeyboardInterrupt:
-		print "Exiting Now."
-		logging.info("Master stopped by keyboard interrupt")
-		break
+	logging.info("Master successfully initialized!")
+	# Main listening thread for API commands
+	while 1:
+		try:
+			# Listen for API connections
+			s.listen(1)
+			print "Listening..."
+			# Accept the incoming connection
+			conn, addr = s.accept()
+
+			# Receive the data
+			data = fL.recv(conn)
+			# Put the data into a queue so the queue worker can hand the data off to 
+			# an instance of the handleCommand object.
+			q.put(data)
+
+		# If someone ends the master through keyboard interrupt, break out of the loop
+		# to allow the threads to finsh before closing the main thread
+		except KeyboardInterrupt:
+			print "Exiting Now."
+			logging.info("Master stopped by keyboard interrupt")
+			break
 
 
 
