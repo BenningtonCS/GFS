@@ -277,7 +277,7 @@ class Database:
 
 			# Check to see if the triggering chunk is in the list of chunk handles associated
 			# with that file. If it is, that means a new chunk must be created
-			if handleOfFullChunk == latestChunk or handleOfFullChunk == -1:
+			if int(handleOfFullChunk) == int(latestChunk) or int(handleOfFullChunk) == -1:
 				# Create a new instance of the Chunk object
 				chunk = Chunk()
 				# Get a new chunkHandle
@@ -286,7 +286,7 @@ class Database:
 				# Add the chunk to the file object, keyed to its new chunkHandle
 				self.data[fileName].chunks[chunkHandle] = chunk
 				# Get the three locations where the chunk will be stored
-				locations = fL.chooseHosts().split()
+				locations = fL.chooseHosts().split("|")
 				logging.debug('Got new locations')
 
 				# Append the chunkserver locations to the chunk's location list
@@ -295,6 +295,9 @@ class Database:
 					logging.debug('Appending locations to chunk ' + str(chunkHandle) + ' locations list')
 
 				logging.debug('file: ' + fileName + ' chunk: ' + str(self.data[fileName].chunks[chunkHandle]))
+
+				# Add the chunk to the chunk/file lookup
+				self.lookup[str(chunkHandle)] = fileName
 
 				#If this completed successfully, return a 1.
 				return 1
@@ -319,9 +322,9 @@ class Database:
 	def getChunkLocations(self, chunkHandle):
 		logging.debug('Initialize getChunkLocations()')
 		# Find the file name associated with the chunk
-		fileName = self.lookup[chunkHandle]
+		fileName = self.lookup[str(chunkHandle)]
 		# Return the list of locations belonging to that chunk
-		return self.data[fileName].chunks[chunkHandle].locations
+		return self.data[fileName].chunks[int(chunkHandle)].locations
 
 
 	# To find the most recent chunk, instead of maintaining a chunk counter, we rely on the 
@@ -370,7 +373,18 @@ class Database:
 	# When the scrubber informs the master that all chunks associated with a file have been deleted
 	# from the chunkservers, this function will be called to remove the file from the database.
 	def sanitizeFile(self, fileName):
-		# Delete the specified key/value pair
+		# Before we delete the file from the database, we want to make sure we know which chunks
+		# are associated with it, so they can be removed from the lookup.
+		associatedChunks = self.data[fileName].chunks.keys()
+		# For each key, remove it from the lookup
+		for chunk in associatedChunks:
+			del self.lookup[str(chunk)]
+
+		# We also want to make sure that it is no longer in the toDelete list, since it has been deleted
+		if fileName in self.toDelete:
+			self.toDelete.remove(fileName)
+
+		# Delete the specified key/value pair from the database.
 		del self.data[fileName]
 		logging.debug('sanitizeFile() success')
 
