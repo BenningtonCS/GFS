@@ -200,16 +200,27 @@ class handleCommand(threading.Thread):
 		logging.debug('start sequence # == ' + str(startSequence))
 		logging.debug('chunk byte offset == ' + str(chunkByteOffset))
 
-		# To find where the user wants to read ending, add the number of bytes they want
-		# to read to their starting point, the byteOffest. This will give the byte offset
-		# of the end of the read
-		endReadOffset = byteOffset + bytesToRead
 
-		# Find the sequence of the chunk in which the end of the read will terminate
-		endSequence = endReadOffset//maxChunkSize
+		# If the user inputs a bytes to read of -1, the read will go until the end
+		# of the file.
+		if bytesToRead == -1:
+			# The ending offset will be the max file size
+			endOffset = maxChunkSize
+			# The end sequence can be found be knowing how many chunks a file has, and 
+			# subtracting by 1 because the sequence numbers start at 0, not 1.
+			endSequence = len(database.data[self.fileName].chunks.keys()) - 1
 
-		# Get the offset of the read-end within its given chunk
-		endOffset = endReadOffset%maxChunkSize
+		else:
+			# To find where the user wants to read ending, add the number of bytes they want
+			# to read to their starting point, the byteOffest. This will give the byte offset
+			# of the end of the read
+			endReadOffset = byteOffset + bytesToRead
+
+			# Find the sequence of the chunk in which the end of the read will terminate
+			endSequence = endReadOffset//maxChunkSize
+
+			# Get the offset of the read-end within its given chunk
+			endOffset = endReadOffset%maxChunkSize
 
 		logging.debug('end sequence # == ' + str(endSequence))
 		logging.debug('end read offset == ' + str(endOffset))
