@@ -68,6 +68,8 @@ class Scrubber:
 		# Get the port number from the config file
 		self.port = config.port
 
+
+	# Creates a TCP socket connection to the specified IP
 	def connectToCS(self, IP):
 		try:
 			logging.debug("Initializing connectToCS()")
@@ -81,9 +83,13 @@ class Scrubber:
 			self.s.connect((IP, self.port))
 			logging.debug("TCP Connection Successfully Established")
 
-		except socket.error:
+		except (socket.error, socket.timeout):
 			logging.error("Unable to establish a connection with the chunkserver.")
 
+
+	# Inform the chunk servers of which chunks should be deleted, and upon succesful
+	# deletion of all chunks in a file, inform the database that the file can be
+	# removed from the database.
 	def clean(self):
 		logging.debug("Commencing Clean")
 
