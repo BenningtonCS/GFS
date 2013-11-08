@@ -299,6 +299,9 @@ class Database:
 				# Add the chunk to the chunk/file lookup
 				self.lookup[str(chunkHandle)] = fileName
 
+				# Update the opLog that a new chunk was created
+				fL.appendToOpLog("CREATECHUNK|" + str(chunkHandle) + "|" + fileName)
+
 				#If this completed successfully, return a 1.
 				return 1
 
@@ -355,6 +358,9 @@ class Database:
 		self.data[fileName].delete = True
 		# Add the file name to the list of files to be deleted
 		self.toDelete.append(fileName)
+		# Update the opLog that a new file was created
+		fL.appendToOpLog("DELETE|-1|" + fileName)
+
 		logging.debug('Delete flag updated')
 
 
@@ -367,6 +373,9 @@ class Database:
 		self.data[fileName].delete = False
 		# Remove the file name from the list of files to be deleted
 		self.toDelete.remove(fileName)
+		# Update the opLog that a new file was created
+		fL.appendToOpLog("UNDELETE|-1|" + fileName)
+
 		logging.debug('Delete flag updated')
 
 
@@ -386,6 +395,10 @@ class Database:
 
 		# Delete the specified key/value pair from the database.
 		del self.data[fileName]
+
+		# Update the opLog that a new file was created
+		fL.appendToOpLog("SANITIZED|-1|" + fileName)
+
 		logging.debug('sanitizeFile() success')
 
 
