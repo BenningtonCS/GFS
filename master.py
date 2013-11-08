@@ -118,18 +118,21 @@ class handleCommand(threading.Thread):
 			fL.send(self.s, "FAIL")
 
 
-
+		# Get the locations for a specified chunk
 		locations = database.data[self.fileName].chunks[chunkHandle].locations
 
+		# Parse the locations list retreived above into a pipe-separated list
 		hosts = ""
 		for item in locations:
 			hosts += item + "|"
 
 		# Visual confirmation for debugging: confirm success of create()
 		logging.debug('Chunk metadata successfully created')
+
 		try:
 			# Send the API a string containing the location and chunkHandle information
 			fL.send(self.s, str(hosts) + str(chunkHandle))
+
 		except socket.error:
 			logging.warning('Socket Connection Broken')
 		# Visual confirmation for debugging: confirm send of a list of storage hosts and chunk handle
@@ -141,18 +144,22 @@ class handleCommand(threading.Thread):
 	def append(self):
 		# Visual confirmation for debugging: confirm init of append()
 		logging.debug('Gathering metadata for chunk append')
-		#in the case of an append, we need to locate the last chunk in a file
-		#so we set a Highest Sequence counter to keep track of which chunk
-		#is the newest
-
+		
+		# We know that we will only be appending to the lastest chunk, since a new
+		# chunk should only be created when an old chunk fills up, so we find the 
+		# handle of the latest chunk for a given file.
 		latestChunkHandle = database.findLatestChunk(self.fileName)
+		# Then we get the locations where that chunk is stored
 		locations = database.getChunkLocations(self.fileName)
 
+		# Define an empty string that will hold the message we send back to the client
 		appendMessage = ''
 
+		# Parse the locations list into a pipe separated string
 		for item in locations:
 			appendMessage += item + '|'
 
+		# Add the chunk handle to the message we will send to the client
 		appendMessage += str(latestChunkHandle)
 
 		#send our message
@@ -266,6 +273,7 @@ class handleCommand(threading.Thread):
 	def delete(self):
 		logging.debug('Begin updating delete flag to True')
 
+		# Change the delete flag for the specified file
 		database.flagDelete(self.fileName)
 
 		logging.debug('Delete Flags Updated')
@@ -276,6 +284,7 @@ class handleCommand(threading.Thread):
 	def undelete(self):
 		logging.debug('Begin updating delete flag to False')
 
+		# Change the delete flag for the specified file
 		database.flagUndelete(self.fileName)
 
 		logging.debug('Delete flag updated')
@@ -303,11 +312,14 @@ class handleCommand(threading.Thread):
 		# Visual confirmation for debugging: confirm success of oplog()
 		logging.debug('Oplog append successful')
 	
+
 	# Function that executes the protocol when FILELIST message is received	
 	def fileList(self):
 		# call the database object's returnData method
 		list = str(database.returnData())
 		fL.send(self.s, list)
+
+
 
 	# Function to handle the message received from the API
 	def run(self):
