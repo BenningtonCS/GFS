@@ -418,6 +418,10 @@ def worker():
 
 #######################################################################
 
+# Initiate an instance of the database
+database = db.Database()
+
+
 if __name__ == "__main__":
 
 	# Define the paths of the host file, activehost file, and oplog from the config file, and
@@ -430,15 +434,14 @@ if __name__ == "__main__":
 	# Define a thread lock to be used to get and increment chunk handles
 	threadLock = threading.Lock()
 
+	# Make sure the database initializes before anything else is done
+	database.initialize()
+
 	# Define a queue
 	q = Queue.Queue(maxsize=0)
 
 	# Define the number of worker threads to be activated
 	WORKERS = 5
-
-	# Make sure the database initializes before anything else is done
-	database = db.Database()
-	database.initialize()
 
 
 	# Initiate the worker threads as daemon threads
