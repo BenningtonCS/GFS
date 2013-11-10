@@ -5,6 +5,7 @@ import config
 import APIvers1
 import sys
 import logging
+import urllib2
 from datetime import datetime
 from APIvers1 import API
 
@@ -52,7 +53,7 @@ class statGen:
 				# from the list of all hosts, check which ones are
 				# also in the active hosts file
 				for x in range(0, len(hosts)):
-					string += '<td>'
+					string += '<tr>'
 					# if active, add OFFLINE to the end of string
 					if hosts[x] not in activeHosts:
 						string += '<td>' + hosts[x] + '</td><td><span class="offline">OFFLINE</span></td>'
@@ -60,7 +61,7 @@ class statGen:
 					elif hosts[x] in activeHosts:
 						string += '<td>' + hosts[x] + '</td><td><span class="online">ONLINE</span></td>'
 					try:
-						file = open("http://"+ hosts[x] +":8000/httpServerFiles/stats.txt", "r")
+						file = urllib2.urlopen("http://"+ hosts[x] +":8000/httpServerFiles/stats.txt")
 						fileData = file.read().split('|')
 					except IOError:
 						logging.error("Couldnt read stats file")
@@ -116,7 +117,7 @@ class statGen:
 statGen = statGen()
 statGen.getMasterStats()
 statGen.getHosts()
-statGen.getFiles()
+#statGen.getFiles()
 statGen.getLog()
 #statGen.getCat()
 statGen.close()

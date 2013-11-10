@@ -2,7 +2,7 @@
 
 import os
 
-disk = os.statvfs("/")
+disk = os.statvfs("/data")
 capacity = disk.f_bsize * disk.f_blocks
 available = disk.f_bsize * disk.f_bavail
 
