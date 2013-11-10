@@ -19,6 +19,7 @@
 
 
 import socket, threading, random, os, time, config, sys, logging, Queue
+import heartBeat as hB
 import functionLibrary as fL
 import database as db
 
@@ -420,7 +421,8 @@ def worker():
 
 # Initiate an instance of the database
 database = db.Database()
-
+# Initiate an instance of the heartBeat
+heartBeat = hB.heartBeat()
 
 if __name__ == "__main__":
 
@@ -433,6 +435,9 @@ if __name__ == "__main__":
 	EOT = config.eot
 	# Define a thread lock to be used to get and increment chunk handles
 	threadLock = threading.Lock()
+
+	# Run the heartBeat to make sure there is an up-to-date activehosts.txt file
+	heartBeat.pumpBlood()
 
 	# Make sure the database initializes before anything else is done
 	database.initialize()

@@ -69,7 +69,7 @@ class heartBeat:
 	# DELAY sets the delay between chunkserver pings, as to reduce the load on the network
 	SOCK_TIMEOUT = 2
 	PORT = config.port
-	DELAY = 1
+	DELAY = .25
 	HOSTS = config.hostsfile
 	AHOSTS = config.activehostsfile
 	# Debug message for successful calling of heartBeat object
