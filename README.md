@@ -13,8 +13,8 @@ Running the master is fairly straightforward, assuming the chunkservers are acti
 
 #### Test Initialization
 
-For a local testing setup, a bit more work has to be done. First, if you are going to use test chunkservers, they will need to be initialized on different machines (this can be done through ssh), and the IPs of those machines will need to be added to `hosts.txt`. After this is done, heartBeat must be run `python heartBeat.py`. This will populate `activehosts.txt` with the IPs hosting active chunkservers. (To simplify this, as it is only a test environment, you can just add the IPs of the machines hosting the chunkservers directly into `activehosts.txt`)
+For a local testing setup, a bit more work has to be done. First, if you are going to use test chunkservers, they will need to be initialized on different machines (this can be done through ssh), and the IPs of those machines will need to be added to `hosts.txt`.
 
-Now, the master can be run `python master.py`, which will also intialize the database. If you wish to interact with the master/database and send commands, you will need an instance of the API client running. It is important to make sure that the `masterip` variable in `config.py` is updated to reflect the IP of the machine that is running your master/database instance, or else the API client will not be able to communicate.
+Now, the master can be run `python master.py`, which will also intialize the heartBeat and database. If you wish to interact with the master/database and send commands, you will need an instance of the API client running. It is important to make sure that the `masterip` variable in `config.py` is updated to reflect the IP of the machine that is running your master/database instance, or else the API client will not be able to communicate.
 
 Once testing is complete, be sure to revert any changes to `hosts.txt` or `config.py` before pushing any changes, especially if the updated version will be pulled to backus.
