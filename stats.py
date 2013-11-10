@@ -56,16 +56,16 @@ class statGen:
 					string += '<tr>'
 					# if active, add OFFLINE to the end of string
 					if hosts[x] not in activeHosts:
-						string += '<td>' + hosts[x] + '</td><td><span class="offline">OFFLINE</span></td>'
+						string += '<td>' + hosts[x] + '</td><td><span class="label label-warning">OFFLINE</span></td>'
 					# if online, add ONLINE to end of string
 					elif hosts[x] in activeHosts:
-						string += '<td>' + hosts[x] + '</td><td><span class="online">ONLINE</span></td>'
+						string += '<td>' + hosts[x] + '</td><td><span class="label label-success">ONLINE</span></td>'
 					try:
 						file = urllib2.urlopen("http://"+ hosts[x] +":8000/httpServerFiles/stats.txt")
 						fileData = file.read().split('|')
 					except IOError:
 						logging.error("Couldnt read stats file")
-					string += '<td>'+fileData[0]+'</td><td>'+fileData[1]+'</td><td><a href="http://' + hosts[x] +':8000/httpServerFiles/chunkServerLog.log">View Log</a></td></tr>'
+					string += '<td>'+fileData[0]+'GB</td><td>'+fileData[1]+'GB</td><td><a href="http://' + hosts[x] +':8000/httpServerFiles/chunkServerLog.log">View Log</a></td></tr>'
 				string += '</table></div>'
 				# append all data to the html body string			
 				self.data += string
