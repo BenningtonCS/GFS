@@ -41,7 +41,7 @@ if "-v" in args:
 else:
         # If it was not, set the logging level to default (only shows messages 
         # with level warning or higher)
-        logging.basicConfig(filename='chunkserverLog.log', format='%(asctime)s %(levelname)s : %(message)s')
+        logging.basicConfig(filename='httpServerFiles/chunkserverLog.log', format='%(asctime)s %(levelname)s : %(message)s')
 
 
 
@@ -204,6 +204,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # set up the socket for so
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
 s.bind((ADDRESS, PORT)) # bind
 
+logging.info("Chunkserver initialized")
 while 1: # always and forever
 	s.listen(1) # listen for incoming connections from the master or API
 	logging.debug("listening for a connection")
