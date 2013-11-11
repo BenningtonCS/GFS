@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
 # import libraries
-import config
-import APIvers1
-import sys
-import logging
-import urllib2
+import config, APIvers1, sys, logging, urllib2
 from datetime import datetime
+from datetime import timedelta
 from APIvers1 import API
 
 # logging
@@ -18,7 +15,7 @@ if "-v" in args:
 else:
         # If it was not, set the logging level to default (only shows messages with level
         # warning or higher)
-        logging.basicConfig(filename='masterLog.txt', format='%(asctime)s %(levelname)s : %(message)s')
+        logging.basicConfig(filename='masterLog.log', format='%(asctime)s %(levelname)s : %(message)s')
 
 
 # stat page generator object
@@ -34,8 +31,17 @@ class statGen:
 			logging.error("Couldn't generate stat file!")		
 			exit()
 	def getMasterStats(self):
-		self.data += "<h2>Master Statistics</h2>"
-		self.data += config.masterip
+		string = ''
+		string += "<h2>Master Statistics</h2>"
+                string += "<p><strong>IP Address:</strong> " + config.masterip + "</p>"
+		try:
+			f = open('/proc/uptime', 'r')
+			uptime_seconds = float(f.readline().split()[0])
+			uptime_string = str(timedelta(seconds = uptime_seconds))
+			string += "<p><strong>Uptime: </strong>" + uptime_string + "</p>"
+		except Exception as e:
+			string += "<p>" + str(e) +"</p>"
+		self.data += string		
 	# makes a list of hosts and sees which ones are online
 	def getHosts(self):
 		try: 
@@ -49,7 +55,7 @@ class statGen:
 				activeHosts = self.activeHostsFile.read().splitlines()
 				# string to be appended to body
 				string = '<h2>Chunkservers</h2>'
-				string += '<div class="table-responsive"><table class="table table-hover"><tr><th>Server IP</th><th>Status</th><th>Space Remaining</th><th>Total Space</th><th>View Logs</th>'
+				string += '<div class="table-responsive"><table class="table table-hover"><tr><th>Server IP</th><th>Status</th><th>Space Usage</th><th>View Logs</th>'
 				# from the list of all hosts, check which ones are
 				# also in the active hosts file
 				for x in range(0, len(hosts)):
@@ -63,9 +69,10 @@ class statGen:
 					try:
 						file = urllib2.urlopen("http://"+ hosts[x] +":8000/httpServerFiles/stats.txt")
 						fileData = file.read().split('|')
+						difference = str(float(fileData[1]) - float(fileData[0]))
 					except IOError:
 						logging.error("Couldnt read stats file")
-					string += '<td>'+fileData[0]+'GB</td><td>'+fileData[1]+'GB</td><td><a href="http://' + hosts[x] +':8000/httpServerFiles/chunkserverLog.log">View Log</a></td></tr>'
+					string += '<td><progress max="'+fileData[1]+'" value="'+ difference +'"></progress> '+fileData[0]+'GB/'+fileData[1]+'GB</td><td><a href="http://' + hosts[x] +':8000/httpServerFiles/chunkserverLog.log">View Log</a></td></tr>'
 				string += '</table></div>'
 				# append all data to the html body string			
 				self.data += string
@@ -97,7 +104,7 @@ class statGen:
 			self.data += "Couldnt generate file list!"
 	def getLog(self):
 		try:
-			masterLogFile = open('masterLog.txt', 'r')
+			masterLogFile = open('masterLog.log', 'r')
 			masterLog = masterLogFile.read()
 			self.data += "<h2>Master Log</h2>"
 			self.data += '<textarea rows="15" class="form-control">' + masterLog + "</textarea>"
