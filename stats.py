@@ -65,7 +65,7 @@ class statGen:
 						fileData = file.read().split('|')
 					except IOError:
 						logging.error("Couldnt read stats file")
-					string += '<td>'+fileData[0]+'GB</td><td>'+fileData[1]+'GB</td><td><a href="http://' + hosts[x] +':8000/httpServerFiles/chunkServerLog.log">View Log</a></td></tr>'
+					string += '<td>'+fileData[0]+'GB</td><td>'+fileData[1]+'GB</td><td><a href="http://' + hosts[x] +':8000/httpServerFiles/chunkserverLog.log">View Log</a></td></tr>'
 				string += '</table></div>'
 				# append all data to the html body string			
 				self.data += string

@@ -48,16 +48,16 @@ chunkPort = config.port
 # messages to show up
 
 # Get a list of command line arguments
-args = sys.argv
-FORMAT = "%(asctime)s %(levelname)s : %(message)s"
+#args = sys.argv
+#FORMAT = "%(asctime)s %(levelname)s : %(message)s"
 # Check to see if the verbose flag was one of the command line arguments
-if "-v" in args:
+#if "-v" in args:
         # If it was one of the arguments, set the logging level to debug 
-        logging.basicConfig(level=logging.DEBUG, format=FORMAT)
-else:
+#        logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+#else:
         # If it was not, set the logging level to default (only shows messages with level
         # warning or higher)
-        logging.basicConfig(filename='functionLibraryLog.txt', format=FORMAT)
+#        logging.basicConfig(filename='functionLibraryLog.txt', format=FORMAT)
 
 
 

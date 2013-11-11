@@ -30,7 +30,7 @@ import config, logging, socket
 # Instead, the program should be run in verbose, $python database.py -v , for debug 
 # messages to show up
 
-logging.basicConfig(level=logging.DEBUG, filename='masterLog.log', format='%(asctime)s DATABASE %(levelname)s : %(message)s')
+#logging.basicConfig(level=logging.DEBUG, filename='masterLog.log', format='%(asctime)s DATABASE %(levelname)s : %(message)s')
 
 
 
