@@ -150,7 +150,7 @@ class heartBeat:
 		# Handle the timeout (chunk server alive but not resonding) and connection (server dead) errors
 		except (socket.timeout, socket.error):
 			print "</3"
-                        logging.error('Could not connect to ' + IP)
+                        logging.debug('Could not connect to ' + IP)
 			# Check to see if the chunk server is in the list of active IPs
                         if IP in activeServers:
 				# If it is, remove it from the list

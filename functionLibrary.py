@@ -89,7 +89,7 @@ def recv(connection):
 		try:
 			ending = d[-1]
 		except IndexError:
-			logging.error('No data received')
+			logging.debug('No data received')
 			break
 		# Check the ending of the received data to see if it contains an end of
 		# transmission character, and if it does, break out of the loop since 
