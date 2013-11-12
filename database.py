@@ -209,14 +209,18 @@ class Database:
 				for chunk in chunkData:
 					# ADD SOME ERROR HANDLING HERE -- IF THE CHUNK DOES NOT EXIST IN THE 
 					# LOOKUP SOMETHING WENT TERRIBLY WRONG!
-					# Find which file the chunk is associated with in the lookup dictionary
-					fileName = self.lookup[chunk]
+					try:
+						# Find which file the chunk is associated with in the lookup dictionary
+						fileName = self.lookup[chunk]
 
-					# From the file name we found the chunk to be associated with in the
-					# lookup, we can append the current IP to the list of chunk locations
-					# in the chunk object within the file object dictionary.
-					self.data[fileName].chunks[chunk].locations.append(IP)
-					logging.debug('Appended location to chunk ' + str(chunk) + ' location list')
+						# From the file name we found the chunk to be associated with in the
+						# lookup, we can append the current IP to the list of chunk locations
+						# in the chunk object within the file object dictionary.
+						self.data[fileName].chunks[chunk].locations.append(IP)
+						logging.debug('Appended location to chunk ' + str(chunk) + ' location list')
+
+					except KeyError:
+						logging.warning('Chunk: ' + str(chunk) + ' on ' + str(IP) + ' is not associated with a file in the database. Ignoring chunk and moving on...')
 
 		logging.debug('interrogateChunkServers() complete')
 
