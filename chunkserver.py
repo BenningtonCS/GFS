@@ -113,7 +113,7 @@ class workerThread(connThread):
 #				chunkHandle = fL.recv(self.connection) # it listens on its 
 #									 # connection for a chunkhandle
 				chunkHandle = com[1] # name of the chunkhandle
-				logging.debug("recieved name of the chunkhandle: ", chunkHandle)
+				logging.debug("recieved name of the chunkhandle: " + chunkHandle)
 				emptySpace = mg64 - os.stat(chunkHandle).st_size # then checks the 
 									         # difference 
 									         # between the 
@@ -135,7 +135,7 @@ class workerThread(connThread):
 				logging.debug("sent continue #1")
 				chunkHandle = fL.recv(self.connection) # listens for chunkHandle
 #				chunkHandle = com[1]
-				logging.debug("recieved name of the chunkhandle: ", chunkHandle)
+				logging.debug("recieved name of the chunkhandle: " + chunkHandle)
 				fL.send(self.connection, "CONTINUE") # confirms ready state
 				logging.debug("sent continue #2")
 				byteOffSet = int(fL.recv(self.connection)) # listens for a byte 
