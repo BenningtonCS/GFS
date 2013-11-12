@@ -86,6 +86,12 @@ class workerThread(connThread):
 		# next the distributor hands the connection to the appropriate 
 		# worker based on the command given, invalid commands simply fall 
 		# through
+		
+
+		#adding this till the ack stuff is resolved - Rohail
+		if "|" in command:
+			commandSplit = command.split('|')
+
 
 		if command == "<3?":
 			try:
@@ -98,16 +104,16 @@ class workerThread(connThread):
 			except socket.error as e:
 				logging.error(e)
 
-		elif command == "CHUNKSPACE?":
+		elif "|" in command and commandSplit[0] == "CHUNKSPACE":
 			try:
-				fL.send(self.connection, "CONTINUE") # after receiving the connection 
+				#fL.send(self.connection, "CONTINUE") # after receiving the connection 
 								 # the thread confirms that it is 
 								 # ready to receive arguments
-				logging.debug("send a continue")
-				chunkHandle = fL.recv(self.connection) # it listens on its 
+				#logging.debug("send a continue")
+				#chunkHandle = fL.recv(self.connection) # it listens on its 
 									 # connection for a chunkhandle
-				logging.debug("recieved name of the chunkhandle: ", chunkHandle)
-				emptySpace = mg64 - os.stat(chunkHandle).st_size # then checks the 
+				#logging.debug("recieved name of the chunkhandle: ", chunkHandle)
+				emptySpace = mg64 - os.stat(commandSplit[1]).st_size # then checks the 
 									         # difference 
 									         # between the 
 									         # file's size and 
