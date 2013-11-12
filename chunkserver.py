@@ -85,7 +85,7 @@ class workerThread(connThread):
 				   # pipes. This will put each part into a list
 		command = com[0]   # the command should be the first part of the message,
 				   # thus the first part of the list
-		logging.debug("Recieved command ", command)
+		logging.debug("Recieved command " + command)
 
 		# next the distributor hands the connection to the appropriate 
 		# worker based on the command given, invalid commands simply fall 
