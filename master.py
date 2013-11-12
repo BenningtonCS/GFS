@@ -287,8 +287,15 @@ class handleCommand(threading.Thread):
 	def delete(self):
 		logging.debug('Begin updating delete flag to True')
 
-		# Change the delete flag for the specified file
-		database.flagDelete(self.fileName)
+		try:
+			# Change the delete flag for the specified file
+			database.flagDelete(self.fileName)
+			# Confirm that file has been marked for deletion
+			fL.send(self.s, "MARKED")
+
+		except:
+			logging.error("File could not be marked for deletion")
+			fL.send(self.s, "FAILED")
 
 		logging.debug('Delete Flags Updated')
 
@@ -298,8 +305,16 @@ class handleCommand(threading.Thread):
 	def undelete(self):
 		logging.debug('Begin updating delete flag to False')
 
-		# Change the delete flag for the specified file
-		database.flagUndelete(self.fileName)
+		try:
+			# Change the delete flag for the specified file
+			database.flagUndelete(self.fileName)
+			# Confirm that file has been marked for deletion
+			fL.send(self.s, "MARKED")
+
+		except:
+			logging.error("File could not be marked for undeletion")
+			fL.send(self.s, "FAILED")
+		
 
 		logging.debug('Delete flag updated')
 
