@@ -48,7 +48,7 @@ else:
 
 
 
-mg64 = 1024*1024 # 64 megabytes in binary
+mg64 = config.chunkSize # 64 megabytes in binary
 	
 ADDRESS = '' # set address to the local IP
 PORT = config.port # carry out all communications on port 9666
