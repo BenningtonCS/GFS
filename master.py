@@ -236,39 +236,41 @@ class handleCommand(threading.Thread):
 		# the byte offset from within that chunk to begin reading from, and the byte offset
 		# to end reading from
 		for sequence in range(startSequence, (endSequence + 1)):
-			try:
-				# Get the chunkHandles associated with the given file, and sort the chunkHandles from
-				# least to greatest in the list. This will put them in their sequence order where the 
-				# 0th element is now the 0th sequence, 1st element the 1st sequence, etc.
-				associatedChunkHandles = database.data[self.fileName].chunks.keys().sort()
+		#	try:
+			# Get the chunkHandles associated with the given file, and sort the chunkHandles from
+			# least to greatest in the list. This will put them in their sequence order where the 
+			# 0th element is now the 0th sequence, 1st element the 1st sequence, etc.
+			logging.debug(sorted(database.data[self.fileName].chunks.keys()))
+			associatedChunkHandles = sorted(database.data[self.fileName].chunks.keys())
 
-				# Append a location of where the start-sequence chunk is stored to the message
-				responseMessage += "|" + str(database.data[self.fileName].chunks[associatedChunkHandles[sequence]].locations[0])
+			# Append a location of where the start-sequence chunk is stored to the message
+			logging.debug(database.data[self.fileName].chunks[associatedChunkHandles[sequence]].locations)
+			responseMessage += "|" + str(database.data[self.fileName].chunks[associatedChunkHandles[sequence]].locations[0])
 
-				# Append the chunk handle to the message
-				responseMessage += "*" + str(associatedChunkHandles[sequence])
+			# Append the chunk handle to the message
+			responseMessage += "*" + str(associatedChunkHandles[sequence])
 
-				# Append the byte offset to start reading from to the message
-				responseMessage += "*" + str(chunkByteOffset)
+			# Append the byte offset to start reading from to the message
+			responseMessage += "*" + str(chunkByteOffset)
 
-				# If there are multiple chunks that will be read over, the next chunk will start
-				# the read from the beginning
-				chunkByteOffset = 0
+			# If there are multiple chunks that will be read over, the next chunk will start
+			# the read from the beginning
+			chunkByteOffset = 0
 
-				# Check to see if the READ will take place in the same chunk. If it does, append the 
-				# endOffset to the message so the client will know where to end reading
-				if startSequence == endSequence:
-					responseMessage += "*" + str(endOffset)
-				# If the READ takes place over multiple chunks, write the end of read for the current
-				# chunk to be the end of the chunk, and then increase the start sequence number so when the 
-				# metadata for the last chunk is processed, it will be caught by the if statement above
-				# and send the appropriate ending offset.
-				elif startSequence < endSequence:
-					responseMessage += "*" + maxChunkSize
-					startSequence += 1
+			# Check to see if the READ will take place in the same chunk. If it does, append the 
+			# endOffset to the message so the client will know where to end reading
+			if startSequence == endSequence:
+				responseMessage += "*" + str(endOffset)
+			# If the READ takes place over multiple chunks, write the end of read for the current
+			# chunk to be the end of the chunk, and then increase the start sequence number so when the 
+			# metadata for the last chunk is processed, it will be caught by the if statement above
+			# and send the appropriate ending offset.
+			elif startSequence < endSequence:
+				responseMessage += "*" + maxChunkSize
+				startSequence += 1
 
-			except:
-				logging.error("Unable to generate proper READ response message.")
+		#	except:
+		#		logging.error("Unable to generate proper READ response message.")
 
 
 		logging.debug('RESPONSE MESSAGE == ' + str(responseMessage))
