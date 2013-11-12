@@ -171,8 +171,6 @@ class Database:
 
 		logging.debug('readFromOpLog() complete')
 
-
-
 	# Communicates with all the chunkservers and requests the chunkhandles of all the chunks
 	# residing on them. It then appends the locations of a chunk into the appropriate chunk object.
 	def interrogateChunkServers(self):
@@ -185,11 +183,17 @@ class Database:
 			# COULD USE A TRY/EXCEPT IN HERE PROBABLY IN CASE THE CONNECTION DOES NOT WORK
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-			s.connect((IP, chunkPort))
-			logging.debug('Connection Established: ' + str(IP) + ' on port ' + str(chunkPort))
-			fL.send(s, 'CONTENTS?')
-			logging.debug('Sent chunkserver a CONTENTS? message')
-			data = fL.recv(s)
+			data = " "
+			try:
+				s.connect((IP, chunkPort))
+				logging.debug('Connection Established: ' + str(IP) + ' on port ' + str(chunkPort))
+				fL.send(s, 'CONTENTS?')
+				logging.debug('Sent chunkserver a CONTENTS? message')
+				data = fL.recv(s)
+			except:
+				print "failed to connect to " + IP
+
+			
 			s.close()
 			logging.debug('Received response from chunkserver')
 
@@ -325,9 +329,10 @@ class Database:
 	def getChunkLocations(self, chunkHandle):
 		logging.debug('Initialize getChunkLocations()')
 		# Find the file name associated with the chunk
+		logging.debug("chunkHandle is " + chunkHandle)
 		fileName = self.lookup[str(chunkHandle)]
 		# Return the list of locations belonging to that chunk
-		return self.data[fileName].chunks[int(chunkHandle)].locations
+		return self.data[fileName].chunks[str(chunkHandle)].locations
 
 
 	# To find the most recent chunk, instead of maintaining a chunk counter, we rely on the 

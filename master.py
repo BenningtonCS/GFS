@@ -151,7 +151,7 @@ class handleCommand(threading.Thread):
 		# handle of the latest chunk for a given file.
 		latestChunkHandle = database.findLatestChunk(self.fileName)
 		# Then we get the locations where that chunk is stored
-		locations = database.getChunkLocations(self.fileName)
+		locations = database.getChunkLocations(latestChunkHandle)
 
 		# Define an empty string that will hold the message we send back to the client
 		appendMessage = ''
@@ -461,7 +461,7 @@ if __name__ == "__main__":
 	s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 
-	# Bind the listener-server 
+	# Bind the listener-server
 	s.bind(('', chunkPort))
 
 	logging.info("Master successfully initialized!")
