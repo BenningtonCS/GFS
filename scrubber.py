@@ -128,6 +128,10 @@ class Scrubber:
 						# WILL NEED IMPROVED HANDLING, MAYBE A RETRY
 						logging.error("Received failure message on chunk delete. Chunkhandle : " + str(chunk.handle))
 
+					# If the chunk server responds with something other than SUCCESS or FAILED, something went wrong.
+					else:
+						logging.error("Unexpected Receive: " + str(data) + " from chunkserver " + str(location))
+
 				# If the success counter is equal to the amount of all the IPs, then
 				# all the IPs successfully deleted that chunk, so increment the 
 				# successfulChunkDelete counter
