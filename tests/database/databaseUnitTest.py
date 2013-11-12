@@ -46,7 +46,7 @@ database = database.Database()
 # Check to see if the database initialized properly
 print "\n"
 print "--------------------------------------------------------------"
-print "CHECKING DATABASE INITIALIZE"
+print "CHECKING: DATABASE INITIALIZE"
 print "--------------------------------------------------------------"
 print "data = ", database.data
 print "lookup = ", database.lookup
@@ -72,7 +72,7 @@ checkFlags(createFileFlag)
 # Now we can check to make sure it got created
 print "\n"
 print "--------------------------------------------------------------"
-print "CHECKING FILE CREATE"
+print "CHECKING: FILE CREATE"
 print "--------------------------------------------------------------"
 print "data = ", database.data
 print "lookup = ", database.lookup
@@ -89,7 +89,7 @@ print "\n"
 # Now lets try to create a file of the same name!
 
 print "--------------------------------------------------------------"
-print "CHECKING DUPLICATE FILE CREATE"
+print "CHECKING: DUPLICATE FILE CREATE"
 print "--------------------------------------------------------------"
 
 chunkHandle = database.getChunkHandle()
@@ -112,7 +112,7 @@ print "\n"
 # Now lets try to create a file of different name!
 
 print "--------------------------------------------------------------"
-print "CHECKING DIFFERENT FILE CREATE"
+print "CHECKING: DIFFERENT FILE CREATE"
 print "--------------------------------------------------------------"
 
 chunkHandle = database.getChunkHandle()
@@ -141,7 +141,7 @@ print "\n"
 # Lets mark the new file for deletion
 
 print "--------------------------------------------------------------"
-print "CHECKING MARK FILE FOR DELETION"
+print "CHECKING: MARK FILE FOR DELETION"
 print "--------------------------------------------------------------"
 
 database.flagDelete("differentFile")
@@ -163,7 +163,7 @@ print "\n"
 # Lets unmark the new file for deletion
 
 print "--------------------------------------------------------------"
-print "CHECKING MARK FILE FOR DELETION"
+print "CHECKING: MARK FILE FOR UNDELETION"
 print "--------------------------------------------------------------"
 
 database.flagUndelete("differentFile")
@@ -186,7 +186,7 @@ print "\n"
 # Create a new chunk for testFile
 
 print "--------------------------------------------------------------"
-print "CHECKING CREATE NEW CHUNK"
+print "CHECKING: CREATE NEW CHUNK"
 print "--------------------------------------------------------------"
 
 
@@ -212,7 +212,7 @@ print "\n"
 # Getting the latest chunk from a file
 
 print "--------------------------------------------------------------"
-print "CHECKING FILE'S LATEST CHUNK"
+print "CHECKING: FILE'S LATEST CHUNK"
 print "--------------------------------------------------------------"
 
 
@@ -234,7 +234,7 @@ print "\n"
 # Find the locations to a chunk
 
 print "--------------------------------------------------------------"
-print "CHECKING LOCATIONS OF A CHUNK"
+print "CHECKING: LOCATIONS OF A CHUNK"
 print "--------------------------------------------------------------"
 
 print "Locations are added upon chunk creation from the functionLibrary chooseHosts(), which looks at activehosts.txt"
@@ -256,7 +256,7 @@ print "\n"
 # Delete a file!
 
 print "--------------------------------------------------------------"
-print "CHECKING DELETE A FILE"
+print "CHECKING: DELETE A FILE"
 print "--------------------------------------------------------------"
 
 
@@ -272,6 +272,22 @@ print "chunkHandle = ", database.chunkHandle
 print "\n"
 
 
+
+
+
+print "--------------------------------------------------------------"
+print "CHECKING: DELETE A FILE THAT DOES NOT EXIST"
+print "--------------------------------------------------------------"
+
+# We just deleted this file, so lets see what happens if it gets deleted again.
+database.sanitizeFile("testFile")
+
+print "\n"
+print "data = ", database.data
+print "lookup = ", database.lookup
+print "toDelete = ", database.toDelete
+print "chunkHandle = ", database.chunkHandle
+print "\n"
 
 
 

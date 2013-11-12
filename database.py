@@ -394,26 +394,28 @@ class Database:
 	# When the scrubber informs the master that all chunks associated with a file have been deleted
 	# from the chunkservers, this function will be called to remove the file from the database.
 	def sanitizeFile(self, fileName):
-		# Before we delete the file from the database, we want to make sure we know which chunks
-		# are associated with it, so they can be removed from the lookup.
-		associatedChunks = self.data[fileName].chunks.keys()
-		# For each key, remove it from the lookup
-		for chunk in associatedChunks:
-			del self.lookup[str(chunk)]
+		try:
+			# Before we delete the file from the database, we want to make sure we know which chunks
+			# are associated with it, so they can be removed from the lookup.
+			associatedChunks = self.data[fileName].chunks.keys()
+			# For each key, remove it from the lookup
+			for chunk in associatedChunks:
+				del self.lookup[str(chunk)]
 
-		# We also want to make sure that it is no longer in the toDelete list, since it has been deleted
-		if fileName in self.toDelete:
-			self.toDelete.remove(fileName)
+			# We also want to make sure that it is no longer in the toDelete list, since it has been deleted
+			if fileName in self.toDelete:
+				self.toDelete.remove(fileName)
 
-		# Delete the specified key/value pair from the database.
-		del self.data[fileName]
+			# Delete the specified key/value pair from the database.
+			del self.data[fileName]
 
-		# Update the opLog that a new file was created
-		fL.appendToOpLog("SANITIZED|-1|" + fileName)
+			# Update the opLog that a new file was created
+			fL.appendToOpLog("SANITIZED|-1|" + fileName)
 
-		logging.debug('sanitizeFile() success')
+			logging.debug('sanitizeFile() success')
 
-
+		except KeyError:
+			logging.error("The file to be deleted does not exist.")
 
 
 
