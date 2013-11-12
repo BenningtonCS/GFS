@@ -235,7 +235,7 @@ class API():
 			print "cH = ", cH
 			offset = secondSplit[2]
 			print "offset = ", offset
-			s.close()
+			self.s.close()
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			try:
 				s.connect((self.location,TCP_PORT))
