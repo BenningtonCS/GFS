@@ -77,23 +77,23 @@ class workerThread(connThread):
 		self.remoteAddress = acceptedConn[1] 
 
 	def run(self):
-		command = fL.recv(self.connection) # listens for a command on 
+		c = fL.recv(self.connection) # listens for a command on 
 							# the connection handed 
 							# down from the main 
 							# thread
+		com = c.split('|') # if c has multiple parts, they will be seperated by
+				   # pipes. This will put each part into a list
+		command = com[0]   # the command should be the first part of the message,
+				   # thus the first part of the list
 		logging.debug("Recieved command ", command)
 
 		# next the distributor hands the connection to the appropriate 
 		# worker based on the command given, invalid commands simply fall 
 		# through
-		
-
-		#adding this till the ack stuff is resolved - Rohail
-		if "|" in command:
-			commandSplit = command.split('|')
-
 
 		if command == "<3?":
+			# heartbeat to see if each chunkserver is running. If it is, it will
+			# send back a confirmation of <3!
 			try:
 				# in this and each other if/elif statement the correct 
 				# worker thread is started for a given command
@@ -104,16 +104,17 @@ class workerThread(connThread):
 			except socket.error as e:
 				logging.error(e)
 
-		elif "|" in command and commandSplit[0] == "CHUNKSPACE":
+		elif command == "CHUNKSPACE?":
 			try:
-				#fL.send(self.connection, "CONTINUE") # after receiving the connection 
-								 # the thread confirms that it is 
-								 # ready to receive arguments
-				#logging.debug("send a continue")
-				#chunkHandle = fL.recv(self.connection) # it listens on its 
-									 # connection for a chunkhandle
-				#logging.debug("recieved name of the chunkhandle: ", chunkHandle)
-				emptySpace = mg64 - os.stat(commandSplit[1]).st_size # then checks the 
+#				fL.send(self.connection, "CONTINUE") # after receiving the connection 
+#								 # the thread confirms that it is 
+#								 # ready to receive arguments
+#				logging.debug("send a continue")
+#				chunkHandle = fL.recv(self.connection) # it listens on its 
+#									 # connection for a chunkhandle
+				chunkHandle = com[1] # name of the chunkhandle
+				logging.debug("recieved name of the chunkhandle: ", chunkHandle)
+				emptySpace = mg64 - os.stat(chunkHandle).st_size # then checks the 
 									         # difference 
 									         # between the 
 									         # file's size and 
@@ -128,10 +129,12 @@ class workerThread(connThread):
 				logging.error(e)
 
 		elif command == "READ":
+			# read data from a chunk
 			try:
 				fL.send(self.connection, "CONTINUE") # confirms readiness for data
 				logging.debug("sent continue #1")
 				chunkHandle = fL.recv(self.connection) # listens for chunkHandle
+#				chunkHandle = com[1]
 				logging.debug("recieved name of the chunkhandle: ", chunkHandle)
 				fL.send(self.connection, "CONTINUE") # confirms ready state
 				logging.debug("sent continue #2")
@@ -140,6 +143,7 @@ class workerThread(connThread):
 									     # (relative to the 
 									     # beginning of the 
 									     # given chunk)
+				byteOffSet 
 				logging.debug("recieved the byte offset number.")
 				fL.send(self.connection, "CONTINUE") # confirms the desire for EVEN MORE data
 				logging.debug("sent continue #3") 
@@ -176,6 +180,7 @@ class workerThread(connThread):
 				logging.error(e)
 
 		elif command == "CREATE":
+			# create a new chunk
 			try:
 				fL.send(self.connection, "CONTINUE")
 				logging.debug("Sent continue")
@@ -185,20 +190,38 @@ class workerThread(connThread):
 	                except socket.error as e:
 				logging.error(e)
 
-		elif command == "APPEND":
+		elif command == "APPEND":	
+			# append new data to a chunk
 			try:
-				fL.send(self.connection, "CONTINUE")
-				logging.debug("sent continue #1")
-				chunkHandle = fL.recv(self.connection) # name of the chunk
-				logging.debug("Recieved name of the chunk")
-				fL.send(self.connection, "CONTINUE") 
-				logging.debug("Sent continue #2") 
-				data = fL.recv(self.connection)    # data being added
+#				fL.send(self.connection, "CONTINUE")
+#				logging.debug("sent continue #1")
+#				chunkHandle = fL.recv(self.connection) # name of the chunk
+				chunkHandle = com[1]
+#				logging.debug("Recieved name of the chunk")
+#				fL.send(self.connection, "CONTINUE") 
+#				logging.debug("Sent continue #2") 
+#				data = fL.recv(self.connection)    # data being added
+				data = com[2]
 				logging.debug("Recieved the data to be added")
 	                	with open(config.chunkPath+"/"+chunkHandle, 'a') as a: # open the chunk
 	                        	a.write(data) 			 # add the data to it
 	                except socket.error as e:
 				logging.error(e)
+
+		elif command == "SANITIZE":
+			# recieves SANITIZE from the scrubber which tells the chunkserver to delete a chunk
+                        try:
+                                chunkHandle = com[1] # name of the chunk
+                                logging.debug("Recieved name of the chunk")
+                                os.remove(config.chunkPath + '/' + chunkHandle) # remove file from directory
+                                logging.debug("Removed chunk handle.")
+                                fL.send(self.connection, "SUCCESS") # send a success
+                                logging.debug("removal successfull!")
+                        except socket.error as e:
+                                logging.error(e)
+                        except:
+                                fL.send(self.connection, "FAILED") # if there was an error, send failed
+                                logging.debug("removal failed.")
 
  		else:
  			error = "Received invalid command: " + command
