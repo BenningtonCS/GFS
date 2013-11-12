@@ -306,12 +306,12 @@ class Database:
 				logging.debug('file: ' + fileName + ' chunk: ' + str(self.data[fileName].chunks[chunkHandle]))
 
 				# Add the chunk to the chunk/file lookup
-				self.lookup[str(chunkHandle)] = fileName
+				self.lookup[chunkHandle] = fileName
 
 				print self.data[fileName].chunks[chunkHandle].locations
 
 				# Update the opLog that a new chunk was created
-				fL.appendToOpLog("CREATECHUNK|" + str(chunkHandle) + "|" + fileName)
+				fL.appendToOpLog("CREATECHUNK|" + chunkHandle + "|" + fileName)
 
 				#If this completed successfully, return a 1.
 				return 1
@@ -328,7 +328,7 @@ class Database:
 		# Increment the chunk handle
 		self.chunkHandle += 1
 		# Return the current chunkhandle
-		return self.chunkHandle - 1
+		return str(self.chunkHandle - 1)
 
 
 	# This function is used to get the locations where a specified chunk is stored on
@@ -337,9 +337,9 @@ class Database:
 		logging.debug('Initialize getChunkLocations()')
 		# Find the file name associated with the chunk
 		logging.debug("chunkHandle is " + chunkHandle)
-		fileName = self.lookup[str(chunkHandle)]
+		fileName = self.lookup[chunkHandle]
 		# Return the list of locations belonging to that chunk
-		return self.data[fileName].chunks[str(chunkHandle)].locations
+		return self.data[fileName].chunks[chunkHandle].locations
 
 
 	# To find the most recent chunk, instead of maintaining a chunk counter, we rely on the 
