@@ -39,7 +39,7 @@ import functionLibrary as fL
 
 # Get a list of command line arguments
 args = sys.argv
-FORMAT = "%(asctime)s HEARTBEAT %(levelname)s : %(message)s"
+FORMAT = "%(asctime)s %(levelname)s : %(message)s"
 # Check to see if the verbose flag was one of the command line arguments
 if "-v" in args:
         # If it was one of the arguments, set the logging level to debug 
