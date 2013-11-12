@@ -291,10 +291,11 @@ class Database:
 				self.data[fileName].chunks[chunkHandle] = chunk
 				# Get the three locations where the chunk will be stored
 				locations = fL.chooseHosts().split("|")
-				logging.debug('Got new locations')
+				logging.debug(locations)
 
 				# Append the chunkserver locations to the chunk's location list
 				for location in locations:
+					logging.debug('adding locations to new chunk')
 					self.data[fileName].chunks[chunkHandle].locations.append(location)
 					logging.debug('Appending locations to chunk ' + str(chunkHandle) + ' locations list')
 
@@ -302,6 +303,8 @@ class Database:
 
 				# Add the chunk to the chunk/file lookup
 				self.lookup[str(chunkHandle)] = fileName
+
+				print self.data[fileName].chunks[chunkHandle].locations
 
 				# Update the opLog that a new chunk was created
 				fL.appendToOpLog("CREATECHUNK|" + str(chunkHandle) + "|" + fileName)
