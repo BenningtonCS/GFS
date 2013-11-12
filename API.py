@@ -54,7 +54,7 @@ class API():
 	#lets define some variables
 	global MASTER_ADDRESS
 	global TCP_PORT
-	MASTER_ADDRESS = config.masterip
+	MASTER_ADDRESS = '10.10.117.111'
 	TCP_PORT = config.port
 
 	#lets make the API able to send and recieve messages
@@ -109,7 +109,7 @@ class API():
 				exit(0)
 			elif dat == "CONTINUE":   
                         	print cH
-                        	fL.send(s, cH)
+                        	fL.send(s, cH)https://github.com/BenningtonCS/GFS.git
 
 		s.close()
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -147,6 +147,7 @@ class API():
 		self.splitdata = self.data.split("|")
 		dataLength = len(self.splitdata)
                 cH = self.splitdata[-1]
+		lenNewData = len(newData)
 		#connects to chunk servers 
                 for n in range(0, dataLength-1):
 			self.s.close()
@@ -154,13 +155,37 @@ class API():
                         location = self.splitdata[n]
 	                #send this data to chunk servers
 			try:
-				s.connect((location,TCP_PORT))
+				self.s.connect((location,TCP_PORT))
                 	except:
 				print "ERROR: COULD NOT CONNECT TO CHUNK SERVER AT ", location
-			fL.send(s, "APPEND")
-                	print "APPEND"
-                	dat = fL.recv(s)
-                	if dat != "CONTINUE":
+			fL.send(s, "CHUNKSPACE|" + cH)
+			dat = fL.recv(s)
+			if lenNewData > dat:   
+                                newData1 = newData[0:dat-1]
+                                newData2 = newData[dat:]
+				fL.send(s, "APPEND|" + cH + "|" + newData1)
+				s.close()
+				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				try:
+					self.s.connect((MASTER_ADDRESS, TCP_PORT))
+				except:
+					print "ERROR: COULD NOT CONNECT TO MASTER DURING APPEND ACROSS CHUNKS"
+                			exit(0)
+		fl.send(s, "CREATECHUNK|" + filename)
+		cData = fL.recv(s)
+		if cData == "OK":
+			self.append(filename, newData2)
+				
+			#print "APPEND"
+                	#dat = fL.recv(s)
+
+
+			#if dat != "CONTINUE":
+				#print "did not receive a continure from chunk servers. exiting..."
+				#exit(0)
+			#elif dat == "CONTINUE"
+				 
+                	'''if dat != "CONTINUE":
                                 print "did not receive a continue from chunk servers. exiting..."
                                 exit(0)
 			elif dat == "CONTINUE":
@@ -171,8 +196,8 @@ class API():
                         	print "did not receive a continue from chunk servers. exiting..."
                         	exit(0)
                 	elif dat == "CONTINUE":
-                        	fL.send(s, self.newData)
-                        	print self.newData
+                        	fL.send(self.s, self.newData)
+                        	print self.newData'''
                        
 		s.close()
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
