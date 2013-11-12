@@ -185,13 +185,13 @@ class Database:
 			s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			data = " "
 			try:
-				s.connect((IP, chunkPort))
+				s.connect(('10.10.117.500', chunkPort))
 				logging.debug('Connection Established: ' + str(IP) + ' on port ' + str(chunkPort))
 				fL.send(s, 'CONTENTS?')
 				logging.debug('Sent chunkserver a CONTENTS? message')
 				data = fL.recv(s)
 			except:
-				print "failed to connect to " + IP
+				logging.error("interrogateChunkServers failed to connect to " + IP)
 
 			
 			s.close()
