@@ -54,7 +54,7 @@ class API():
 	#lets define some variables
 	global MASTER_ADDRESS
 	global TCP_PORT
-	MASTER_ADDRESS = '10.10.117.111'
+	MASTER_ADDRESS = config.masterip
 	TCP_PORT = config.port
 
 	#lets make the API able to send and recieve messages
@@ -109,7 +109,7 @@ class API():
 				exit(0)
 			elif dat == "CONTINUE":   
                         	print cH
-                        	fL.send(s, cH)https://github.com/BenningtonCS/GFS.git
+                        	fL.send(s, cH)
 
 		s.close()
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -155,24 +155,24 @@ class API():
                         location = self.splitdata[n]
 	                #send this data to chunk servers
 			try:
-				self.s.connect((location,TCP_PORT))
+				s.connect((location,TCP_PORT))
                 	except:
 				print "ERROR: COULD NOT CONNECT TO CHUNK SERVER AT ", location
-			fL.send(s, "CHUNKSPACE|" + cH)
+			fL.send(s, "CHUNKSPACE?|" + cH)
 			dat = fL.recv(s)
 			if lenNewData > dat:   
                                 newData1 = newData[0:dat-1]
                                 newData2 = newData[dat:]
-				fL.send(s, "APPEND|" + cH + "|" + newData1)
+				fL.send(self.s, "APPEND|" + cH + "|" + newData1)
 				s.close()
-				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				try:
 					self.s.connect((MASTER_ADDRESS, TCP_PORT))
 				except:
 					print "ERROR: COULD NOT CONNECT TO MASTER DURING APPEND ACROSS CHUNKS"
                 			exit(0)
-		fl.send(s, "CREATECHUNK|" + filename)
-		cData = fL.recv(s)
+		fL.send(self.s, "CREATECHUNK|" + filename)
+		cData = fL.recv(self.s)
 		if cData == "OK":
 			self.append(filename, newData2)
 				
