@@ -5,8 +5,8 @@
 #                        ################                                    #
 #                        # API Version 1#                                    #
 #                        ################                                    #
-#This is the API version 1. It currently has the create and append functions #
-#with read, open, close, and delete to be implemented later on (soon). This  #
+#This is the API version 1. It currently has the create, append, read, delete#
+#and undelete functions. Open and close will be added if desired.            #
 #file will be imported and called from a client file that the client can just#
 #run.                                                                        #
 ##############################################################################
