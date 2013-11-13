@@ -191,17 +191,22 @@ class API():
 					print "ERROR: COULD NOT CONNECT TO MASTER DURING APPEND ACROSS CHUNKS"
                 			exit(0)
 		#tell the master to create a new chunk for the remaining data
-		fL.send(m, "CREATECHUNK|" + filename)
+		try:
+			fL.send(m, "CREATECHUNK|" + filename)
+		except:
+			print "ERROR: COULD NOT CREATE NEW CHUNK TO APPEND TO"
 		#receive data back from master
 		cData = fL.recv(m)
 		#if everything went well with the master...
 		if cData == "OK":
 			#run append again with the second part of the new data 
 			self.append(filename, newData2)
-				
+		elif cData != "OK"
+			print "did not receive OK to continue appending. exiting..."
+			exit(0)		
 
 
-	#reads an existing file by taking th filename, byte offset, and the number of bytes the client
+	#reads an existing file by taking the filename, byte offset, and the number of bytes the client
 	#wants to read as args. This information is passed on to the master which sends back a list
 	#where every element is a list. The outer list is a list of all the chunks that one copy of 
 	#the file is on and the inner lists are the locations of each chunk and har far to read on
@@ -283,7 +288,45 @@ class API():
 			print "COULD NOT RECONNECT TO MASTER"
 			exit(0)
 
+	#This is the delete function. It takes a filename as a parameter and 
+	#deletes the given file from our GFS implementation. When a DELETE 
+	#request is sent to the master it marks the file for deletion. The 
+	#next time the garbage collector runs it will remove any marked files
+	def delete(self, filename):
+		#send DELETE request to the master
+		try:
+			fL.send(self.m, "DELETE|" + filename)
+		except:
+			print "ERROR: COULD NOT SEND DELETE REQUEST TO MASTER"
+		#receive acks from the master
+		self.data = fL.recv(self.m)
+		#tell the user whether the file was successfully marked or not
+		if self.data == "FAIL":
+			print "ERROR: COULD NOT MARK FILE FOR DELETION"
+		elif self.data == "MARKED":
+			print "File successfully marked for deletion."
 
+	
+	#This is the undelete function. It takes a filename as a parameter and 
+	#if that file is marked for deletion, and the garbage collector has not 
+	#removed it yet, the file will be unmarked and safe from deletion.
+	def undelete(self, filename):
+		#send UNDELETE request to master
+		try:
+			fL.send(self.m, "UNDELETE|" + filename)
+		except:
+			print "ERROR COULD NOT SEND UNDELETE REQUEST TO MASTER"
+		#receive acks from the master
+		self.data = fL.recv(self.m)
+		#tell the user whether the file was successfully unmarked or not
+		if self.data == "FAIL":
+			print "ERROR: COULD NOT UNDELETE FILE"
+		elif self.data == "UNMARKED":
+			print "File successfully unmarked for deletion."
+		
+	
+
+	#I have no idea what this is but I wrote an exception for it
 	def fileList(self):
 		try:
 			fL.send(self.m, "FILELIST|x")

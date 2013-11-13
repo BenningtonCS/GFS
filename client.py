@@ -24,6 +24,13 @@ while 1:
 		bytesToRead = raw_input("How many bytes would you like to read? : ")
 		API.read(filename, byteOffSet, bytesToRead)
 	
+	elif (operation == "delete"):
+		filename = raw_input("What is the name of the target file? : ")
+		API.delete(filename)
+
+	elif (operation == "undelete"):
+		filename = raw_input("What is the name of the target file? : ")
+
 	time.sleep(3)
 	again = raw_input("Would you like to perform another operation? : ")
 	
