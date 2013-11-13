@@ -113,25 +113,26 @@ class API():
 				print "ERROR: COULD NOT CONNECT TO CHUNKSERVER AT ", location
 				continue
 			#send CREATE request to the chunk server at the current location
-			fL.send(s, "CREATE")
+			fL.send(s, "CREATE|" + cH)
                 	print "CREATE"
 			#wait to receive a CONTINUE from chunk server to proceed
-                	dat = fL.recv(s)
-                	if dat != "CONTINUE":
-				print "did not receive a continue from chunk servers. exiting..."
-				exit(0)
-			elif dat == "CONTINUE":   
-                        	print cH
-                        	fL.send(s, cH)
+                	global ack
+			ack = fL.recv(s)
 			#close connection to current chunk server.
-			s.close()
-		#reestablish connection to master
+		s.close()
+			#reestablish connection to master
 		m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		try:
 			m.connect((MASTER_ADDRESS, TCP_PORT))
 		except:
 			print "COULD NOT RECONNECT TO MASTER"
 			exit(0)
+		if ack == "FAILED":
+                	print "ERROR: FILE CREATION FAILED"
+			fL.send(m, "FAILED")
+                elif ack == "CREATED":
+                	print "File creation successful!"
+			fL.send(m, "CREATED")
 		
 		#oplog stuff for questions contact rohail
 	#	try:
@@ -260,30 +261,8 @@ class API():
 				print "ERROR: COULD NOT CONNECT TO CHUNK SERVER AT ", location
 				continue
 			#send READ request to chunk server
-                	fL.send(s, "READ")
-                	print "READ"
-			#do a whole bunch of stupid shit with continues
-                	dat = fL.recv(s)
-			if dat != "CONTINUE": 
-                                print "did not receive a continue from chunk servers. exiting..."
-                                exit(0)
-                	elif dat == "CONTINUE":
-                        	fL.send(s, cH)
-                        	print cH
-                	dat = fL.recv(s)
-			if dat != "CONTINUE": 
-                                print "did not receive a continue from chunk servers. exiting..."
-                                exit(0)
-                	elif dat == "CONTINUE":
-                        	fL.send(s, offset)
-                        	print offset
-                	dat = fL.recv(s)
-			if dat != "CONTINUE": 
-                                print "did not receive a continue from chunk servers. exiting..."
-                                exit(0)
-                	elif dat == "CONTINUE":
-                        	fL.send(s, bytesToRead)
-                        	print bytesToRead
+                	fL.send(s, "READ|" + cH + "|" + offset + "|" + bytesToRead)
+                	print "READ|" + cH + "|" + offset + "|" + bytesToRead"
 			#receive and print the contents of the file
                 	dat = fL.recv(s)
                 	print dat
