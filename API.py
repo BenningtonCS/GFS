@@ -205,7 +205,7 @@ class API():
 		if cData == "OK":
 			#run append again with the second part of the new data 
 			self.append(filename, self.newData2)
-		elif cData != "OK"
+		else:
 			print "did not receive OK to continue appending. exiting..."
 			exit(0)		
 
