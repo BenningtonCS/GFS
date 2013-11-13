@@ -142,8 +142,8 @@ def filesMissing():
 
 
 	# check to see if there is an item in files that is not in current
-	for item in files:
-		isThere = item not in currentFiles
+	if all(item in currentFiles for item in files): isThere = False
+        else: isThere = True
 
 	# if a file is missing
 	if isThere == True:
