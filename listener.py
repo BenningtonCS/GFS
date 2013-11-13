@@ -52,43 +52,19 @@ else:
         # with level warning or higher)
         logging.basicConfig(filename='httpServerFiles/listenerErrors.log', format='%(asctime)s %(levelname)s : %(message)s')
 
-#################################
 
-# 	V A R I A B L E S	#
 
-#################################
 
-# The time that the program waits before running again is given in an argument.
-try:
-	# The first argument is the delay time
-	delayTime = float(args[1])
-	logging.debug("the time delay is " + str(delayTime))
-except ValueError:
-	# if there is a value error (as in, -v is put before the dealytime,
-	# it will assume that the second argument in the list is the delaytime.
-	try:
-		delayTime = float(args[2])
-		logging.debug("the time delay is " + str(delayTime))
-	except IndexError as e:
-		logging.debug("user forgot to put in the time delay")
-		print e
-		print "Please put in the time delay as an argument."
-		exit()
-except IndexError as e:
-	logging.debug("user forgot to put in the time delay")
-	print e
-        print "Please put in the time delay as an argument."
-        exit()
+
+# "files" is a list of files that need to be in the directory. 
+files = listenerConfig.files
+
 
 # name of the log in which all of the (non-error related) information
 # is stored.
 logName = listenerConfig.logName
 logging.debug("Name of listen log: " + logName)
 
-# "files" is a list of files that need to be in the directory. 
-files = listenerConfig.files
-
-for x in files: logging.debug("Files in config: " + x)
 
 #################################
 
@@ -100,7 +76,7 @@ def logInfo(kind, info):
 	# puts all of the information into a log
 	logging.debug(kind + ": " + str(info))
 	with open(logName, 'a') as f:
-		f.write(kind + ': ' + str(info) + '|')
+		f.write(kind + ': ' + str(info) + '\n')
 
 def getCPU():
 	# gets the percent of the CPU in use
@@ -161,6 +137,47 @@ def filesMissing():
 #################################
 
 if __name__ == '__main__':
+
+
+
+	#################################
+
+	# 	V A R I A B L E S	#
+
+	#################################
+
+	# The time that the program waits before running again is given in an argument.
+	try:
+		# The first argument is the delay time
+		delayTime = float(args[1])
+		logging.debug("the time delay is " + str(delayTime))
+	except ValueError:
+		# if there is a value error (as in, -v is put before the dealytime,
+		# it will assume that the second argument in the list is the delaytime.
+		try:
+			delayTime = float(args[2])
+			logging.debug("the time delay is " + str(delayTime))
+		except IndexError as e:
+			logging.debug("user forgot to put in the time delay")
+			print e
+			print "Please put in the time delay as an argument."
+			exit()
+	except IndexError as e:
+		logging.debug("user forgot to put in the time delay")
+		print e
+	        print "Please put in the time delay as an argument."
+	        exit()
+
+	
+
+	
+
+	for x in files: logging.debug("Files in config: " + x)
+
+
+
+
+
 	while 1:
 		time.sleep(delayTime)
 		getCPU()
