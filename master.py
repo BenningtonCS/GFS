@@ -139,7 +139,8 @@ class handleCommand(threading.Thread):
 		# Visual confirmation for debugging: confirm send of a list of storage hosts and chunk handle
 		logging.debug('SENT ==> ' + str(hosts) + str(chunkHandle))
 		
-
+	def createChunk(self):
+		newChunk = database.createNewChunk(self.msg[1], self.msg[2])
 
 	# Function that executes the protocol when an APPEND message is received
 	def append(self):
@@ -438,6 +439,9 @@ class handleCommand(threading.Thread):
 		elif self.op == "FILELIST":
 			self.fileList()
 						
+		elif self.op == "CREATECHUNK":
+			self.createChunk()		
+
 		else:
 			# If the operation is something else, something went terribly wrong. 
 			# This error handling needs to vastly improve

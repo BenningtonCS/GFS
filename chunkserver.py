@@ -114,7 +114,7 @@ class workerThread(connThread):
 #									 # connection for a chunkhandle
 				chunkHandle = com[1] # name of the chunkhandle
 				logging.debug("recieved name of the chunkhandle: " + chunkHandle)
-				emptySpace = mg64 - os.stat(config.chunkPath + "/" + chunkHandle).st_size # then checks the 
+				emptySpace = str(mg64 - os.stat(config.chunkPath + "/" + chunkHandle).st_size) # then checks the 
 									         # difference 
 									         # between the 
 									         # file's size and 
@@ -138,7 +138,7 @@ class workerThread(connThread):
 #				logging.debug("recieved name of the chunkhandle: " + chunkHandle)
 #				fL.send(self.connection, "CONTINUE") # confirms ready state
 #				logging.debug("sent continue #2")
-				byteOffSet = com[2] # listens for a byte 
+				byteOffSet = int(com[2]) # listens for a byte 
 									     # offset to read from 
 									     # (relative to the 
 									     # beginning of the 
@@ -147,7 +147,7 @@ class workerThread(connThread):
 #				logging.debug("recieved the byte offset number.")
 #				fL.send(self.connection, "CONTINUE") # confirms the desire for EVEN MORE data
 #				logging.debug("sent continue #3") 
-				bytesToRead = com[3] #int(fL.recv(self.connection)) # listens for the 
+				bytesToRead = int(com[3]) #int(fL.recv(self.connection)) # listens for the 
 									      # number of bytes to read
 				logging.debug("recieved the number of bytes to read")
 				chunk = open(config.chunkPath+"/"+chunkHandle) # opens the designated chunk to read from
@@ -187,7 +187,7 @@ class workerThread(connThread):
 	                	chunkHandle = com[1] #fL.recv(self.connection) # get the name of the chunk
 				logging.debug("recieved name of the chunk")
 	                	open(config.chunkPath + "/" + chunkHandle, 'w').close() # create the file
-	        except IOError as e:
+	        	except IOError as e:
 				logging.error(e)
 				fL.send(self.connection, "FAILED")
 			else:
