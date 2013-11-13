@@ -160,10 +160,11 @@ def filesMissing():
 
 #################################
 
-while 1:
-	time.sleep(delayTime)
-	getCPU()
-	getMemory()
-	getNetwork()
-	getDisk()
-	filesMissing()
+if __name__ == '__main__':
+	while 1:
+		time.sleep(delayTime)
+		getCPU()
+		getMemory()
+		getNetwork()
+		getDisk()
+		filesMissing()
