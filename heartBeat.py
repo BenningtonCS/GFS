@@ -20,7 +20,7 @@
 
 
 
-import socket, time, os, config, logging, sys
+import socket, time, os, config, logging, sys, listener
 import functionLibrary as fL
 
 
@@ -89,10 +89,14 @@ class heartBeat:
                         # If the hosts.txt file can not be read, alert the logger
                         except IOError:
                                 logging.error('Could not read from ' + self.HOSTS)
+				listener.logInfo("FILE READ ERROR", "Could not open or read from hosts file")
+				exit(1)
                 # If the hosts.txt file does not exist:
                 else:
                         # TEMPORARY: print a message to inform of the issue (ISSUE #41)
                         logging.error(self.HOSTS + " does not exist.")
+			listener.filesMissing()
+			exit(1)
 
         # Function that returns a list of all chunk server IPs that are active 
         # (that have responded to heartbeats)
@@ -108,7 +112,23 @@ class heartBeat:
                                         return activeCS
                         # If the activehosts.txt file can not be read, alert the logger
                         except IOError:
-                                logging.error('Could not read from ' + self.AHOSTS)
+                                # Retry opening/reading from file 
+                                try:
+                                        # Read from it and parse its contents into a list. Return the list.
+                                        with open(self.AHOSTS, "r") as file:
+                                              activeCS = file.read().splitlines()
+                                              return activeCS
+                                # If you are unable to read/open the file (permissions error?) then try to
+                                # delete the file and create a new one.
+                                except IOError:
+                                        os.remove(self.AHOSTS)
+                                        # Create a file called activehosts.txt
+                                        open(self.AHOSTS, "a").close()
+                                        # Return an empty list, as there are no contents yet in activehosts.txt
+                                        # so parsing it into a list would return an empty list anyways.
+                                        return []
+
+
                 # If the activehosts.txt file does not exist:
                 else:
                         # Create a file called activehosts.txt
