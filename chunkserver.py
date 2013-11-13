@@ -187,8 +187,11 @@ class workerThread(connThread):
 	                	chunkHandle = com[1] #fL.recv(self.connection) # get the name of the chunk
 				logging.debug("recieved name of the chunk")
 	                	open(config.chunkPath + "/" + chunkHandle, 'w').close() # create the file
-	                except socket.error as e:
+	        except IOError as e:
 				logging.error(e)
+				fL.send(self.connection, "FAILED")
+			else:
+				fL.send(self.connection, "CREATED")
 
 		elif command == "APPEND":	
 			# append new data to a chunk
