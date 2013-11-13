@@ -131,23 +131,23 @@ class workerThread(connThread):
 		elif command == "READ":
 			# read data from a chunk
 			try:
-				fL.send(self.connection, "CONTINUE") # confirms readiness for data
-				logging.debug("sent continue #1")
-				chunkHandle = fL.recv(self.connection) # listens for chunkHandle
-#				chunkHandle = com[1]
-				logging.debug("recieved name of the chunkhandle: " + chunkHandle)
-				fL.send(self.connection, "CONTINUE") # confirms ready state
-				logging.debug("sent continue #2")
-				byteOffSet = int(fL.recv(self.connection)) # listens for a byte 
+#				fL.send(self.connection, "CONTINUE") # confirms readiness for data
+#				logging.debug("sent continue #1")
+#				chunkHandle = fL.recv(self.connection) # listens for chunkHandle
+				chunkHandle = com[1]
+#				logging.debug("recieved name of the chunkhandle: " + chunkHandle)
+#				fL.send(self.connection, "CONTINUE") # confirms ready state
+#				logging.debug("sent continue #2")
+				byteOffSet = com[2] # listens for a byte 
 									     # offset to read from 
 									     # (relative to the 
 									     # beginning of the 
 									     # given chunk)
-				byteOffSet 
-				logging.debug("recieved the byte offset number.")
-				fL.send(self.connection, "CONTINUE") # confirms the desire for EVEN MORE data
-				logging.debug("sent continue #3") 
-				bytesToRead = int(fL.recv(self.connection)) # listens for the 
+#				byteOffSet 
+#				logging.debug("recieved the byte offset number.")
+#				fL.send(self.connection, "CONTINUE") # confirms the desire for EVEN MORE data
+#				logging.debug("sent continue #3") 
+				bytesToRead = com[3] #int(fL.recv(self.connection)) # listens for the 
 									      # number of bytes to read
 				logging.debug("recieved the number of bytes to read")
 				chunk = open(config.chunkPath+"/"+chunkHandle) # opens the designated chunk to read from
@@ -182,9 +182,9 @@ class workerThread(connThread):
 		elif command == "CREATE":
 			# create a new chunk
 			try:
-				fL.send(self.connection, "CONTINUE")
-				logging.debug("Sent continue")
-	                	chunkHandle = fL.recv(self.connection) # get the name of the chunk
+#				fL.send(self.connection, "CONTINUE")
+#				logging.debug("Sent continue")
+	                	chunkHandle = com[1] #fL.recv(self.connection) # get the name of the chunk
 				logging.debug("recieved name of the chunk")
 	                	open(config.chunkPath + "/" + chunkHandle, 'w').close() # create the file
 	                except socket.error as e:
