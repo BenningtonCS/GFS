@@ -291,3 +291,18 @@ print "\n"
 
 
 
+
+print "--------------------------------------------------------------"
+print "CHECKING: MAKE SURE getChunkHandle() WORKS"
+print "--------------------------------------------------------------"
+
+
+print "Let's see about getting 10 chunkhandles with database.getChunkHandle()"
+
+for x in range(10):
+	chunkHandle = database.getChunkHandle()
+	print x, " : ", chunkHandle
+
+
+
+
