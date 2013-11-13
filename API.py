@@ -186,7 +186,7 @@ class API():
                                 newData2 = newData[dat:]
 				#tell the chunk server to append the first part of the new data that
 				#will fill up the rest of the remaining space on a chunk
-				fL.send(self.s, "APPEND|" + cH + "|" + newData1)
+				fL.send(s, "APPEND|" + cH + "|" + newData1)
 				#close connection to chunk server
 				s.close()
 				#connect back to the master
@@ -197,7 +197,7 @@ class API():
 					print "ERROR: COULD NOT CONNECT TO MASTER DURING APPEND ACROSS CHUNKS"
                 			exit(0)
 			else:
-				fL.send(self.s, "APPEND|" + cH + "|" + newData)
+				fL.send(s, "APPEND|" + cH + "|" + newData)
 				exit(0)
 
 		#tell the master to create a new chunk for the remaining data
