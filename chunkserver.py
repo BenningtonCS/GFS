@@ -41,7 +41,7 @@ if "-v" in args:
 else:
         # If it was not, set the logging level to default (only shows messages 
         # with level warning or higher)
-        logging.basicConfig(filename='httpServerFiles/chunkserverLog.log', format='%(asctime)s %(levelname)s : %(message)s')
+        logging.basicConfig(level=logging.INFO, filename='httpServerFiles/chunkserverLog.log', format='%(asctime)s %(levelname)s : %(message)s')
 
 
 

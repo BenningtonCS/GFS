@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 
 # import libraries
-import config, APIvers1, sys, logging, urllib2
+import config, sys, logging, urllib2
 from datetime import datetime
 from datetime import timedelta
-from APIvers1 import API
+#from APIvers1 import API
 
 # logging
 args = sys.argv
 # Check to see if the verbose flag was one of the command line arguments
-if "-v" in args:
+#if "-v" in args:
         # If it was one of the arguments, set the logging level to debug 
-        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
-else:
+#        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
+#else:
         # If it was not, set the logging level to default (only shows messages with level
         # warning or higher)
-        logging.basicConfig(filename='masterLog.log', format='%(asctime)s %(levelname)s : %(message)s')
+logging.basicConfig(filename='masterLog.log', format='%(asctime)s %(levelname)s : %(message)s')
 
 
 # stat page generator object
