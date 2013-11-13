@@ -128,11 +128,11 @@ class API():
 			exit(0)
 		
 		#oplog stuff for questions contact rohail
-		try:
-			opLog = updateOpLog("OPLOG|CREATE|"+cH+"|"+filename)
-			opLog.start()
-		except:
-			print "COULD NOT UPDATE OPLOG"
+	#	try:
+	#		opLog = updateOpLog("OPLOG|CREATE|"+cH+"|"+filename)
+	#		opLog.start()
+	#	except:
+	#		print "COULD NOT UPDATE OPLOG"
 
 	
 	#appends to an existing file by first prompting the client for what 
