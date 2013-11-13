@@ -123,8 +123,8 @@ class workerThread(connThread):
 				fL.send(self.connection, str(emptySpace)) # and returns the amount of space 
 								 # left to the API
 				logging.debug("Send the space remaining")
-				self.connection.close() # closes the connection
-				logging.debug("Closed the connection")
+#				self.connection.close() # closes the connection
+#				logging.debug("Closed the connection")
 			except socket.error as e:
 				logging.error(e)
 
