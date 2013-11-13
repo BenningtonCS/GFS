@@ -128,11 +128,11 @@ class API():
 			exit(0)
 		
 		#oplog stuff for questions contact rohail
-		try:
-			opLog = updateOpLog("OPLOG|CREATE|"+cH+"|"+filename)
-			opLog.start()
-		except:
-			print "COULD NOT UPDATE OPLOG"
+	#	try:
+	#		opLog = updateOpLog("OPLOG|CREATE|"+cH+"|"+filename)
+	#		opLog.start()
+	#	except:
+	#		print "COULD NOT UPDATE OPLOG"
 
 	
 	#appends to an existing file by first prompting the client for what 
@@ -305,7 +305,7 @@ class API():
 		#receive acks from the master
 		self.data = fL.recv(self.m)
 		#tell the user whether the file was successfully marked or not
-		if self.data == "FAIL":
+		if self.data == "FAILED":
 			print "ERROR: COULD NOT MARK FILE FOR DELETION"
 		elif self.data == "MARKED":
 			print "File successfully marked for deletion."
@@ -323,9 +323,9 @@ class API():
 		#receive acks from the master
 		self.data = fL.recv(self.m)
 		#tell the user whether the file was successfully unmarked or not
-		if self.data == "FAIL":
+		if self.data == "FAILED":
 			print "ERROR: COULD NOT UNDELETE FILE"
-		elif self.data == "UNMARKED":
+		elif self.data == "MARKED":
 			print "File successfully unmarked for deletion."
 		
 	
