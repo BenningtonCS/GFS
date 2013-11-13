@@ -114,13 +114,13 @@ class workerThread(connThread):
 #									 # connection for a chunkhandle
 				chunkHandle = com[1] # name of the chunkhandle
 				logging.debug("recieved name of the chunkhandle: " + chunkHandle)
-				emptySpace = mg64 - os.stat(chunkHandle).st_size # then checks the 
+				emptySpace = mg64 - os.stat(config.chunkPath + "/" + chunkHandle).st_size # then checks the 
 									         # difference 
 									         # between the 
 									         # file's size and 
 									         # 64mg (the max 
 									         # chunk size)
-				fL.send(self.connection, emptySpace) # and returns the amount of space 
+				fL.send(self.connection, str(emptySpace)) # and returns the amount of space 
 								 # left to the API
 				logging.debug("Send the space remaining")
 				self.connection.close() # closes the connection
