@@ -100,7 +100,7 @@ def logInfo(kind, info):
 	# puts all of the information into a log
 	logging.debug(kind + ": " + str(info))
 	with open(logName, 'a') as f:
-		f.write(kind + ': ' + str(info) + '\n')
+		f.write(kind + ': ' + str(info) + '|')
 
 def getCPU():
 	# gets the percent of the CPU in use
