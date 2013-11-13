@@ -114,7 +114,7 @@ class workerThread(connThread):
 #									 # connection for a chunkhandle
 				chunkHandle = com[1] # name of the chunkhandle
 				logging.debug("recieved name of the chunkhandle: " + chunkHandle)
-				emptySpace = mg64 - os.stat(config.chunkPath + "/" + chunkHandle).st_size # then checks the 
+				emptySpace = str(mg64 - os.stat(config.chunkPath + "/" + chunkHandle).st_size) # then checks the 
 									         # difference 
 									         # between the 
 									         # file's size and 
