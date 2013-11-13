@@ -170,9 +170,9 @@ class API():
 			#ask chunk server how much room is left on latest chunk
 			fL.send(s, "CHUNKSPACE?|" + cH)
 			#the response is stored in dat
-			dat = fL.recv(s)
+			remainingSpace = fL.recv(s)
 			#if the length of the new data is greater than the room left in the chunk...
-			if lenNewData > dat:   
+			if lenNewData > remainingSpace:   
 				#...split the data into two parts, the first part being equal to the
 				#amount of room left in the current chunk. the second part being the 
 				#rest of the data. 
@@ -190,9 +190,13 @@ class API():
 				except:
 					print "ERROR: COULD NOT CONNECT TO MASTER DURING APPEND ACROSS CHUNKS"
                 			exit(0)
+			else:
+				fL.send(self.s, "APPEND|" + cH + "|" + newData)
+				exit(0)
+
 		#tell the master to create a new chunk for the remaining data
 		try:
-			fL.send(m, "CREATECHUNK|" + filename)
+			fL.send(self.m, "CREATECHUNK|" + filename)
 		except:
 			print "ERROR: COULD NOT CREATE NEW CHUNK TO APPEND TO"
 		#receive data back from master
@@ -200,7 +204,7 @@ class API():
 		#if everything went well with the master...
 		if cData == "OK":
 			#run append again with the second part of the new data 
-			self.append(filename, newData2)
+			self.append(filename, self.newData2)
 		elif cData != "OK"
 			print "did not receive OK to continue appending. exiting..."
 			exit(0)		
