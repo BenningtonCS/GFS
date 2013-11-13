@@ -178,23 +178,30 @@ class API():
 			fL.send(self.s, "CHUNKSPACE?|" + cH)
 			#the response is stored in dat
 			remainingSpace = fL.recv(self.s)
+			remainingSpace = int(remainingSpace)
 			print lenNewData
 			print remainingSpace
 			#if the length of the new data is greater than the room left in the chunk...
-			if lenNewData > remainingSpace:   
+			if (lenNewData > remainingSpace):   
 				#...split the data into two parts, the first part being equal to the
 				#amount of room left in the current chunk. the second part being the 
 				#rest of the data. 
-                                newData1 = newData[0:dat-1]
+                                newData1 = newData[0:remainingSpace]
 				print newData1
-                                newData2 = newData[dat:]
+                                newData2 = newData[remainingSpace:]
 				print newData2
 				#tell the chunk server to append the first part of the new data that
 				#will fill up the rest of the remaining space on a chunk
-				fL.send(self.s, "APPEND|" + cH + "|" + newData1)
+				self.s.close()
+				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				try:
+					s.connect((location, TCP_PORT))
+				except:
+					print "ERROR: COULD NOT REOPEN SOCKET"
+				fL.send(s, "APPEND|" + cH + "|" + newData1)
 				print "first append"
 				#close connection to chunk server
-				self.s.close()
+				s.close()
 				#connect back to the master
 				'''m  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				try:
@@ -202,7 +209,7 @@ class API():
 				except:
 					print "ERROR: COULD NOT CONNECT TO MASTER DURING APPEND ACROSS CHUNKS"
                 			exit(0)'''
-			else:
+			elif (lenNewData <= remainingSpace):
 				self.s.close()
 				t = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				t.connect((location, TCP_PORT))
@@ -215,23 +222,44 @@ class API():
 			m  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                         try:
                         	m.connect((MASTER_ADDRESS, TCP_PORT))
+				print "connected to master"
                         except:
                                 print "ERROR: COULD NOT CONNECT TO MASTER DURING APPEND ACROSS CHUNKS"
                                 exit(0)
 			#tell the master to create a new chunk for the remaining data
 			try:
-				fL.send(self.m, "CREATECHUNK|" + filename)
+				fL.send(m, "CREATECHUNK|" + filename + "|" + cH)
 			except:
 				print "ERROR: COULD NOT CREATE NEW CHUNK TO APPEND TO"
 			#receive data back from master
 			cData = fL.recv(m)
-			#if everything went well with the master...
-			if cData == "OK":
-				#run append again with the second part of the new data 
-				self.append(filename, self.newData2)
-			else:
-				print "did not receive OK to continue appending. exiting..."
-				exit(0)		
+			#parse this data and handle it very similarly as the in the create function
+			
+			self.splitcData = self.cData.split("|")
+			dataLength = len(self.splitdata)
+                	cH = self.splitdata[-1]
+                	#close the connection to the master so we can connect to the chunk servers
+                	m.close()
+                	#iterate through each IP address received from the master
+                	for n in range(0, dataLength-1):
+                        	#create a socket to be used to connect to chunk server
+                        	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        	#designate the IP for this iteration
+                        	location = self.splitdata[n]
+                        	print location
+                        	#attempt to connect to the chunk server at the current location
+                        	try:
+                                	s.connect((location,TCP_PORT))
+                        	except:
+                                	print "ERROR: COULD NOT CONNECT TO CHUNKSERVER AT ", location
+                                	continue
+                        	#send CREATE request to the chunk server at the current location
+                        	fL.send(s, "CREATE|" + cH)
+			
+			#now that the new chunk has been created on all of the servers...
+			#...run append again with the second part of the new data 
+			self.append(filename, newData2)
+					
 
 
 	#reads an existing file by taking the filename, byte offset, and the number of bytes the client
