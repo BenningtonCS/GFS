@@ -140,7 +140,11 @@ class handleCommand(threading.Thread):
 		logging.debug('SENT ==> ' + str(hosts) + str(chunkHandle))
 		
 	def createChunk(self):
-		newChunk = database.createNewChunk(self.msg[1], self.msg[2])
+		self.lock.acquire()
+		chunkHandle = database.getChunkHandle()
+		self.lock.release()
+		newChunk = database.createNewChunk(self.msg[1], self.msg[2], chunkHandle)
+		fL.send(self.s, newChunk)
 
 	# Function that executes the protocol when an APPEND message is received
 	def append(self):

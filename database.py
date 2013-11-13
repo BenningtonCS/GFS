@@ -302,13 +302,15 @@ class Database:
 				# Get the three locations where the chunk will be stored
 				locations = fL.chooseHosts().split("|")
 				logging.debug(locations)
-
+				
+				#string to be returned
+				string = ''
 				# Append the chunkserver locations to the chunk's location list
 				for location in locations:
 					logging.debug('adding locations to new chunk')
 					self.data[fileName].chunks[chunkHandle].locations.append(location)
 					logging.debug('Appending locations to chunk ' + str(chunkHandle) + ' locations list')
-
+					string += location+"|"
 				logging.debug('file: ' + fileName + ' chunk: ' + str(self.data[fileName].chunks[chunkHandle]))
 
 				# Add the chunk to the chunk/file lookup
@@ -318,9 +320,9 @@ class Database:
 
 				# Update the opLog that a new chunk was created
 				fL.appendToOpLog("CREATECHUNK|" + chunkHandle + "|" + fileName)
-
+				string += chunkHandle
 				#If this completed successfully, return a 1.
-				return 1
+				return string
 
 			# The full chunk is not the latest chunk, so a new chunk has already been created for 
 			# the file. We dont want to branch a file into multiple chunks, so we let the master know
