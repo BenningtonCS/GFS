@@ -167,54 +167,71 @@ class API():
         	self.m.close()
 	        for n in range(0, dataLength-1):
 			#create socket to connect to chunk server at location
-			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                         location = self.splitdata[n]
 	                #attempt to connect to chunk server at location
 			try:
-				s.connect((location,TCP_PORT))
+				self.s.connect((location,TCP_PORT))
                 	except:
 				print "ERROR: COULD NOT CONNECT TO CHUNK SERVER AT ", location
 			#ask chunk server how much room is left on latest chunk
-			fL.send(s, "CHUNKSPACE?|" + cH)
+			fL.send(self.s, "CHUNKSPACE?|" + cH)
 			#the response is stored in dat
-			remainingSpace = fL.recv(s)
+			remainingSpace = fL.recv(self.s)
+			print lenNewData
+			print remainingSpace
 			#if the length of the new data is greater than the room left in the chunk...
 			if lenNewData > remainingSpace:   
 				#...split the data into two parts, the first part being equal to the
 				#amount of room left in the current chunk. the second part being the 
 				#rest of the data. 
                                 newData1 = newData[0:dat-1]
+				print newData1
                                 newData2 = newData[dat:]
+				print newData2
 				#tell the chunk server to append the first part of the new data that
 				#will fill up the rest of the remaining space on a chunk
-				fL.send(s, "APPEND|" + cH + "|" + newData1)
+				fL.send(self.s, "APPEND|" + cH + "|" + newData1)
+				print "first append"
 				#close connection to chunk server
-				s.close()
+				self.s.close()
 				#connect back to the master
-				m  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				'''m  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				try:
 					m.connect((MASTER_ADDRESS, TCP_PORT))
 				except:
 					print "ERROR: COULD NOT CONNECT TO MASTER DURING APPEND ACROSS CHUNKS"
-                			exit(0)
+                			exit(0)'''
 			else:
-				fL.send(s, "APPEND|" + cH + "|" + newData)
-				exit(0)
+				self.s.close()
+				t = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				t.connect((location, TCP_PORT))
+				try:
+					fL.send(t, "APPEND|" + cH + "|" + newData)
+				except:
+					print "ERROR: COULD NOT SEND APPEND TO CHUNK SERVER"			
 
-		#tell the master to create a new chunk for the remaining data
-		try:
-			fL.send(self.m, "CREATECHUNK|" + filename)
-		except:
-			print "ERROR: COULD NOT CREATE NEW CHUNK TO APPEND TO"
-		#receive data back from master
-		cData = fL.recv(m)
-		#if everything went well with the master...
-		if cData == "OK":
-			#run append again with the second part of the new data 
-			self.append(filename, self.newData2)
-		else:
-			print "did not receive OK to continue appending. exiting..."
-			exit(0)		
+		if lenNewData > remainingSpace:
+			m  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        try:
+                        	m.connect((MASTER_ADDRESS, TCP_PORT))
+                        except:
+                                print "ERROR: COULD NOT CONNECT TO MASTER DURING APPEND ACROSS CHUNKS"
+                                exit(0)
+			#tell the master to create a new chunk for the remaining data
+			try:
+				fL.send(self.m, "CREATECHUNK|" + filename)
+			except:
+				print "ERROR: COULD NOT CREATE NEW CHUNK TO APPEND TO"
+			#receive data back from master
+			cData = fL.recv(m)
+			#if everything went well with the master...
+			if cData == "OK":
+				#run append again with the second part of the new data 
+				self.append(filename, self.newData2)
+			else:
+				print "did not receive OK to continue appending. exiting..."
+				exit(0)		
 
 
 	#reads an existing file by taking the filename, byte offset, and the number of bytes the client
@@ -262,7 +279,7 @@ class API():
 				continue
 			#send READ request to chunk server
                 	fL.send(s, "READ|" + cH + "|" + offset + "|" + bytesToRead)
-                	print "READ|" + cH + "|" + offset + "|" + bytesToRead"
+                	print "READ|" + cH + "|" + offset + "|" + bytesToRead
 			#receive and print the contents of the file
                 	dat = fL.recv(s)
                 	print dat
