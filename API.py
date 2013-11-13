@@ -260,10 +260,11 @@ class API():
                                 	continue
                         	#send CREATE request to the chunk server at the current location
                         	fL.send(s, "CREATE|" + cH)
+				s.close()
 			
 			#now that the new chunk has been created on all of the servers...
 			#...run append again with the second part of the new data
-			self.s.close()
+			#self.s.close()
 			self.append(filename, newData2)
 					
 
@@ -282,26 +283,26 @@ class API():
 			print "ERROR: COULD NOT SEND READ REQUEST TO MASTER"
 		#recieve data from the master
 		self.data = fL.recv(self.m)
-		print self.data
+		#print self.data
 		#split the data into a list
 		self.splitdata = self.data.split("|")
 		#remove the first element of the list because it is irrelevant
 		self.splitdata = self.splitdata[1:]
-		print self.splitdata
+		#print self.splitdata
 		#iterate through the list
 		for q in self.splitdata:
 			#split the list into smaller parts
 			secondSplit = q.split("*")
-			print secondSplit
+			#print secondSplit
 			#set the location...
 			location = secondSplit[0]
-			print "location = ", location
+			#print "location = ", location
 			#...and the chunk handle
 			cH = secondSplit[1]
-			print "cH = ", cH
+			#print "cH = ", cH
 			#...and the offset
 			offset = secondSplit[2]
-			print "offset = ", offset
+			#print "offset = ", offset
 			#close connection to master
 			self.m.close()
 			#connect to the chunk server
@@ -313,7 +314,7 @@ class API():
 				continue
 			#send READ request to chunk server
                 	fL.send(s, "READ|" + cH + "|" + offset + "|" + bytesToRead)
-                	print "READ|" + cH + "|" + offset + "|" + bytesToRead
+                	#print "READ|" + cH + "|" + offset + "|" + bytesToRead
 			#receive and print the contents of the file
                 	dat = fL.recv(s)
                 	print dat
