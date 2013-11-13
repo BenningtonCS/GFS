@@ -122,7 +122,7 @@ class workerThread(connThread):
 									         # chunk size)
 				fL.send(self.connection, emptySpace) # and returns the amount of space 
 								 # left to the API
-				logging.debug("Send the spaec remaining")
+				logging.debug("Send the space remaining")
 				self.connection.close() # closes the connection
 				logging.debug("Closed the connection")
 			except socket.error as e:
@@ -187,8 +187,11 @@ class workerThread(connThread):
 	                	chunkHandle = com[1] #fL.recv(self.connection) # get the name of the chunk
 				logging.debug("recieved name of the chunk")
 	                	open(config.chunkPath + "/" + chunkHandle, 'w').close() # create the file
-	                except socket.error as e:
+	        except IOError as e:
 				logging.error(e)
+				fL.send(self.connection, "FAILED")
+			else:
+				fL.send(self.connection, "CREATED")
 
 		elif command == "APPEND":	
 			# append new data to a chunk
