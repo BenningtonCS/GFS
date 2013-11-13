@@ -271,7 +271,7 @@ class handleCommand(threading.Thread):
 			# metadata for the last chunk is processed, it will be caught by the if statement above
 			# and send the appropriate ending offset.
 			elif startSequence < endSequence:
-				responseMessage += "*" + maxChunkSize
+				responseMessage += "*" + str(maxChunkSize)
 				startSequence += 1
 
 		#	except:

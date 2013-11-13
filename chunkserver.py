@@ -151,7 +151,7 @@ class workerThread(connThread):
 									      # number of bytes to read
 				logging.debug("recieved the number of bytes to read")
 				chunk = open(config.chunkPath+"/"+chunkHandle) # opens the designated chunk to read from
-				chunk.seek(byteOffSet) # goes to the specified byte offset
+				chunk.seek(int(byteOffSet)) # goes to the specified byte offset
 				fileContent = chunk.read(bytesToRead) # stuffs all the stuff to be 
 								      # read into a variable
 				fL.send(self.connection, fileContent)
