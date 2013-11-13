@@ -341,6 +341,33 @@ class handleCommand(threading.Thread):
 		# Visual confirmation for debugging: confirm success of oplog()
 		logging.debug('Oplog append successful')
 	
+	# Function that will send the files that should be deleted to the scrubber
+	def getDeleteData(self):
+		# Get the list of files from the database
+		toDelete = database.toDelete
+		# Create an empty message which will hold the data
+		msg = ""
+		# For each item in the list, add it to the message string
+		for item in toDelete:
+			msg += item + "|"
+		# Send back the string of delete data
+		fL.send(self.s, msg)
+
+
+	# Function that will send all of the chunks associated with the given file
+	def getAllChunks(self):
+		chunks = database.allChunks(self.fileName)
+		fL.send(self.s, chunks)
+
+	# Function that will send all the locations of a given chunk
+	def getAllLocations(self):
+		locations = database.getChunkLocations(self.msg[1])
+		msg = ""
+		for item in locations:
+			msg += item + "|"
+
+		fL.send(self.s, msg)
+
 
 	# Function that executes the protocol when FILELIST message is received	
 	def fileList(self):
@@ -395,6 +422,18 @@ class handleCommand(threading.Thread):
 		# If the operation is to update the oplog, OPLOG:
 		elif self.op == "OPLOG":
 			self.oplog()
+
+		# If the operation is to get the list of all the things to be deleted, do so!
+		elif self.op == "GETDELETEDATA":
+			self.getDeleteData()
+
+		# If the operation is to get the list of all the chunks in a file, do so!
+		elif self.op == "GETALLCHUNKS":
+			self.getAllChunks()
+
+		# If the operation is to get the list of all the locations of a chunk, do so!
+		elif self.op == "GETLOCATIONS":
+			self.getAllLocations()
 
 		elif self.op == "FILELIST":
 			self.fileList()

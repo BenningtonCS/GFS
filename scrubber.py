@@ -18,7 +18,6 @@
 #################################################################################
 
 import socket, config, logging, sys
-from master import database as database
 import functionLibrary as fL
 
 
@@ -61,18 +60,20 @@ else:
 # exist in the system due to deletion.
 class Scrubber:
 
-	def __init__(self):
+	def __init__(self, data):
 		logging.debug("Initilizing Scrubber Instance")
 		# Get the data from the database's toDelete list
-		self.data = database.toDelete
+		self.data = data
 		# Get the port number from the config file
 		self.port = config.port
+		# Set a timeout length
+		self.SOCK_TIMEOUT = 3
 
 
 	# Creates a TCP socket connection to the specified IP
-	def connectToCS(self, IP):
+	def connect(self, IP):
 		try:
-			logging.debug("Initializing connectToCS()")
+			logging.debug("Initializing connect()")
 			# Create a TCP socket instance
 			self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			# Set the timeout of the socket
@@ -84,7 +85,7 @@ class Scrubber:
 			logging.debug("TCP Connection Successfully Established")
 
 		except (socket.error, socket.timeout):
-			logging.error("Unable to establish a connection with the chunkserver.")
+			logging.error("Unable to establish a connection")
 
 
 	# Inform the chunk servers of which chunks should be deleted, and upon succesful
@@ -95,23 +96,42 @@ class Scrubber:
 
 		# For all of the files in the toDelete list
 		for file in self.data:
-			# Get all of the chunk handles associated with a file
-			chunkHandles = database.data[file].chunks.keys()
+
+			self.connect(config.masterip)
+			fL.send(self.s, "GETALLCHUNKS|" + file)
+
+			data = fL.recv(self.s)
+			self.s.close()
+
+			chunkHandles = data.split("|")
+			chunkHandles = filter(None, chunkHandles)
+			print chunkHandles
+
 			# Create a counter for successful chunk deletions
 			successfulChunkDelete = 0
 			# For each of those chunk handles
 			for handle in chunkHandles:
 				# Create a counter for successful deletions from a chunkserver
 				successDeleteFromCS = 0
+
+				self.connect(config.masterip)
+				fL.send(self.s, "GETLOCATIONS|" + handle)
+
+				data = fL.recv(self.s)
+				self.s.close()
+
 				# Find the locations where the chunks are being kept
-				locations = database.data[file].chunks[handle].locations
+				locations = data.split("|")
+				locations = filter(None, locations)
+				print locations
+
 				# For each location the chunk is stored on
 				for location in locations:
 					# Connect to the chunk server
-					self.connectToCS(location)
+					self.connect(location)
 					# Send the chunk server a SANITIZE message with the chunk handle
 					# so it knows which chunk it is deleting
-					fL.send(self.s, 'SANITIZE|' + str(chunkHandle))
+					fL.send(self.s, 'SANITIZE|' + str(handle))
 					logging.debug('Sent SANITIZE message to chunkserver')
 					# Wait for a response back from the chunk server to verify that
 					# the chunk was removed
@@ -126,7 +146,7 @@ class Scrubber:
 					# If the chunk server responds with a failure message, DO SOMETHING ELSE!
 					elif data == "FAILED":
 						# WILL NEED IMPROVED HANDLING, MAYBE A RETRY
-						logging.error("Received failure message on chunk delete. Chunkhandle : " + str(chunk.handle))
+						logging.error("Received failure message on chunk delete. Chunkhandle : " + str(handle))
 
 					# If the chunk server responds with something other than SUCCESS or FAILED, something went wrong.
 					else:
@@ -165,8 +185,30 @@ class Scrubber:
 #########################################################################
 
 if __name__ == "__main__":
+
+	# Create a TCP socket instance
+	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	# Set the timeout of the socket
+	s.settimeout(3)
+	# Allow the socket to re-use address
+	s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+	# Connect to the chunkserver over the specified port
+	s.connect((config.masterip, config.port))
+
+	fL.send(s, "GETDELETEDATA|*")
+
+	data = fL.recv(s)
+
+	toDelete = []
+
+	for item in data.split("|"):
+		if item != "":
+			toDelete.append(item)
+
+	print toDelete
+
 	# Create an instance of the Scrubber object, and initiate it.
-	scrub = Scrubber()
+	scrub = Scrubber(toDelete)
 	scrub.clean()
 
 

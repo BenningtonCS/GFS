@@ -153,13 +153,19 @@ class Database:
 			# If the operation was to delete a file, change the file object's delete attribute
 			# to True, so the scrubber will recognize it as marked for deletion.
 			elif lineData[0] == 'DELETE':
-				self.flagDelete(lineData[2])
+				# Flag the given file for deletion
+				self.data[lineData[2]].delete = True
+				# Add the file name to the list of files to be deleted
+				self.toDelete.append(lineData[2])
 				logging.debug('DELETE ==> ' + str(lineData[2]) + ' marked True for delete')
 
 			# If the operation was to undelete a file, change the file object's delete attribute
 			# back to False, so the scrubber will not delete it.
 			elif lineData[0] == "UNDELETE":
-				self.flagUndelete(lineData[2])
+				# Flag the given file for deletion
+				self.data[lineData[2]].delete = False
+				# Add the file name to the list of files to be deleted
+				self.toDelete.remove(lineData[2])
 				logging.debug('UNDELETE ==> ' + str(lineData[2]) + ' marked False for delete')
 
 			# If the operation was to sanitize, that is, the chunks were actually deleted,
@@ -358,6 +364,19 @@ class Database:
 		logging.debug('Latest Chunk found')
 		# Return the highest chunk number as a string
 		return str(max(keyValues))
+
+
+	# Gets a list of all the chunks associated with a given file
+	def allChunks(self, fileName):
+		# Get a list of all the chunkHandles associated with the file
+		associatedChunks = self.data[fileName].chunks.keys()
+		# Create an empty string to put all the chunks into
+		msg = ""
+		# Put all the chunks into a string
+		for chunk in associatedChunks:
+			msg += chunk + "|"
+
+		return msg
 
 
 	# When the user wishes to delete a file, it will not be deleted automatically, instead
