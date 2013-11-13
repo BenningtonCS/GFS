@@ -30,7 +30,8 @@ while 1:
 
 	elif (operation == "undelete"):
 		filename = raw_input("What is the name of the target file? : ")
-
+		API.undelete(filename)	
+	
 	time.sleep(3)
 	again = raw_input("Would you like to perform another operation? : ")
 	
