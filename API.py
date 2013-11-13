@@ -149,8 +149,13 @@ class API():
 	#client then sends "append" and the new data to the chunk servers which
 	#append the new data to the files.
 	def append(self, filename, newData):
+
+		self.m.close()
 		#send APPEND request to master
 		try:
+			self.m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        self.m.connect((MASTER_ADDRESS, TCP_PORT))
+
 			fL.send(self.m, "APPEND|" + filename)
 		except:
 			print "COULD NOT SEND APPEND REQUEST TO MASTER"
@@ -235,17 +240,17 @@ class API():
 			cData = fL.recv(m)
 			#parse this data and handle it very similarly as the in the create function
 			
-			self.splitcData = self.cData.split("|")
-			dataLength = len(self.splitdata)
-                	cH = self.splitdata[-1]
+			splitcData = cData.split("|")
+			cDataLength = len(splitcData)
+                	cH = splitcData[-1]
                 	#close the connection to the master so we can connect to the chunk servers
                 	m.close()
                 	#iterate through each IP address received from the master
-                	for n in range(0, dataLength-1):
+                	for n in range(0, cDataLength-1):
                         	#create a socket to be used to connect to chunk server
                         	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                         	#designate the IP for this iteration
-                        	location = self.splitdata[n]
+                        	location = splitcData[n]
                         	print location
                         	#attempt to connect to the chunk server at the current location
                         	try:
@@ -257,7 +262,8 @@ class API():
                         	fL.send(s, "CREATE|" + cH)
 			
 			#now that the new chunk has been created on all of the servers...
-			#...run append again with the second part of the new data 
+			#...run append again with the second part of the new data
+			self.s.close()
 			self.append(filename, newData2)
 					
 
