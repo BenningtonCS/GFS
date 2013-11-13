@@ -1,0 +1,18 @@
+body {
+	color:white;
+	background:black;
+	font-family:sans-serif;
+}
+h1, h2 {
+	color:#525252;
+}
+.online {
+	color: green;
+}
+.offline {
+	color: red;
+}
+textarea {
+	color:#b8b8b8;
+	background:#080808;
+}
