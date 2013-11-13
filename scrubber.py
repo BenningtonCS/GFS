@@ -167,8 +167,13 @@ class Scrubber:
 			if len(chunkHandles) == successfulChunkDelete:
 				# Call the database sanitize function, which removes the key/value pair
 				# from the database.
-				database.sanitizeFile(file)
+				self.connect(config.masterip)
+				fL.send(self.s, "SANITIZE|" + file)
+
+				#data = fL.recv(self.s)
+				self.s.close()
 				logging.debug(str(file) + 'successfully sanitized')
+				
 			else:
 				# Improve error handling to automatically resolve problem
 				logging.error("Not all chunk deletes were successful")
