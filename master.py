@@ -345,6 +345,12 @@ class handleCommand(threading.Thread):
 		fL.appendToOpLog(self.msg[1]+"|"+self.msg[2]+"|"+self.msg[3])
 		# Visual confirmation for debugging: confirm success of oplog()
 		logging.debug('Oplog append successful')
+
+
+	def sanitize(self):
+		database.sanitizeFile(self.fileName)
+
+
 	
 	# Function that will send the files that should be deleted to the scrubber
 	def getDeleteData(self):
@@ -427,6 +433,10 @@ class handleCommand(threading.Thread):
 		# If the operation is to update the oplog, OPLOG:
 		elif self.op == "OPLOG":
 			self.oplog()
+
+		# If the operation is to update the oplog, OPLOG:
+		elif self.op == "SANITIZE":
+			self.sanitize()
 
 		# If the operation is to get the list of all the things to be deleted, do so!
 		elif self.op == "GETDELETEDATA":

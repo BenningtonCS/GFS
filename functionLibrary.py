@@ -72,7 +72,7 @@ chunkPort = config.port
 
 def recv(connection):
 	# Debug message to show the function has been called
-	logging.debug('Starting recv() function')
+	logging.debug('RECV: Starting recv() function')
 	# Create an empty string which will eventually hold the received message
 	data = ""
 	# Coninuously receive data over the socket connection until the end of 
@@ -80,7 +80,7 @@ def recv(connection):
 	while 1:
 		# Receive the data
 		d = connection.recv(1024)
-		logging.debug('data has been received: ' + str(d))
+		logging.debug('RECV: data has been received: ' + str(d))
 		# Append the received data to the data string
 		data += d
 		# Create a string from the received data string which contains the last 
@@ -89,22 +89,22 @@ def recv(connection):
 		try:
 			ending = d[-1]
 		except IndexError:
-			logging.debug('No data received')
+			logging.debug('RECV: No data received')
 			break
 		# Check the ending of the received data to see if it contains an end of
 		# transmission character, and if it does, break out of the loop since 
 		# no more data should be sent.
 		if eot in ending:
-			logging.debug('End of transmission character found. No longer receiving.')
+			logging.debug('RECV: End of transmission character found. No longer receiving.')
 			break
 
-		logging.debug('End of transmission character not found. Continue receiving.')
+		logging.debug('RECV: End of transmission character not found. Continue receiving.')
 
 	
 	connection.send("ack " + data)
 	# In the received data, remove the end of transmission character
 	data = data.replace(eot, "")
-	logging.debug('Data Parsed Successfully!')
+	logging.debug('RECV: Data Parsed Successfully!')
 	# Give back the received data
 	return data
 
@@ -124,7 +124,7 @@ def send(connection, message):
 	while 1:
 		# Receive the data
 		d = connection.recv(1024)
-		logging.debug('data has been received: ' + str(data))
+		logging.debug('SEND: data has been received: ' + str(data))
 		# Append the received data to the data string
 		data += d
 		# Create a string from the received data string which contains the last 
@@ -133,21 +133,21 @@ def send(connection, message):
 		try:
 			ending = d[-1]
 		except IndexError:
-			logging.error('No data received')
+			logging.error('SEND: No data received')
 			exit()
 		# Check the ending of the received data to see if it contains an end of
 		# transmission character, and if it does, break out of the loop since 
 		# no more data should be sent.
 		if eot in ending:
-			logging.debug('End of transmission character found. No longer receiving.')
+			logging.debug('SEND: End of transmission character found. No longer receiving.')
 			break
 
-		logging.debug('End of transmission character not found. Continue receiving.')
+		logging.debug('SEND: End of transmission character not found. Continue receiving.')
 		
 	if data == "ack " + message + eot:
-		logging.debug("received ack " + data)
+		logging.debug("SEND: received ack " + data)
 	else:
-		logging.error("recieved incorrect message while waiting for acknowledgement: "
+		logging.error("SEND: recieved incorrect message while waiting for acknowledgement: "
 		 + data + "instead of " + message)
 
 

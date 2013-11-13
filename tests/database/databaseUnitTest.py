@@ -1,4 +1,3 @@
-
 # USED TO TEST THE DATABASE FUNCTIONALITY
 
 # These series of tests are used to make sure that the functionality
@@ -249,7 +248,7 @@ print "\n"
 
 print "WHAT ARE THE LOCATIONS OF CHUNK 0 IN testFile?"
 print "-------------------------------------------------"
-print database.getChunkLocations(0)
+print database.getChunkLocations("0")
 print "\n"
 
 
