@@ -1,0 +1,128 @@
+#!/usr/bin/env python
+
+##############################################################################
+#
+#	FILE: listener.py
+#	DATE: 2013 Nov. 12
+#	AUTHOR: Brendon Walter
+#
+#	DESCTIPTION: listener.py uses psutil to listen to the CPU, memory, 
+#	network information, and disk space and logs it to a file called 
+#	listenerLog.log. 
+#
+#	USAGE: run the listener by:
+#		python listener.py <-v> <run delay>
+#	or:
+#		./listener.py <-v> <run delay>
+#	running the listener in verbose mode (-v) will print out information
+#	for debugging purposes. The run delay (in seconds) will determine how
+#	often the program runs through the main loop and thus, how often it 
+#	checks the CPU, memory, network, and disk usage.
+#
+###############################################################################
+
+import psutil, time, sys, logging
+
+###########################
+
+#	L O G G I N G	  #
+
+###########################
+
+# Setup for having a verbose mode for debugging:
+# USAGE: When running program, $python chunkserver.py , no debug message will
+# show up. Instead, the program should be run in verbose, $
+#	python chunkserver.py -v ,
+# for debug messages to show up
+
+# Get a list of command line arguments
+args = sys.argv
+# Check to see if the verbose flag was one of the command line arguments
+if "-v" in args:
+        # If it was one of the arguments, set the logging level to debug
+        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
+else:
+        # If it was not, set the logging level to default (only shows messages
+        # with level warning or higher)
+        logging.basicConfig(filename='httpServerFiles/listenerErrors.log', format='%(asctime)s %(levelname)s : %(message)s')
+
+#################################
+
+# 	V A R I A B L E S	#
+
+#################################
+
+# The time that the program waits before running again is given in an argument.
+try:
+	# The first argument is the delay time
+	delayTime = float(args[1])
+	logging.debug("the time delay is " + str(delayTime))
+except ValueError:
+	# if there is a value error (as in, -v is put before the dealytime,
+	# it will assume that the second argument in the list is the delaytime.
+	try:
+		delayTime = float(args[2])
+		logging.debug("the time delay is " + str(delayTime))
+	except IndexError as e:
+		logging.debug("user forgot to put in the time delay")
+		print e
+		print "Please put in the time delay as an argument."
+		exit()
+except IndexError as e:
+	logging.debug("user forgot to put in the time delay")
+	print e
+        print "Please put in the time delay as an argument."
+        exit()
+
+# name of the log in which all of the (non-error related) information
+# is stored.
+logName = "listenerLog.log"
+
+#################################
+
+# 	F U N C T I O N S	#
+
+#################################
+
+def logInfo(kind, info):
+	# puts all of the information into a log
+	logging.debug(kind + ": " + str(info))
+	with open(logName, 'a') as f:
+		f.write(kind + ': ' + str(info) + '\n')
+
+def getCPU():
+	# gets the percent of the CPU in use
+	cpuPercent = psutil.cpu_percent()
+	logInfo("CPU", cpuPercent)
+
+def getMemory():
+	# gets the total, used, free, and percentage of both virtual and 
+	# swap memory
+	virtualMemory = psutil.virtual_memory()
+	logInfo("MEMORY", virtualMemory)
+	swap = psutil.swap_memory()
+	logInfo("MEMORY", swap)
+
+def getNetwork():
+	# gets bytes send, bytes recieved plus other information about the
+	# network.
+	stats = psutil.network_io_counters()
+	logInfo("NETWORK", stats)
+
+def getDisk():
+	# recieves information about the disk
+	space = psutil.disk_usage('/')
+	logInfo("DISK", space)
+
+#################################
+
+#	M A I N   C O D E	#
+
+#################################
+
+while 1:
+	time.sleep(delayTime)
+	getCPU()
+	getMemory()
+	getNetwork()
+	getDisk()
