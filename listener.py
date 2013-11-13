@@ -8,7 +8,13 @@
 #
 #	DESCTIPTION: listener.py uses psutil to listen to the CPU, memory, 
 #	network information, and disk space and logs it to a file called 
-#	listenerLog.log. 
+#	listenerLog.log. It also checks the current directory to see what files
+#	are currently in it and checks it against a list of files that need to
+#	be there, as stated in the listernerConfig.py. These files that need
+#	to be here should be in the form of a list. It should look like as 
+# 	follows: files = ["hosts.txt", "config.py"]. 
+#	If either of those items are not found in the current directoy, it will
+#	return a critical error that should be checked as soon as possible.
 #
 #	USAGE: run the listener by:
 #		python listener.py <-v> <run delay>
@@ -21,7 +27,7 @@
 #
 ###############################################################################
 
-import psutil, time, sys, logging
+import psutil, time, sys, logging, os, listenerConfig
 
 ###########################
 
@@ -76,7 +82,13 @@ except IndexError as e:
 
 # name of the log in which all of the (non-error related) information
 # is stored.
-logName = "listenerLog.log"
+logName = listenerConfig.logName
+logging.debug("Name of listen log: " + logName)
+
+# "files" is a list of files that need to be in the directory. 
+files = listenerConfig.files
+
+for x in files: logging.debug("Files in config: " + x)
 
 #################################
 
@@ -114,6 +126,34 @@ def getDisk():
 	space = psutil.disk_usage('/')
 	logInfo("DISK", space)
 
+def filesMissing():
+	# reads the local directory  and checks to make sure that the files
+	# that are supposed to be there are there
+
+	# put the name of all the files present in the directory into a list
+	# called currentFiles created below
+	currentFiles = []
+	for current in os.listdir('.'):
+		currentFiles.append(current)
+	logging.debug("The current files in the directory are: " + str(currentFiles))
+	# for debugging purposes
+	for item in files:
+		logging.debug("The files that should be here are: " + str(item))
+
+
+	# check to see if there is an item in files that is not in current
+	for item in files:
+		isThere = item not in currentFiles
+
+	# if a file is missing
+	if isThere == True:
+		# log a critical error. This needs to be checked!!
+		logging.critical("File missing from directory!!")
+	else: 
+		# otherwise, continue as normal.
+		logging.debug("Every file that's supposed to be here is here.")
+	
+
 #################################
 
 #	M A I N   C O D E	#
@@ -126,3 +166,4 @@ while 1:
 	getMemory()
 	getNetwork()
 	getDisk()
+	filesMissing()
