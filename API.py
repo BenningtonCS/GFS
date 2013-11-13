@@ -82,9 +82,15 @@ class API():
 			print "ERROR: COULD NOT SEND CREATE REQUEST TO MASTER"
 		#receive data back from the master 
 		self.data = fL.recv(self.m)
-		#error if the file trying to be created already exists
-		if self.data == "FAIL":
+		#error if the file trying to be created already exists 
+		if self.data == "FAIL1":
 			print "THAT FILE EXISTS ALREADY... EXITING API"
+			exit(0)
+		elif self.data == "FAIL2":
+			print "NO SUCH FILE EXISTS FOR CHUNK CREATION"
+			exit(0)
+		elif self.data == "FAIL3":
+			print "CHUNK IS NOT THE LATEST CHUNK"
 			exit(0)
 		print self.data
 		#parse the received data into locations, and chunk handle
