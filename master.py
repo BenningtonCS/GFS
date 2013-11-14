@@ -394,8 +394,14 @@ class handleCommand(threading.Thread):
 		self.msg = self.handleInput(self.data)
 		# The zeroth item in the list of received data should always be the operation
 		self.op = self.msg[0]
-		# The first item in the list of received data should always be the file name
-		self.fileName = self.msg[1]
+		
+		try:
+			# The first item in the list of received data should always be the file name
+			self.fileName = self.msg[1]
+		except IndexError:
+			logging.error("master recieved no file name")
+			pass
+
 		# Visual confirmation for debugging: confirm connection
 		logging.debug('Connection from: ' + str(self.ip) + " on port " + str(self.port))
 		# Visual confirmation for debugging: confirm received operation
