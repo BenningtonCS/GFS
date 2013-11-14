@@ -16,7 +16,7 @@
 #################################################################################
 
 
-import config, sys, logging, socket, random
+import config, sys, logging, socket, random, listener
 
 
 ###############################################################################
@@ -164,13 +164,24 @@ def chooseHosts():
 ###############################################################################
 
 
+# When called, this function will append the specified data into the oplog. Data 
+# passed in should follow the format <operation>|<chunkHandle>|<filename>
 def appendToOpLog(data):
 	try:
+		# Append the given data into the oplog file
 		with open(OPLOG, 'a') as oplog:
 			oplog.write(data + "\n")
 
+	# If the oplog is unable to be opened or appended to, retry, if that fails, alert the listener
 	except IOError:
-		logging.error("Could not append to: " + OPLOG)
+		try:
+			# Append the given data into the oplog file
+			with open(OPLOG, 'a') as oplog:
+				oplog.write(data + "\n")
+
+		except IOError:
+			logging.error("Could not append to: " + OPLOG)
+			listener.logInfo('FATAL', 'Appending to opLog was unsuccessful. Database integrity at risk.')
 
 
 
