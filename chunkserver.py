@@ -127,6 +127,12 @@ class workerThread(connThread):
 #				logging.debug("Closed the connection")
 			except socket.error as e:
 				logging.error(e)
+			except IOError as e:
+				fL.send(self.connection,"FAILED")
+				logging.error(e)
+			except exception as e:
+				fL.send(self.connection,"FAILED")
+				logging.error(e)
 
 		elif command == "READ":
 			# read data from a chunk
@@ -161,6 +167,12 @@ class workerThread(connThread):
 				self.connection.close() # closes the connection
 			except socket.error as e:
 				logging.error(e)
+			except IOError as e:
+				fL.send(self.connection,"FAILED")
+				logging.error(e)
+			except exception as e:
+				fL.send(self.connection,"FAILED")
+				logging.error(e)
 
 		elif command == "CONTENTS?":
 			try:
@@ -178,6 +190,12 @@ class workerThread(connThread):
 					logging.debug("sent the output")
 			except socket.error as e:
 				logging.error(e)
+			except IOError as e:
+				fL.send(self.connection,"FAILED")
+				logging.error(e)
+			except exception as e:
+				fL.send(self.connection,"FAILED")
+				logging.error(e)
 
 		elif command == "CREATE":
 			# create a new chunk
@@ -190,8 +208,12 @@ class workerThread(connThread):
 	        	except IOError as e:
 				logging.error(e)
 				fL.send(self.connection, "FAILED")
+			except exception as e:
+				logging.error(e)
+				fL.send(self.connection, "FAILED)
 			else:
 				fL.send(self.connection, "CREATED")
+			
 
 		elif command == "APPEND":	
 			# append new data to a chunk
@@ -210,6 +232,12 @@ class workerThread(connThread):
 	                        	a.write(data) 			 # add the data to it
 	                except socket.error as e:
 				logging.error(e)
+			except IOError as e:
+				fL.send(self.connection,"FAILED")
+				logging.error(e)
+			except exception as e:
+				fL.send(self.connection,"FAILED")
+				logging.error(e)
 
 		elif command == "SANITIZE":
 			# recieves SANITIZE from the scrubber which tells the chunkserver to delete a chunk
@@ -222,9 +250,12 @@ class workerThread(connThread):
                                 logging.debug("removal successfull!")
                         except socket.error as e:
                                 logging.error(e)
-                        except:
-                                fL.send(self.connection, "FAILED") # if there was an error, send failed
-                                logging.debug("removal failed.")
+                        except IOError as e:
+				fL.send(self.connection,"FAILED")
+				logging.error(e)
+			except exception as e:
+				fL.send(self.connection,"FAILED")
+				logging.error(e)
 
  		else:
  			error = "Received invalid command: " + command
