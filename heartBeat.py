@@ -85,6 +85,9 @@ class heartBeat:
                                 # Read from it and parse its contents into a list. Return the list.
                                 with open(self.HOSTS, "r") as file:
                                         cs = file.read().splitlines()
+                                        # If there are any additional \n in the hosts file, this will
+                                        # remove them from our list of chunkservers
+                                        cs = filter(None, cs)
                                         return cs
                         # If the hosts.txt file can not be read, alert the logger
                         except IOError:
@@ -183,10 +186,46 @@ class heartBeat:
                                         newList += item + "\n"
                                 file.write(newList)
 
+
+        # Makes sure that all the IPs in the active hosts still exist in the  
+        # hosts file. Without this, if a server was removed from the hosts file,  
+        # it would remain in the activehosts file. 
+        def checkForMatch(self):
+                # Get a list of all hosts
+                chunkServers = self.getChunkServerIPs()
+                # Get a list of all active hosts
+                activeServers = self.getActiveChunkServers()
+                # Define a list to hold the IPs that will need to be removed
+                # from activehosts
+                toRemove = []
+                # Check to see if all things in activehosts exist in hosts. 
+                # If there is something that is in active hosts but not in hosts, 
+                # Add it to the list of IPs toRemove
+                for item in activeServers:
+                        if item not in chunkServers:
+                                toRemove.append(item)
+                # If there are things that need to be removed:
+                if toRemove != []:      
+                        # Remove the IPs from the activehosts list
+                        for item in toRemove:
+                                activeServers.remove(item)
+
+                        # Define a string that will hold the new list of IPs
+                        # excluding those that are not in the hosts file
+                        activeList = ""
+                        # Add all valid items to the activeList string
+                        for item in activeServers:
+                                activeList += item + "\n"
+                        # Add the valid active IPs to the activehosts file, removing
+                        # the invalid IPs
+                        with open(self.AHOSTS, "w") as file:
+                                file.write(activeList)
+
+
 	# Function to iterate through all of the chunk servers and send a heart beat
 	def pumpBlood(self):
 		# Debug message for successful calling of function
-		logging.debug('Begin sending heartbeats to chunk servers')
+                logging.debug('Begin sending heartbeats to chunk servers')
 		# Get the list of chunk server IPs from the hosts file
                 chunkServers = self.getChunkServerIPs()
 		# For every IP, run the heartBeat funtion, with a short delay between each to ease network load
@@ -195,6 +234,8 @@ class heartBeat:
                         print item
                         self.heartBeat(item)
                         time.sleep(self.DELAY)
+                # Makes sure all the IPs in activehosts are valid host IPs
+                self.checkForMatch()
 
 
 
