@@ -27,7 +27,7 @@
 #
 ###############################################################################
 
-import time, sys, logging, os, listenerConfig#, psutil
+import time, sys, logging, os, listenerConfig, psutil
 import functionLibrary as fL
 
 ###########################
@@ -65,7 +65,6 @@ def logInfo(kind, info):
 	logging.debug(kind + ": " + str(info))
 	with open(logName, 'a') as f:
 		f.write(kind + ': ' + str(info) + '\n')
-"""
 def getCPU():
 	# gets the percent of the CPU in use
 	cpuPercent = psutil.cpu_percent()
@@ -89,7 +88,7 @@ def getDisk():
 	# recieves information about the disk
 	space = psutil.disk_usage('/')
 	logInfo("DISK", space)
-"""
+
 def filesMissing():
 	# reads the local directory  and checks to make sure that the files
 	# that are supposed to be there are there
