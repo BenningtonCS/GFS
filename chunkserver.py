@@ -210,7 +210,7 @@ class workerThread(connThread):
 				fL.send(self.connection, "FAILED")
 			except exception as e:
 				logging.error(e)
-				fL.send(self.connection, "FAILED)
+				fL.send(self.connection, "FAILED")
 			else:
 				fL.send(self.connection, "CREATED")
 			
