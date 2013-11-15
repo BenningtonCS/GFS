@@ -16,7 +16,7 @@
 #################################################################################
 
 
-import config, sys, logging, socket, random
+import config, sys, logging, socket, random, listener
 
 
 ###############################################################################
@@ -32,8 +32,6 @@ HOSTSFILE = config.hostsfile
 ACTIVEHOSTSFILE = config.activehostsfile
 OPLOG = config.oplog
 chunkPort = config.port
-
-
 
 ###############################################################################
 
@@ -56,9 +54,6 @@ def debug():
 	        # If it was not, set the logging level to default (only shows messages with level
 	        # warning or higher)
 	        logging.basicConfig(filename='apiLog.log', format='%(asctime)s %(levelname)s : %(message)s')
-
-
-
 
 
 ###############################################################################
@@ -150,33 +145,6 @@ def send(connection, message):
 
 
 
-
-###############################################################################
-
-#               GET AND INCREMENT CHUNK HANDLE
-
-###############################################################################
-
-
-# Function to keep track of chunkHandle numbers and to increment the number
-def handleCounter():
-	# Visual confirmation for debugging: confirm init of handleCounter()
-	logging.debug('Generating chunk handle')
-	# Create an empty string to hold the current chunk handle
-	chunkHandle = ""
-	# Open the text file holding the current chunkHandle number and read it into memory
-	with open('handleCounter.txt', 'r') as file:
-		chunkHandle = int(file.read())
-	# Open the text file holding the current chunkHandle and increment it by 1
-	with open('handleCounter.txt', 'w') as file:
-		file.write(str(chunkHandle + 1))
-	# Visual confirmation for debugging: confirm success of handleCounter()
-	logging.debug('Successfully generated chunk handle')
-	# Return the chunkHandle
-	return chunkHandle
-
-
-
 ###############################################################################
 
 #               RANDOMLY CHOOSE CHUNK SERVER LOCATIONS
@@ -216,13 +184,24 @@ def chooseHosts():
 ###############################################################################
 
 
+# When called, this function will append the specified data into the oplog. Data 
+# passed in should follow the format <operation>|<chunkHandle>|<filename>
 def appendToOpLog(data):
 	try:
+		# Append the given data into the oplog file
 		with open(OPLOG, 'a') as oplog:
 			oplog.write(data + "\n")
 
+	# If the oplog is unable to be opened or appended to, retry, if that fails, alert the listener
 	except IOError:
-		logging.error("Could not append to: " + OPLOG)
+		try:
+			# Append the given data into the oplog file
+			with open(OPLOG, 'a') as oplog:
+				oplog.write(data + "\n")
+
+		except IOError:
+			logging.error("Could not append to: " + OPLOG)
+			listener.logInfo('FATAL', 'Appending to opLog was unsuccessful. Database integrity at risk.')
 
 
 

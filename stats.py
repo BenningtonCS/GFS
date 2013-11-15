@@ -62,17 +62,19 @@ class statGen:
 					string += '<tr>'
 					# if active, add OFFLINE to the end of string
 					if hosts[x] not in activeHosts:
-						string += '<td>' + hosts[x] + '</td><td><span class="label label-warning">OFFLINE</span></td>'
+						string += '<td>' + hosts[x] + '</td><td><span class="label label-warning">OFFLINE</span></td><td>N/A</td>'
 					# if online, add ONLINE to end of string
 					elif hosts[x] in activeHosts:
 						string += '<td>' + hosts[x] + '</td><td><span class="label label-success">ONLINE</span></td>'
-					try:
-						file = urllib2.urlopen("http://"+ hosts[x] +":8000/httpServerFiles/stats.txt")
-						fileData = file.read().split('|')
-						difference = str(float(fileData[1]) - float(fileData[0]))
-					except IOError:
-						logging.error("Couldnt read stats file")
-					string += '<td><progress max="'+fileData[1]+'" value="'+ difference +'"></progress> '+fileData[0]+'GB/'+fileData[1]+'GB</td><td><a href="http://' + hosts[x] +':8000/httpServerFiles/chunkserverLog.log">View Log</a></td></tr>'
+						try:
+							file = urllib2.urlopen("http://"+ hosts[x] +":8000/httpServerFiles/stats.txt")
+							fileData = file.read().split('|')
+							difference = str(float(fileData[1]) - float(fileData[0]))
+							string += '<td><progress max="'+fileData[1]+'" value="'+ difference +'"></progress> '+fileData[0]+'GB/'+fileData[1]+'GB</td>'
+						except IOError:
+							logging.error("Couldnt read stats file")
+					
+					string += '<td><a href="http://' + hosts[x] +':8000/httpServerFiles/chunkserverLog.log">View Log</a></td></tr>'
 				string += '</table></div>'
 				# append all data to the html body string			
 				self.data += string

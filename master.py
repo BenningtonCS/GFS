@@ -264,17 +264,30 @@ class handleCommand(threading.Thread):
 	def delete(self):
 		logging.debug('Begin updating delete flag to True')
 
-		try:
-			# Change the delete flag for the specified file
-			database.flagDelete(self.fileName)
-			# Confirm that file has been marked for deletion
-			fL.send(self.s, "MARKED")
+		# Make sure the file is not already marked for delete
+		if self.fileName not in database.toDelete:
+			# Make sure the file you wish to delete is actually a file in the system
+			if self.fileName in database.data.keys():
+				try:
+					# Change the delete flag for the specified file
+					database.flagDelete(self.fileName)
+					# Confirm that file has been marked for deletion
+					fL.send(self.s, "MARKED")
 
-		except:
-			logging.error("File could not be marked for deletion")
+					logging.debug('Delete Flags Updated')
+
+				except:
+					logging.error("File could not be marked for deletion")
+					fL.send(self.s, "FAILED")
+
+			else:
+				logging.debug('The file, ' + self.fileName + ', does not exist.')
+				fL.send(self.s, "FAILED")
+
+		else:
+			logging.debug('The file, ' + self.fileName + ', is already marked for delete')
 			fL.send(self.s, "FAILED")
-
-		logging.debug('Delete Flags Updated')
+		
 
 
 	# Function that will prompt the database to update the delete flag for 
@@ -282,18 +295,27 @@ class handleCommand(threading.Thread):
 	def undelete(self):
 		logging.debug('Begin updating delete flag to False')
 
-		try:
-			# Change the delete flag for the specified file
-			database.flagUndelete(self.fileName)
-			# Confirm that file has been marked for deletion
-			fL.send(self.s, "MARKED")
+		# Make sure the file is already marked for delete
+		if self.fileName in database.toDelete:
+			
+			try:
+				# Change the delete flag for the specified file
+				database.flagUndelete(self.fileName)
+				# Confirm that file has been marked for deletion
+				fL.send(self.s, "MARKED")
 
-		except:
-			logging.error("File could not be marked for undeletion")
+				logging.debug('Delete Flags Updated')
+
+			except:
+				logging.error("File could not be unmarked for deletion")
+				fL.send(self.s, "FAILED")
+
+		# If the file is not already marked for delete, you can't undelete it..
+		else:
+			logging.debug('The file, ' + self.fileName + ', was not marked for deletion to begin with.')
 			fL.send(self.s, "FAILED")
-		
 
-		logging.debug('Delete flag updated')
+
 
 
 
