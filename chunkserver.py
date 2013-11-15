@@ -105,7 +105,7 @@ class workerThread(connThread):
 			except IOError as e:
 				fL.send(self.connection,"FAILED")
 				logging.error(e)
-			except exception as e:
+			except Exception as e:
 				fL.send(self.connection,"FAILED")
 				logging.error(e)
 
@@ -145,7 +145,7 @@ class workerThread(connThread):
 			except IOError as e:
 				fL.send(self.connection,"FAILED")
 				logging.error(e)
-			except exception as e:
+			except Exception as e:
 				fL.send(self.connection,"FAILED")
 				logging.error(e)
 
@@ -168,7 +168,7 @@ class workerThread(connThread):
 			except IOError as e:
 				fL.send(self.connection,"FAILED")
 				logging.error(e)
-			except exception as e:
+			except Exception as e:
 				fL.send(self.connection,"FAILED")
 				logging.error(e)
 
@@ -183,7 +183,7 @@ class workerThread(connThread):
 	        	except IOError as e:
 				logging.error(e)
 				fL.send(self.connection, "FAILED")
-			except exception as e:
+			except Exception as e:
 				logging.error(e)
 				fL.send(self.connection, "FAILED")
 			else:
@@ -210,7 +210,7 @@ class workerThread(connThread):
 			except IOError as e:
 				fL.send(self.connection,"FAILED")
 				logging.error(e)
-			except exception as e:
+			except Exception as e:
 				fL.send(self.connection,"FAILED")
 				logging.error(e)
 
@@ -228,7 +228,7 @@ class workerThread(connThread):
                         except IOError as e:
 				fL.send(self.connection,"FAILED")
 				logging.error(e)
-			except exception as e:
+			except Exception as e:
 				fL.send(self.connection,"FAILED")
 				logging.error(e)
 
