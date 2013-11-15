@@ -1,72 +1,37 @@
 #!/usr/bin/env python
 
+##############################################################################
+#
+#       FILE: listener.py
+#       DATE: 2013 Nov. 15
+#       AUTHOR: Brendon Walter
+#
+#       DESCTIPTION: listener.py uses psutil to listen to the CPU, memory, 
+#       network information, and disk space and logs it to a file called 
+#       listenerLog.log. It also checks the current directory to see what files
+#       are currently in it and checks it against a list of files that need to
+#       be there, as stated in the listernerConfig.py. These files that need
+#       to be here should be in the form of a list. It should look like as 
+#       follows: files = ["hosts.txt", "config.py"]. 
+#       If either of those items are not found in the current directoy, it will
+#       return a critical error that should be checked as soon as possible.
+#
+#       USAGE: run the listener by:
+#               python listener.py <-v> <run delay>
+#       or:
+#               ./listener.py <-v> <run delay>
+#       running the listener in verbose mode (-v) will print out information
+#       for debugging purposes. The run delay (in seconds) will determine how
+#       often the program runs through the main loop and thus, how often it 
+#       checks the CPU, memory, network, and disk usage.
+#
+###############################################################################
+
 import psutil, time, sys, logging, os, re, listenerConfig
+#import functionLibrary as fL
 
-#######################
-
-#    L O G G I N G    #
-
-#######################
-
-# Setup for having a verbose mode for debugging:
-# USAGE: When running program, $python chunkserver.py , no debug message will
-# show up. Instead, the program should be run in verbose, $
-#       python chunkserver.py -v ,
-# for debug messages to show up
-
-# Get a list of command line arguments
-args = sys.argv
-# Check to see if the verbose flag was one of the command line arguments
-if "-v" in args:
-        # If it was one of the arguments, set the logging level to debug
-        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
-else:
-        # If it was not, set the logging level to default (only shows messages
-        # with level warning or higher)
-        logging.basicConfig(filename='httpServerFiles/listenerErrors.log', format='%(asctime)s %(levelname)s : %(message)s')
-
-##########################
-
-#    V A R I A B L E S   #
-
-##########################
-
-# The time that the program waits before running again is given in an argument.
-try:
-        # The first argument is the delay time
-        delayTime = float(args[1])
-        logging.debug("the time delay is " + str(delayTime))
-except ValueError:
-        # if there is a value error (as in, -v is put before the dealytime,
-        # it will assume that the second argument in the list is the delaytime.
-        try:
-                delayTime = float(args[2])
-                logging.debug("the time delay is " + str(delayTime))
-        except IndexError as e:
-                logging.debug("user forgot to put in the time delay")
-                print e
-                print "Please put in the time delay as an argument."
-                exit()
-except IndexError as e:
-        logging.debug("user forgot to put in the time delay")
-        print e
-        print "Please put in the time delay as an argument."
-        exit()
-
-# name of the log in which all of the (non-error related) information
-# is stored.
-logName = listenerConfig.logName
-logging.debug("Name of listen log: " + logName)
-
-# "files" is a list of files that need to be in the directory. 
-files = listenerConfig.files
-
-for x in files: logging.debug("Files in config: " + x)
-
-totItems = listenerConfig.numberOfItemsPerLine
-logging.debug(str(totItems) + " items per line in log.")
-
-count = [0]
+# import debugging
+#fL.debug()
 
 ###########################
 
@@ -84,7 +49,6 @@ def logInfo(lineNum, info):
 	logging.debug("read " + str(data) + " from the log.")
 
 	if data == []:
-		print "line is empty."	
 		l = []
 
 	# if the file is empty, there should be some way of handling this!!
@@ -139,20 +103,20 @@ def getCPU():
 	logging.debug("CPU percent : " + str(cpuPercent))
 	logInfo(lineNum, cpuPercent)
 
-def test():
-	lineNum = 2
-	count[0] += 1
-	logging.debug("count put to " + str(count[0]))
-	logInfo(lineNum, count[0])
-
 def getMemory():
-	pass
+	lineNum = 1
+	vm = psutil.virtual_memory()
+	logInfo(lineNum, vm)
 
 def getNetwork():
-	pass
+	lineNum = 2
+	network = psutil.net_io_counters()
+	logInfo(lineNum, network)
 
 def getDisk():
-	pass
+	lineNum = 3
+	disk = psutil.disk_usage('/')
+	logInfo(lineNum, disk)
 
 # This should be looked at to make it so that it will print what files are missing
 def filesMissing():
@@ -185,17 +149,46 @@ def filesMissing():
 
 ###########################
 
-#    M A I N   L O O P    #
+#    M A I N   C O D E    #
 
 ###########################
 
 logging.debug("Starting main loop.........")
 
-while 1:
-	getCPU()
-	test()
-	getMemory()
-	getNetwork()
-	getDisk()
-#	filesMissing()
-	time.sleep(delayTime)
+if __name__ == '__main__':
+
+	##########################
+	
+	#    V A R I A B L E S   #
+	
+	##########################
+	
+	# The time that the program waits before running again is given in an argument.
+	delayTime = listenerConfig.delayTime
+	
+	# name of the log in which all of the (non-error related) information
+	# is stored.
+	logName = listenerConfig.logName
+	logging.debug("Name of listen log: " + logName)
+	
+	# "files" is a list of files that need to be in the directory. 
+	files = listenerConfig.files
+	
+	for x in files: logging.debug("Files in config: " + x)
+	
+	totItems = listenerConfig.numberOfItemsPerLine
+	logging.debug(str(totItems) + " items per line in log.")
+	
+	##########################
+
+	#   M A I N    L O O P   #
+	
+	##########################
+	
+	while 1:
+		getCPU()
+		getMemory()
+		getNetwork()
+		getDisk()
+		filesMissing()
+		time.sleep(delayTime)
