@@ -20,28 +20,9 @@
 import socket, config, logging, sys
 import functionLibrary as fL
 
+##import debugging
+fL.debug()
 
-#########################################################################
-
-#			VERBOSE (DEBUG)	HANDLING	
-
-#########################################################################
-
-# Setup for having a verbose mode for debugging:
-# USAGE: When running program, $python scrubber.py , no debug message will show up
-# Instead, the program should be run in verbose, $python scrubber.py -v , for debug 
-# messages to show up
-
-# Get a list of command line arguments
-args = sys.argv
-# Check to see if the verbose flag was one of the command line arguments
-if "-v" in args:
-        # If it was one of the arguments, set the logging level to debug 
-        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
-else:
-        # If it was not, set the logging level to default (only shows messages with level
-        # warning or higher)
-        logging.basicConfig(format='%(levelname)s : %(message)s')
 
 
 

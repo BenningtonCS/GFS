@@ -18,33 +18,8 @@ connection to the appropriate worker thread"""
 #import all the necessary libraries
 import socket, threading, os, config, sys, logging, datetime
 import functionLibrary as fL
-
-
-###############################################################################
-
-#               Verbose (Debug) Handling                                      #
-
-###############################################################################
-
-
-# Setup for having a verbose mode for debugging:
-# USAGE: When running program, $python chunkserver.py , no debug message will 
-# show up. Instead, the program should be run in verbose, $python chunkserver.py -v , 
-# for debug messages to show up
-
-# Get a list of command line arguments
-args = sys.argv
-# Check to see if the verbose flag was one of the command line arguments
-if "-v" in args:
-        # If it was one of the arguments, set the logging level to debug 
-        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
-else:
-        # If it was not, set the logging level to default (only shows messages 
-        # with level warning or higher)
-        logging.basicConfig(level=logging.INFO, filename='httpServerFiles/chunkserverLog.log', format='%(asctime)s %(levelname)s : %(message)s')
-
-
-
+#import debugging
+fL.debug()
 
 
 

@@ -27,7 +27,8 @@
 #
 ###############################################################################
 
-import psutil, time, sys, logging, os, listenerConfig
+import time, sys, logging, os, listenerConfig#, psutil
+import functionLibrary as fL
 
 ###########################
 
@@ -35,22 +36,9 @@ import psutil, time, sys, logging, os, listenerConfig
 
 ###########################
 
-# Setup for having a verbose mode for debugging:
-# USAGE: When running program, $python chunkserver.py , no debug message will
-# show up. Instead, the program should be run in verbose, $
-#	python chunkserver.py -v ,
-# for debug messages to show up
+#import debugging
+fL.debug()
 
-# Get a list of command line arguments
-args = sys.argv
-# Check to see if the verbose flag was one of the command line arguments
-if "-v" in args:
-        # If it was one of the arguments, set the logging level to debug
-        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
-else:
-        # If it was not, set the logging level to default (only shows messages
-        # with level warning or higher)
-        logging.basicConfig(filename='httpServerFiles/listenerErrors.log', format='%(asctime)s %(levelname)s : %(message)s')
 
 
 
@@ -77,7 +65,7 @@ def logInfo(kind, info):
 	logging.debug(kind + ": " + str(info))
 	with open(logName, 'a') as f:
 		f.write(kind + ': ' + str(info) + '\n')
-
+"""
 def getCPU():
 	# gets the percent of the CPU in use
 	cpuPercent = psutil.cpu_percent()
@@ -101,7 +89,7 @@ def getDisk():
 	# recieves information about the disk
 	space = psutil.disk_usage('/')
 	logInfo("DISK", space)
-
+"""
 def filesMissing():
 	# reads the local directory  and checks to make sure that the files
 	# that are supposed to be there are there

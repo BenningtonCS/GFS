@@ -41,23 +41,21 @@ chunkPort = config.port
 
 ###############################################################################
 
+def debug():
+	# Setup for having a verbose mode for debugging:
+	# USAGE: When running program, $python API.py , no debug message will show up
+	# Instead, the program should be run in verbose, $python API.py -v , for debug 
+	# messages to show up
 
-# Setup for having a verbose mode for debugging:
-# USAGE: When running program, $python functionLibrary.py , no debug message will show up
-# Instead, the program should be run in verbose, $python functionLibrary.py -v , for debug 
-# messages to show up
-
-# Get a list of command line arguments
-#args = sys.argv
-#FORMAT = "%(asctime)s %(levelname)s : %(message)s"
-# Check to see if the verbose flag was one of the command line arguments
-#if "-v" in args:
-        # If it was one of the arguments, set the logging level to debug 
-#        logging.basicConfig(level=logging.DEBUG, format=FORMAT)
-#else:
-        # If it was not, set the logging level to default (only shows messages with level
-        # warning or higher)
-#        logging.basicConfig(filename='functionLibraryLog.txt', format=FORMAT)
+	# Get a list of command line arguments
+	# Check to see if the verbose flag was one of the command line arguments
+	if "-v" in sys.argv:
+	        # If it was one of the arguments, set the logging level to debug 
+	        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
+	else:
+	        # If it was not, set the logging level to default (only shows messages with level
+	        # warning or higher)
+	        logging.basicConfig(filename='apiLog.log', format='%(asctime)s %(levelname)s : %(message)s')
 
 
 
