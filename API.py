@@ -54,17 +54,8 @@ class API():
 	#lets define some variables
 	global MASTER_ADDRESS
 	global TCP_PORT
-	MASTER_ADDRESS = config.masterip
+	MASTER_ADDRESS = '10.10.117.104'
 	TCP_PORT = config.port
-
-	#lets make the API able to send and recieve messages
-	m = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 	
-	m.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-	try:
-		m.connect((MASTER_ADDRESS, TCP_PORT))
-	except:
-		print "ERROR: COULD NOT CONNECT TO MASTER"
-		exit(0)
 
 	#lets make some methods
 	
@@ -75,13 +66,22 @@ class API():
 	#the data "makeChunk". The chunkservers then make an empty chunk at
 	#each of those locations. Takes the filename as an arguement.
 	def create(self,filename):
+		#lets make the API able to send and recieve messages
+		m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        	m.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        	try:
+                	m.connect((MASTER_ADDRESS, TCP_PORT))
+        	except:
+                	print "ERROR: COULD NOT CONNECT TO MASTER"
+                	exit(0)
+
 		#send a CREATE request to the master
 		try:
-			fL.send(self.m, "CREATE|" + filename)
+			fL.send(m, "CREATE|" + filename)
 		except: 
 			print "ERROR: COULD NOT SEND CREATE REQUEST TO MASTER"
 		#receive data back from the master 
-		self.data = fL.recv(self.m)
+		self.data = fL.recv(m)
 		#error if the file trying to be created already exists 
 		if self.data == "FAIL1":
 			print "THAT FILE EXISTS ALREADY... EXITING API"
@@ -98,7 +98,7 @@ class API():
 		dataLength = len(self.splitdata)
 		cH = self.splitdata[-1]
 		#close the connection to the master so we can connect to the chunk servers
-		self.m.close()
+		m.close()
 		#iterate through each IP address received from the master
 		for n in range(0, dataLength-1):
 			#create a socket to be used to connect to chunk server
@@ -149,18 +149,22 @@ class API():
 	#client then sends "append" and the new data to the chunk servers which
 	#append the new data to the files.
 	def append(self, filename, newData):
-
-		self.m.close()
+		#lets make the API able to send and recieve messages
+	        m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        	m.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        	try:
+                	m.connect((MASTER_ADDRESS, TCP_PORT))
+        	except:
+                	print "ERROR: COULD NOT CONNECT TO MASTER"
+                	exit(0)
 		#send APPEND request to master
 		try:
-			self.m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                        self.m.connect((MASTER_ADDRESS, TCP_PORT))
-
-			fL.send(self.m, "APPEND|" + filename)
+			fL.send(m, "APPEND|" + filename)
 		except:
 			print "COULD NOT SEND APPEND REQUEST TO MASTER"
+			exit(0)
 		#receive data back from master
-		self.data = fL.recv(self.m)
+		self.data = fL.recv(m)
 		print self.data
 		#parse the data into useful parts
 		self.splitdata = self.data.split("|")
@@ -169,7 +173,7 @@ class API():
 		#get length of the requested new data to use for append across chunks
 		lenNewData = len(newData)
 		#close connection to master 
-        	self.m.close()
+        	m.close()
 	        for n in range(0, dataLength-1):
 			#create socket to connect to chunk server at location
 			self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -207,13 +211,7 @@ class API():
 				print "first append"
 				#close connection to chunk server
 				s.close()
-				#connect back to the master
-				'''m  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-				try:
-					m.connect((MASTER_ADDRESS, TCP_PORT))
-				except:
-					print "ERROR: COULD NOT CONNECT TO MASTER DURING APPEND ACROSS CHUNKS"
-                			exit(0)'''
+				
 			elif (lenNewData <= remainingSpace):
 				self.s.close()
 				t = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -276,13 +274,21 @@ class API():
 	#that chunk. I then pass on the necessary data to the chunk servers which send me back the
 	#contents of the file. 
 	def read(self, filename, byteOffset, bytesToRead):
+		#lets make the API able to send and recieve messages
+        	m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        	m.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        	try:
+                	m.connect((MASTER_ADDRESS, TCP_PORT))
+        	except:
+                	print "ERROR: COULD NOT CONNECT TO MASTER"
+                	exit(0)
 		#send READ request to the master
 		try:
-			fL.send(self.m, "READ|" + filename + "|" + str(byteOffset) + "|" + str(bytesToRead))
+			fL.send(m, "READ|" + filename + "|" + str(byteOffset) + "|" + str(bytesToRead))
 		except:
 			print "ERROR: COULD NOT SEND READ REQUEST TO MASTER"
 		#recieve data from the master
-		self.data = fL.recv(self.m)
+		self.data = fL.recv(m)
 		#print self.data
 		#split the data into a list
 		self.splitdata = self.data.split("|")
@@ -304,7 +310,7 @@ class API():
 			offset = secondSplit[2]
 			#print "offset = ", offset
 			#close connection to master
-			self.m.close()
+			m.close()
 			#connect to the chunk server
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			try:
@@ -322,25 +328,27 @@ class API():
 		#close connection to chunk server		
                	s.close()
 		#reestablish connection to master
-                m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                try:
-			m.connect((MASTER_ADDRESS, TCP_PORT))
-		except:
-			print "COULD NOT RECONNECT TO MASTER"
-			exit(0)
 
 	#This is the delete function. It takes a filename as a parameter and 
 	#deletes the given file from our GFS implementation. When a DELETE 
 	#request is sent to the master it marks the file for deletion. The 
 	#next time the garbage collector runs it will remove any marked files
 	def delete(self, filename):
+		#lets make the API able to send and recieve messages
+        	m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        	m.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        	try:
+                	m.connect((MASTER_ADDRESS, TCP_PORT))
+        	except:
+                	print "ERROR: COULD NOT CONNECT TO MASTER"
+                	exit(0)
 		#send DELETE request to the master
 		try:
-			fL.send(self.m, "DELETE|" + filename)
+			fL.send(m, "DELETE|" + filename)
 		except:
 			print "ERROR: COULD NOT SEND DELETE REQUEST TO MASTER"
 		#receive acks from the master
-		self.data = fL.recv(self.m)
+		self.data = fL.recv(m)
 		#tell the user whether the file was successfully marked or not
 		if self.data == "FAILED":
 			print "ERROR: COULD NOT MARK FILE FOR DELETION"
@@ -352,13 +360,21 @@ class API():
 	#if that file is marked for deletion, and the garbage collector has not 
 	#removed it yet, the file will be unmarked and safe from deletion.
 	def undelete(self, filename):
+		#lets make the API able to send and recieve messages
+        	m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        	m.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        	try:
+                	m.connect((MASTER_ADDRESS, TCP_PORT))
+        	except:
+                	print "ERROR: COULD NOT CONNECT TO MASTER"
+                	exit(0)
 		#send UNDELETE request to master
 		try:
-			fL.send(self.m, "UNDELETE|" + filename)
+			fL.send(m, "UNDELETE|" + filename)
 		except:
 			print "ERROR COULD NOT SEND UNDELETE REQUEST TO MASTER"
 		#receive acks from the master
-		self.data = fL.recv(self.m)
+		self.data = fL.recv(m)
 		#tell the user whether the file was successfully unmarked or not
 		if self.data == "FAILED":
 			print "ERROR: COULD NOT UNDELETE FILE"
