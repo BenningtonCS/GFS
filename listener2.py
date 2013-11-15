@@ -81,8 +81,7 @@ def logInfo(lineNum, info):
 	with open(logName, 'r') as r:
 		# take the data in the line and split it into a list
 		data = r.readlines()
-		print data
-		logging.debug("read " + str(data) + " from the log.")
+	logging.debug("read " + str(data) + " from the log.")
 
 	if data == []:
 		print "line is empty."	
@@ -92,14 +91,15 @@ def logInfo(lineNum, info):
 
 	else: 
 		# take the data from the log and split it into a list at the | and \n
-		l = re.split('[|\n]', data[int(lineNum)])
+		try:
+			l = re.split('[|\n]', data[int(lineNum)])
+		except IndexError:
+			l = [0]
 	
 		# the list 2 items are empty strings (at least for the CPU). This will have 
 		# to be removed depending on what happens with the other functions.
 		del l[-1]
 		
-	print l
-	
 	# if the list has more elements than it should, delte them until it has the
 	# right number
 	while len(l) > totItems:
@@ -114,16 +114,19 @@ def logInfo(lineNum, info):
 	# append the new data to the list
 	l.append(str(info))
 	logging.debug("appended " + str(info) + " to the list.")
-	print l		
 
 	# turn that list into a string
-	newData = data[int(lineNum)]
 	newData = '|'.join(l)
-	print newData
 
 	# add a new line character to the end of the string
-	data[int(lineNum)] = newData + '\n'
-	print data
+	try:
+		if data == []:
+			data = newData + '\n'
+		else: 
+			data[int(lineNum)] = newData + '\n'
+
+	except IndexError:
+		data.append(newData + '\n')
 	
 	# write new data to the log
 	with open(logName, 'w') as w:
@@ -137,14 +140,15 @@ def getCPU():
 	logInfo(lineNum, cpuPercent)
 
 def test():
-	lineNum = 1
+	lineNum = 2
 	count[0] += 1
-#	logInfo(lineNum, count[0])
+	logging.debug("count put to " + str(count[0]))
+	logInfo(lineNum, count[0])
 
 def getMemory():
 	pass
 
-def getMemory():
+def getNetwork():
 	pass
 
 def getDisk():
@@ -189,7 +193,9 @@ logging.debug("Starting main loop.........")
 
 while 1:
 	getCPU()
+	test()
 	getMemory()
+	getNetwork()
 	getDisk()
 #	filesMissing()
 	time.sleep(delayTime)
