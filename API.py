@@ -63,8 +63,8 @@ class API():
 	#master will send back a chunk handle followed by three locations in
 	#which to create this chunk handle. the client then sends the chunk 
 	#handle to the three locations (which are chunk servers) along with
-	#the data "makeChunk". The chunkservers then make an empty chunk at
-	#each of those locations. Takes the filename as an arguement.
+	#the data "CREATE". The chunkservers then make an empty chunk at
+	#each of those locations. Takes the filename as an argument.
 	def create(self,filename):
 		#lets make the API able to send and recieve messages
 		m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -160,6 +160,10 @@ class API():
 		#receive data back from master
 		self.data = fL.recv(m)
 		print self.data
+		#some error handling
+		if (self.data == FAILED):
+			print "ERROR: MASTER SENT FAIL MESSAGE exiting..."
+			exit(0)
 		#parse the data into useful parts
 		self.splitdata = self.data.split("|")
 		dataLength = len(self.splitdata)
@@ -179,8 +183,13 @@ class API():
 				print "ERROR: COULD NOT CONNECT TO CHUNK SERVER AT ", location
 			#ask chunk server how much room is left on latest chunk
 			fL.send(self.s, "CHUNKSPACE?|" + cH)
-			#the response is stored in dat
+			#the response is stored in remainingSpace
 			remainingSpace = fL.recv(self.s)
+			#some error handling
+			if remainingSpace == "FAILED":
+				print "CHUNKSPACE REQUEST FAILED. exiting..."
+				exit(0)
+			#make remainingSpace an integer
 			remainingSpace = int(remainingSpace)
 			print lenNewData
 			print remainingSpace
@@ -203,6 +212,11 @@ class API():
 					print "ERROR: COULD NOT REOPEN SOCKET"
 				fL.send(s, "APPEND|" + cH + "|" + newData1)
 				print "first append"
+				SoF = fL.recv(s)
+				#error handling
+				if SoF == "FAILED":
+					print "ERROR WITH APPEND ON CHUNK SERVER SIDE. exiting..."
+					exit(0)
 				#close connection to chunk server
 				s.close()
 				
@@ -213,6 +227,12 @@ class API():
 					fL.send(t, "APPEND|" + cH + "|" + newData)
 				except:
 					print "ERROR: COULD NOT SEND APPEND TO CHUNK SERVER"			
+				SoF = fL.recv(t)
+				#error handling/acks
+				if SoF == "FAILED":
+					print "ERROR WITH APPEND ON CHUNK SERVER SIDE. exiting..."
+					exit(0)				
+
 
 		if lenNewData > remainingSpace:
 			m  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -251,7 +271,19 @@ class API():
                                 	continue
                         	#send CREATE request to the chunk server at the current location
                         	fL.send(s, "CREATE|" + cH)
-				s.close()
+				global ack
+                        	ack = fL.recv(s)
+                        #close connection to current chunk server.
+                        s.close()
+
+			#do some acks
+                	if ack == "FAILED":
+                        	print "ERROR: CHUNK CREATION FAILED"
+                        	fL.send(m, "FAILED")
+                	elif ack == "CREATED":
+                        	print "Chunk creation successful!"
+                        	fL.send(m, "CREATED")
+               		m.close()
 			
 			#now that the new chunk has been created on all of the servers...
 			#...run append again with the second part of the new data

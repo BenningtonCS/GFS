@@ -41,14 +41,14 @@ while 1:
 		continue
 
 	time.sleep(2)
-	again = raw_input("Would you like to perform another operation? : ")	
+	#again = raw_input("Would you like to perform another operation? : ")	
 
-	if again == "no":
-		break
-	elif again == "yes":
-		continue
-	elif (again != "yes" or "no"):
-		print "Please enter 'yes' or 'no' the next time you are asked if you'd like to continue."
-		print "If you wish to no longer continue operations, when prompted for operation, input 'nothing'. "
+	#if again == "no":
+	#	break
+	#elif again == "yes":
+	#	continue
+	#elif (again != "yes" or "no"):
+	#	print "Please enter 'yes' or 'no' the next time you are asked if you'd like to continue."
+	print "If you wish to no longer continue operations, when prompted for operation, input 'nothing'. "
 
 
