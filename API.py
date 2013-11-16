@@ -375,8 +375,12 @@ class API():
 		#receive acks from the master
 		self.data = fL.recv(m)
 		#tell the user whether the file was successfully marked or not
-		if self.data == "FAILED":
-			print "ERROR: COULD NOT MARK FILE FOR DELETION"
+		if self.data == "FAILED1":
+			print "ERROR: The file could not be marked for deletion."
+		elif self.data == "FAILED2":
+			print "ERROR: The given file name does not exist."
+		elif self.data == "FAILED3":
+			print "The file has already been marked for deletion."
 		elif self.data == "MARKED":
 			print "File successfully marked for deletion."
 		m.close()
@@ -401,8 +405,10 @@ class API():
 		#receive acks from the master
 		self.data = fL.recv(m)
 		#tell the user whether the file was successfully unmarked or not
-		if self.data == "FAILED":
+		if self.data == "FAILED1":
 			print "ERROR: COULD NOT UNDELETE FILE"
+		elif self.data == "FAILED2":
+			print "File was not flagged for deletion."
 		elif self.data == "MARKED":
 			print "File successfully unmarked for deletion."
 		m.close()

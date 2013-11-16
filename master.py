@@ -297,15 +297,15 @@ class handleCommand(threading.Thread):
 
 				except:
 					logging.error("File could not be marked for deletion")
-					fL.send(self.s, "FAILED")
+					fL.send(self.s, "FAILED1")
 
 			else:
 				logging.debug('The file, ' + self.fileName + ', does not exist.')
-				fL.send(self.s, "FAILED")
+				fL.send(self.s, "FAILED2")
 
 		else:
 			logging.debug('The file, ' + self.fileName + ', is already marked for delete')
-			fL.send(self.s, "FAILED")
+			fL.send(self.s, "FAILED3")
 		
 
 
@@ -327,12 +327,12 @@ class handleCommand(threading.Thread):
 
 			except:
 				logging.error("File could not be unmarked for deletion")
-				fL.send(self.s, "FAILED")
+				fL.send(self.s, "FAILED1")
 
 		# If the file is not already marked for delete, you can't undelete it..
 		else:
 			logging.debug('The file, ' + self.fileName + ', was not marked for deletion to begin with.')
-			fL.send(self.s, "FAILED")
+			fL.send(self.s, "FAILED2")
 
 
 

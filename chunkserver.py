@@ -213,6 +213,8 @@ class workerThread(connThread):
 			except Exception as e:
 				fL.send(self.connection,"FAILED")
 				logging.error(e)
+			else:
+				fL.send(self.connection,"SUCCESS")
 
 		elif command == "SANITIZE":
 			# recieves SANITIZE from the scrubber which tells the chunkserver to delete a chunk
