@@ -16,7 +16,7 @@
 #################################################################################
 
 
-import config, sys, logging, socket, random, listener
+import config, sys, logging, socket, random
 
 
 ###############################################################################
@@ -39,12 +39,12 @@ chunkPort = config.port
 
 ###############################################################################
 
-def debug():
-	# Setup for having a verbose mode for debugging:
-	# USAGE: When running program, $python API.py , no debug message will show up
-	# Instead, the program should be run in verbose, $python API.py -v , for debug 
-	# messages to show up
+# Setup for having a verbose mode for debugging:
+# USAGE: When running program, $python API.py , no debug message will show up
+# Instead, the program should be run in verbose, $python API.py -v , for debug 
+# messages to show up
 
+def debug():
 	# Get a list of command line arguments
 	# Check to see if the verbose flag was one of the command line arguments
 	if "-v" in sys.argv:
@@ -53,7 +53,19 @@ def debug():
 	else:
 	        # If it was not, set the logging level to default (only shows messages with level
 	        # warning or higher)
-	        logging.basicConfig(filename='apiLog.log', format='%(asctime)s %(levelname)s : %(message)s')
+	        logging.basicConfig(filename='masterLog.log', level=logging.INFO, format='%(asctime)s %(levelname)s : %(message)s')
+
+
+def chunkdebug():
+	# Get a list of command line arguments
+	# Check to see if the verbose flag was one of the command line arguments
+	if "-v" in sys.argv:
+	        # If it was one of the arguments, set the logging level to debug 
+	        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
+	else:
+	        # If it was not, set the logging level to default (only shows messages with level
+	        # warning or higher)
+	        logging.basicConfig(filename='httpServerFiles/chunkserverLog.log', level=logging.INFO, format='%(asctime)s %(levelname)s : %(message)s')
 
 
 ###############################################################################

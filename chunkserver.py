@@ -19,7 +19,7 @@ connection to the appropriate worker thread"""
 import socket, threading, os, config, sys, logging, datetime
 import functionLibrary as fL
 #import debugging
-fL.debug()
+fL.chunkdebug()
 
 
 
