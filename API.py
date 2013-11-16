@@ -319,7 +319,7 @@ class API():
 				print "ERROR: COULD NOT CONNECT TO CHUNK SERVER AT ", location
 				continue
 			#send READ request to chunk server
-                	fL.send(s, "READ|" + cH + "|" + offset + "|" + bytesToRead)
+                	fL.send(s, "READ|" + str(cH) + "|" + str(offset) + "|" + str(bytesToRead))
                 	#print "READ|" + cH + "|" + offset + "|" + bytesToRead
 			#receive and print the contents of the file
                 	dat = fL.recv(s)
