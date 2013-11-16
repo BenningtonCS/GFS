@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 
 import API
@@ -5,6 +6,12 @@ import time
 from API import *
 
 API = API()
+
+
+def Again():
+        global again
+        again = raw_input("Would you like to perform another operation? : ")
+
 
 while 1:
 	operation = raw_input("What operation would you like to perform? : ")
@@ -32,10 +39,20 @@ while 1:
 		filename = raw_input("What is the name of the target file? : ")
 		API.undelete(filename)	
 	
-	time.sleep(3)
-	again = raw_input("Would you like to perform another operation? : ")
-	
+	elif (operation != "create" or "append" or "read" or "delete" or "undelete"):
+		print "That is an invalid operation. Please try again."
+		continue
+
+	time.sleep(2)
+	#again = raw_input("Would you like to perform another operation? : ")
+	Again()	
+
 	if again == "no":
 		break
 	elif again == "yes":
-		pass
+		continue
+	elif (again != "yes" or "no"):
+		print "Please enter 'yes' or 'no'"
+		Again()
+
+
