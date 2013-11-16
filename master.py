@@ -186,6 +186,11 @@ class handleCommand(threading.Thread):
 		# (divide and take the floor)
 		startSequence = byteOffset//maxChunkSize
 
+		if startSequence > len(database.data[self.fileName].chunks.keys()):
+			logging.debug('No such byte offset exists for the given file')
+			fL.send(self.s, "FAILED, NO SUCH BYTE OFFSET EXISTS FOR THIS FILE")
+			return
+
 		# Get the offset of the read-start within its given chunk
 		chunkByteOffset = byteOffset%maxChunkSize
 
