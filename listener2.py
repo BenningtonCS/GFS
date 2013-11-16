@@ -2,6 +2,7 @@
 
 ##############################################################################
 #
+#
 #       FILE: listener.py
 #       DATE: 2013 Nov. 15
 #       AUTHOR: Brendon Walter
@@ -17,13 +18,20 @@
 #       return a critical error that should be checked as soon as possible.
 #
 #       USAGE: run the listener by:
-#               python listener.py <-v> <run delay>
+#               python listener.py <-v>
 #       or:
-#               ./listener.py <-v> <run delay>
+#               ./listener.py <-v>
 #       running the listener in verbose mode (-v) will print out information
-#       for debugging purposes. The run delay (in seconds) will determine how
-#       often the program runs through the main loop and thus, how often it 
-#       checks the CPU, memory, network, and disk usage.
+#       for debugging purposes. 
+#
+#	The listenerConfig contains the name of the log that will store all 
+#	errors, the number of items per line, which will determine how many
+#	items are stored on each line (such as, if this number is set at 60,
+#	the history of the CPU (and every part) will go back 60 items into its
+#	past.) The delayTime will determine how often (in seconds) the program
+#	will run through, and files is a list of every file that is supposed to
+#	be in the folder in which the listener is running.
+#       
 #
 ###############################################################################
 
