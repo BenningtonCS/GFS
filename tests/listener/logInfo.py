@@ -3,7 +3,7 @@ import os, re
 logName = 'test.log'
 totItems = 5
 
-def logInfoi(lineNum, info):
+def logInfo(lineNum, info):
         # logs info from each function below this one into a listener log
 
         # put the information from the listener log into a var called data
