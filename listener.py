@@ -204,5 +204,5 @@ if __name__ == '__main__':
 		getMemory(1)
 		getNetwork(2)
 		getDisk(3)
-		filesMissing(4)
+		filesMissing()
 		time.sleep(delayTime)
