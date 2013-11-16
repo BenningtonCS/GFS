@@ -1,4 +1,0 @@
-CREATEFILE|0|/fox/faux
-CREATEFILE|0|fox/faux
-CREATECHUNK|1|/fox/faux
-CREATECHUNK|2|/fox/faux
