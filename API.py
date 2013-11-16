@@ -17,37 +17,7 @@
 import socket, threading, time, config, sys, logging
 import functionLibrary as fL
 
-
-
-###############################################################################
-
-#               Verbose (Debug) Handling                                      #
-
-###############################################################################
-
-
-# Setup for having a verbose mode for debugging:
-# USAGE: When running program, $python API.py , no debug message will show up
-# Instead, the program should be run in verbose, $python API.py -v , for debug 
-# messages to show up
-
-# Get a list of command line arguments
-args = sys.argv
-# Check to see if the verbose flag was one of the command line arguments
-if "-v" in args:
-        # If it was one of the arguments, set the logging level to debug 
-        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s : %(message)s')
-else:
-        # If it was not, set the logging level to default (only shows messages with level
-        # warning or higher)
-        logging.basicConfig(filename='apiLog.log', format='%(asctime)s %(levelname)s : %(message)s')
-
-
-
-
-
-
-
+fL.debug()
 
 class API():
 
@@ -66,23 +36,27 @@ class API():
 	#the data "CREATE". The chunkservers then make an empty chunk at
 	#each of those locations. Takes the filename as an argument.
 	def create(self,filename):
+		logging.debug("API: Starting create function.")
 		#lets make the API able to send and recieve messages
+		logging.debug("API: Creating socket.")
 		m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         	m.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         	try:
                 	m.connect((MASTER_ADDRESS, TCP_PORT))
         	except:
-                	print "ERROR: COULD NOT CONNECT TO MASTER"
+                	logging.error("ERROR: COULD NOT CONNECT TO MASTER")
                 	exit(0)
 
 		#send a CREATE request to the master
 		try:
+			logging.debug("API: Attempting to send CREATE| " + filename)
 			fL.send(m, "CREATE|" + filename)
 		except: 
-			print "ERROR: COULD NOT SEND CREATE REQUEST TO MASTER"
+			logging.error("ERROR: COULD NOT SEND CREATE REQUEST TO MASTER")
 		#receive data back from the master 
 		self.data = fL.recv(m)
 		#error if the file trying to be created already exists 
+		logging.debug("API: Received message: " + self.data)
 		if self.data == "FAIL1":
 			print "THAT FILE EXISTS ALREADY... EXITING API"
 			exit(0)
@@ -98,8 +72,10 @@ class API():
 		dataLength = len(self.splitdata)
 		cH = self.splitdata[-1]
 
+		logging.debug("API: about to begin for loop, " + str(dataLength -1) + "iterations")
 		#iterate through each IP address received from the master
 		for n in range(0, dataLength-1):
+			logging.debug("API: For loop, iteration number " + str(n))
 			#create a socket to be used to connect to chunk server
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			#designate the IP for this iteration
@@ -109,22 +85,22 @@ class API():
 			try:
 				s.connect((location,TCP_PORT))
                 	except: 
-				print "ERROR: COULD NOT CONNECT TO CHUNKSERVER AT ", location
+				logging.error("ERROR: COULD NOT CONNECT TO CHUNKSERVER AT ", location)
 				continue
 			#send CREATE request to the chunk server at the current location
 			fL.send(s, "CREATE|" + cH)
-                	print "CREATE"
+			print "CREATE"
 			#wait to receive a CONTINUE from chunk server to proceed
-                	global ack
+			global ack
 			ack = fL.recv(s)
 			#close connection to current chunk server.
 			s.close()
 
 		if ack == "FAILED":
-                	print "ERROR: FILE CREATION FAILED"
+			print "ERROR: FILE CREATION FAILED"
 			fL.send(m, "FAILED")
-                elif ack == "CREATED":
-                	print "File creation successful!"
+		elif ack == "CREATED":
+			print "File creation successful!"
 			fL.send(m, "CREATED")
 		m.close()
 		
@@ -161,7 +137,7 @@ class API():
 		self.data = fL.recv(m)
 		print self.data
 		#some error handling
-		if (self.data == FAILED):
+		if (self.data == "FAILED"):
 			print "ERROR: MASTER SENT FAIL MESSAGE exiting..."
 			exit(0)
 		#parse the data into useful parts
