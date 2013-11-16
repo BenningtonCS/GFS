@@ -103,6 +103,14 @@ class Database:
 		print self.toDelete
 		# The current chunk handle
 		print self.chunkHandle
+
+		activeHosts = []
+		with open(ACTIVEHOSTSFILE, 'r') as activeFile:
+			activeHosts = activeFile.read().splitlines()
+
+		if len(activeHosts) < 3:
+			logging.critical("LESS THAN THREE CHUNKSERVERS ARE ACTIVE. OPERATIONS MAY BE LIMITED OR INACCESSIBLE.")
+
 		##########################################################################
 
 		logging.debug('Database initialized')
@@ -302,7 +310,7 @@ class Database:
 				# Get the three locations where the chunk will be stored
 				locations = fL.chooseHosts().split("|")
 				logging.debug(locations)
-				
+
 				#string to be returned
 				string = ''
 				# Append the chunkserver locations to the chunk's location list
