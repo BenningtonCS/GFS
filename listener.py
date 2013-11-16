@@ -36,10 +36,10 @@
 ###############################################################################
 
 import psutil, time, sys, logging, os, re, listenerConfig
-#import functionLibrary as fL
+import functionLibrary as fL
 
 # import debugging
-#fL.debug()
+fL.debug()
 
 ##########################
 
@@ -173,7 +173,6 @@ def getDisk():
 	info = used + '/' + free
 	logInfo(lineNum, info)
 
-# This should be looked at to make it so that it will print what files are missing
 def filesMissing():
         # reads the local directory  and checks to make sure that the files
         # that are supposed to be there are there
@@ -188,18 +187,23 @@ def filesMissing():
         for item in files:
                 logging.debug("The files that should be here are: " + str(item))
 
+	missing = []
+	# compare the files that are supposed to be here to files that actually
+	# are here.
+	for val in files:
+		if val not in currentFiles:
+			# if a file that is supposed to be here is not here, add
+			# the name of the file to a list called missing
+			missing.append(val)
 
-        # check to see if there is an item in files that is not in current
-        if all(item in currentFiles for item in files): isThere = False
-        else: isThere = True
-
-        # if a file is missing
-        if isThere == True:
-                # log a critical error. This needs to be checked!!
-                logging.critical("File missing from directory!!")
-        else:
-                # otherwise, continue as normal.
-                logging.debug("Every file that's supposed to be here is here.")
+	# if there is nothing in the list of missing files
+	if missing == []:
+		# everything is fine
+		logging.debug("Every file that is supposed to be here is here.")
+	else:
+		for item in missing:	
+			# for each item that is missing, log a critical error
+			logging.critical("File " + str(item) + " is missing!!")
 
 
 ###########################
