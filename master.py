@@ -110,13 +110,27 @@ class handleCommand(threading.Thread):
 			logging.warning('Socket Connection Broken')
 		# Visual confirmation for debugging: confirm send of a list of storage hosts and chunk handle
 		logging.debug('SENT ==> ' + str(hosts) + str(chunkHandle))
+
+		# Receieve an ack to affirm that the chunk was successfully created
+		ack = fL.recv(self.s)
+
+		if ack == "CREATED":
+			logging.debug("successful creation")
+		elif ack == "FAILED":
+			logging.error("unsuccessful creation")
+		else:
+			logging.error("unknown ack")
 		
+
+
 	def createChunk(self):
 		self.lock.acquire()
 		chunkHandle = database.getChunkHandle()
 		self.lock.release()
 		newChunk = database.createNewChunk(self.msg[1], self.msg[2], chunkHandle)
 		fL.send(self.s, newChunk)
+
+
 
 	# Function that executes the protocol when an APPEND message is received
 	def append(self):

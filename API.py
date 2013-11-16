@@ -97,8 +97,7 @@ class API():
 		self.splitdata = self.data.split("|")
 		dataLength = len(self.splitdata)
 		cH = self.splitdata[-1]
-		#close the connection to the master so we can connect to the chunk servers
-		m.close()
+
 		#iterate through each IP address received from the master
 		for n in range(0, dataLength-1):
 			#create a socket to be used to connect to chunk server
@@ -120,13 +119,7 @@ class API():
 			ack = fL.recv(s)
 			#close connection to current chunk server.
 			s.close()
-		#reestablish connection to master
-		m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		try:
-			m.connect((MASTER_ADDRESS, TCP_PORT))
-		except:
-			print "COULD NOT RECONNECT TO MASTER"
-			exit(0)
+
 		if ack == "FAILED":
                 	print "ERROR: FILE CREATION FAILED"
 			fL.send(m, "FAILED")
