@@ -71,94 +71,78 @@ logging.debug(str(totItems) + " items per line in log.")
 ###########################
 
 def logInfo(lineNum, info):
-	# logs info from each of the below functions into a listener log
+        # logs info from each function below this one into a listener log
 
-	# try to read the listener log from the line specified
-	with open(logName, 'r') as r:
-		# take the data in the line and split it into a list
-		data = r.readlines()
-	logging.debug("read " + str(data) + " from the log.")
+        # put the information from the listener log into a var called data
+        with open(logName, 'r') as r:
+                data = r.readlines()
+        logging.debug("Read " + str(data) + " from the log.")
 
-	if data == []:
-		l = []
+        # split the data from the line spefied  at the pipe and newline character 
+        try: l = re.split('[|\n]', data[int(lineNum)])
+        # if there is no data at that line, it will return an index error. If this
+        # happens, it will make a list with one character in it that will then
+        # be deleted
+        except IndexError: l = [0]
+        # the last index in the list is deleted as it is an empty string
+        del l[-1]
 
-	# if the file is empty, there should be some way of handling this!!
+        # if there are more items in the list than there should be as specified
+        # in the config file, delete the first item
+        while len(l) >= totItems: del l[0]
 
-	else: 
-		# take the data from the log and split it into a list at the | and \n
-		try:
-			l = re.split('[|\n]', data[int(lineNum)])
-		except IndexError:
-			l = [0]
+        # add new data to the end of the list
+        l.append(str(info))
+        logging.debug("Appended " + str(info) + " to the list.")
+
+        # turn the data into a string, each part seperated by a pipe
+        newData = '|'.join(l)
+
+        try: # try to add the new data to the list of data
+                # in the case that the file is empty
+                if data == []: data = newData + '\n'
+                # in the case that there already is information at that line
+                else: data[int(lineNum)] = newData + '\n'
+        # in the case that the line that should have new data added to it doesn't 
+        # exist yet
+        except IndexError: data.append(newData + '\n')
+
+        # add the data to the listener log
+        with open(logName, 'w') as w:
+                w.writelines(data)
 	
-		# the list 2 items are empty strings (at least for the CPU). This will have 
-		# to be removed depending on what happens with the other functions.
-		del l[-1]
-		
-	# if the list has more elements than it should, delte them until it has the
-	# right number
-	while len(l) > totItems:
-		del l[0]
-	# if the list already has the number of items that it should,
-	if len(l) == totItems:
-		logging.debug("Line " + str(lineNum) + " was longer than " + str(totItems))
-		# delete the first item
-		del l[0]
-	else: logging.debug("Line " + str(lineNum) + " was too short. Adding new item.")
-
-	# append the new data to the list
-	l.append(str(info))
-	logging.debug("appended " + str(info) + " to the list.")
-
-	# turn that list into a string
-	newData = '|'.join(l)
-
-	# add a new line character to the end of the string
-	try:
-		if data == []:
-			data = newData + '\n'
-		else: 
-			data[int(lineNum)] = newData + '\n'
-
-	except IndexError:
-		data.append(newData + '\n')
-	
-	# write new data to the log
-	with open(logName, 'w') as w:
-		w.writelines(data)
-	
-def getCPU():
+def getCPU(lineNum):
 	# gets the percent of the CPU in use
-	lineNum = 0 # the line of the log in which all of the CPU information is stored
+	line = lineNum# the line of the log in which all of the CPU information is stored
 	cpuPercent = psutil.cpu_percent()
 	logging.debug("CPU percent : " + str(cpuPercent))
-	logInfo(lineNum, cpuPercent)
+	logInfo(line, cpuPercent)
 
-def getMemory():
+def getMemory(lineNum):
 	# gets the percent of virtual memory in use
-	lineNum = 1
+	line = lineNum
 	vm = psutil.virtual_memory()
 	# pick out the percent from the psutil output
 	vmPercent = vm.percent
 	# log the information
 	logging.debug("Virtual memory percent : " + str(vmPercent))
-	logInfo(lineNum, vmPercent)
+	logInfo(line, vmPercent)
 
-def getNetwork():
+def getNetwork(lineNum):
 	# gets the number of bytes sent and recieved over the network
-	lineNum = 2
+	line = lineNum
 	network = psutil.net_io_counters()
 	# get the sent information
 	sent = network.bytes_sent
 	# and the received information
 	receieved = network.bytes_recv
 	info = str(sent) + '/' + str(receieved)
-	logInfo(lineNum, info)
+	logInfo(line, info)
 
-def getDisk():
+def getDisk(lineNum):
 	# gets the space used and space available from the disk
 	# the output is logged in the form of : USED / AVAILABLE
-	lineNum = 3
+	line = lineNum
 	disk = psutil.disk_usage('/')
 	# get the disk used from the psutil output
 	u = str(disk.used)
@@ -171,7 +155,7 @@ def getDisk():
 	free = f[:-1]
 	logging.debug("Disk free : " + str(free))
 	info = used + '/' + free
-	logInfo(lineNum, info)
+	logInfo(line, info)
 
 def filesMissing():
         # reads the local directory  and checks to make sure that the files
@@ -216,9 +200,9 @@ logging.debug("Starting main loop.........")
 
 if __name__ == '__main__':
 	while 1:
-		getCPU()
-		getMemory()
-		getNetwork()
-		getDisk()
-		filesMissing()
+		getCPU(0)
+		getMemory(1)
+		getNetwork(2)
+		getDisk(3)
+		filesMissing(4)
 		time.sleep(delayTime)
