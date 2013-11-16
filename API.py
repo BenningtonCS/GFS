@@ -133,6 +133,7 @@ class API():
                 elif ack == "CREATED":
                 	print "File creation successful!"
 			fL.send(m, "CREATED")
+		m.close()
 		
 		#oplog stuff for questions contact rohail
 	#	try:
@@ -190,6 +191,7 @@ class API():
 			remainingSpace = int(remainingSpace)
 			print lenNewData
 			print remainingSpace
+			self.s.close()
 			#if the length of the new data is greater than the room left in the chunk...
 			if (lenNewData > remainingSpace):   
 				#...split the data into two parts, the first part being equal to the
@@ -201,7 +203,6 @@ class API():
 				print newData2
 				#tell the chunk server to append the first part of the new data that
 				#will fill up the rest of the remaining space on a chunk
-				self.s.close()
 				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				try:
 					s.connect((location, TCP_PORT))
@@ -213,7 +214,6 @@ class API():
 				s.close()
 				
 			elif (lenNewData <= remainingSpace):
-				self.s.close()
 				t = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				t.connect((location, TCP_PORT))
 				try:
@@ -294,7 +294,8 @@ class API():
 		self.splitdata = self.data.split("|")
 		#remove the first element of the list because it is irrelevant
 		self.splitdata = self.splitdata[1:]
-		#print self.splitdata
+		#close connection to master
+		m.close()
 		#iterate through the list
 		for q in self.splitdata:
 			#split the list into smaller parts
@@ -310,7 +311,6 @@ class API():
 			offset = secondSplit[2]
 			#print "offset = ", offset
 			#close connection to master
-			m.close()
 			#connect to the chunk server
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			try:
@@ -354,7 +354,7 @@ class API():
 			print "ERROR: COULD NOT MARK FILE FOR DELETION"
 		elif self.data == "MARKED":
 			print "File successfully marked for deletion."
-
+		m.close()
 	
 	#This is the undelete function. It takes a filename as a parameter and 
 	#if that file is marked for deletion, and the garbage collector has not 
@@ -380,13 +380,22 @@ class API():
 			print "ERROR: COULD NOT UNDELETE FILE"
 		elif self.data == "MARKED":
 			print "File successfully unmarked for deletion."
-		
+		m.close()
 	
 
 	#I have no idea what this is but I wrote an exception for it
 	def fileList(self):
+		#lets make the API able to send and recieve messages
+                m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                m.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                try:
+                        m.connect((MASTER_ADDRESS, TCP_PORT))
+                except:
+                        print "ERROR: COULD NOT CONNECT TO MASTER"
+                        exit(0)
+
 		try:
-			fL.send(self.m, "FILELIST|x")
+			fL.send(m, "FILELIST|x")
 			self.data = fL.recv(s)
 			return self.data
 		except:
@@ -404,6 +413,6 @@ class updateOpLog(threading.Thread):
                 self.m.connect((MASTER_ADDRESS,TCP_PORT))
                 fL.send(self.m, self.message)
 		print "opLog message sent"
-
+		m.close()
 
 
