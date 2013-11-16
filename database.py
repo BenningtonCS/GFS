@@ -18,21 +18,6 @@
 import functionLibrary as fL
 import config, logging, socket
 
-###############################################################################
-
-#               Verbose (Debug) Handling                        
-
-###############################################################################
-
-
-# Setup for having a verbose mode for debugging:
-# USAGE: When running program, $python database.py , no debug message will show up
-# Instead, the program should be run in verbose, $python database.py -v , for debug 
-# messages to show up
-
-#logging.basicConfig(level=logging.DEBUG, filename='masterLog.log', format='%(asctime)s DATABASE %(levelname)s : %(message)s')
-
-
 
 
 HOSTSFILE = config.hostsfile
