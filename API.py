@@ -54,7 +54,7 @@ class API():
 	#lets define some variables
 	global MASTER_ADDRESS
 	global TCP_PORT
-	MASTER_ADDRESS = '10.10.117.104'
+	MASTER_ADDRESS = config.masterip
 	TCP_PORT = config.port
 
 	#lets make some methods
@@ -119,8 +119,8 @@ class API():
                 	global ack
 			ack = fL.recv(s)
 			#close connection to current chunk server.
-		s.close()
-			#reestablish connection to master
+			s.close()
+		#reestablish connection to master
 		m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		try:
 			m.connect((MASTER_ADDRESS, TCP_PORT))
