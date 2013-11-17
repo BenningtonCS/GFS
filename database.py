@@ -41,6 +41,7 @@ class File:
 		self.fileName = name
 		self.chunks = {}
 		self.delete = False
+		self.Open = False
 
 # The chunk object is stored in the chunk library of the File object, keyed to 
 # its chunk handle. The chunk object stores the locations where the chunks are 
