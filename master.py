@@ -396,7 +396,7 @@ class handleCommand(threading.Thread):
 	# Function that executes the protocol when FILELIST message is received	
 	def fileList(self):
 		# call the database object's returnData method
-		list = str(database.returnData())
+		list = str(database.getFiles())
 		fL.send(self.s, list)
 
 

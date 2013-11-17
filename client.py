@@ -32,6 +32,9 @@ while 1:
 	elif (operation == "undelete"):
 		filename = raw_input("What is the name of the target file? : ")
 		API.undelete(filename)
+
+	elif (operation == "files"):
+		API.fileList()
 	
 	elif (operation == "nothing"):
 		break

@@ -433,5 +433,6 @@ class Database:
 
 
 
-
+	def getFiles(self):
+		return self.data.keys()
 

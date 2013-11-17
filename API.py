@@ -410,8 +410,9 @@ class API():
 
 		try:
 			fL.send(m, "FILELIST|x")
-			self.data = fL.recv(s)
-			return self.data
+			data = fL.recv(m)
+			m.close()
+			print data
 		except:
 			print "file list error"
 
