@@ -140,6 +140,9 @@ class API():
 		if (self.data == "FAILED"):
 			print "ERROR: MASTER SENT FAIL MESSAGE exiting..."
 			exit(0)
+		elif (self.data == "OPEN"):
+			print "ERROR: FILE " +filename+" ALREADY OPEN"
+			return 0
 		#parse the data into useful parts
 		self.splitdata = self.data.split("|")
 		dataLength = len(self.splitdata)
