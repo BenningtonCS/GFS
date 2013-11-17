@@ -134,32 +134,37 @@ class handleCommand(threading.Thread):
 
 	# Function that executes the protocol when an APPEND message is received
 	def append(self):
-		# Visual confirmation for debugging: confirm init of append()
-		logging.debug('Gathering metadata for chunk append')
-		
-		# We know that we will only be appending to the lastest chunk, since a new
-		# chunk should only be created when an old chunk fills up, so we find the 
-		# handle of the latest chunk for a given file.
-		latestChunkHandle = database.findLatestChunk(self.fileName)
-		# Then we get the locations where that chunk is stored
-		locations = database.getChunkLocations(latestChunkHandle)
-
-		# Define an empty string that will hold the message we send back to the client
-		appendMessage = ''
-
-		# Parse the locations list into a pipe separated string
-		for item in locations:
-			appendMessage += item + '|'
-
-		# Add the chunk handle to the message we will send to the client
-		appendMessage += str(latestChunkHandle)
-
-		#send our message
-		fL.send(self.s, appendMessage)
-		# Visual confirmation for debugging: confirm send of a list of storage hosts and chunk handle
-		logging.debug('SENT == ' + str(appendMessage))
-		# Visual confirmation for debugging: confirm success of append()
-		logging.debug('Append successfully handled')
+		if not db.data[self.filename].open
+			# Visual confirmation for debugging: confirm init of append()
+			logging.debug('Gathering metadata for chunk append')
+			
+			# We know that we will only be appending to the lastest chunk, since a new
+			# chunk should only be created when an old chunk fills up, so we find the 
+			# handle of the latest chunk for a given file.
+			latestChunkHandle = database.findLatestChunk(self.fileName)
+			# Then we get the locations where that chunk is stored
+			locations = database.getChunkLocations(latestChunkHandle)
+	
+			# Define an empty string that will hold the message we send back to the client
+			appendMessage = ''
+	
+			# Parse the locations list into a pipe separated string
+			for item in locations:
+				appendMessage += item + '|'
+	
+			# Add the chunk handle to the message we will send to the client
+			appendMessage += str(latestChunkHandle)
+	
+			#send our message
+			fL.send(self.s, appendMessage)
+			# Visual confirmation for debugging: confirm send of a list of storage hosts and chunk handle
+			logging.debug('SENT == ' + str(appendMessage))
+			# Visual confirmation for debugging: confirm success of append()
+			logging.debug('Append successfully handled')
+		else:
+			fL.send(self.s, "OPEN")
+			logging.debug('SENT "OPEN")
+			logging.debug('Failed append: File already open') 
 
 
 
