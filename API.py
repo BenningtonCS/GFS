@@ -325,9 +325,11 @@ class API():
 			#receive and print the contents of the file
                 	dat = fL.recv(s)
                 	print dat
-		
+					
 		#close connection to chunk server		
                	s.close()
+
+		return dat
 		#reestablish connection to master
 
 	#This is the delete function. It takes a filename as a parameter and 
@@ -353,10 +355,13 @@ class API():
 		#tell the user whether the file was successfully marked or not
 		if self.data == "FAILED1":
 			print "ERROR: The file could not be marked for deletion."
+			return -1
 		elif self.data == "FAILED2":
 			print "ERROR: The given file name does not exist."
+			return -2
 		elif self.data == "FAILED3":
 			print "The file has already been marked for deletion."
+			return -3
 		elif self.data == "MARKED":
 			print "File successfully marked for deletion."
 		m.close()
@@ -383,8 +388,10 @@ class API():
 		#tell the user whether the file was successfully unmarked or not
 		if self.data == "FAILED1":
 			print "ERROR: COULD NOT UNDELETE FILE"
+			return -1
 		elif self.data == "FAILED2":
 			print "File was not flagged for deletion."
+			return -2
 		elif self.data == "MARKED":
 			print "File successfully unmarked for deletion."
 		m.close()
