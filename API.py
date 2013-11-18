@@ -152,6 +152,7 @@ class API():
 		
 		newData = strct.unpack((open(newData,"rb").read()))
 		lenNewData = len(newData)
+		print lenNewData
 		#close connection to master 
         	m.close()
 	        for n in range(0, dataLength-1):
