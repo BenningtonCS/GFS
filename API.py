@@ -150,11 +150,12 @@ class API():
 		#get length of the requested new data to use for append across chunks
 		if flag:
 			dataSize = os.path.getsize(newData)
+			newData = strct.pack((open(newData,"rb").read()))
 		else:
 			dataSize = len(newData)
 		strct = struct.Struct(str(dataSize)+"s")
 		
-		newData = strct.pack((open(newData,"rb").read()))
+		
 		lenNewData = int(dataSize)
 		#close connection to master 
         	m.close()
