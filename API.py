@@ -148,6 +148,7 @@ class API():
 		dataLength = len(self.splitdata)
                 cH = self.splitdata[-1]
 		#get length of the requested new data to use for append across chunks
+		newData = open(filename,"rb").read()
 		lenNewData = len(newData)
 		#close connection to master 
         	m.close()
@@ -301,6 +302,8 @@ class API():
 		#close connection to master
 		m.close()
 		#iterate through the list
+		fromChunks = ""
+		fileContents = ""
 		for q in self.splitdata:
 			#split the list into smaller parts
 			secondSplit = q.split("*")
@@ -326,12 +329,14 @@ class API():
                 	fL.send(s, "READ|" + str(cH) + "|" + str(offset) + "|" + str(bytesToRead))
                 	#print "READ|" + cH + "|" + offset + "|" + bytesToRead
 			#receive and print the contents of the file
+			fromChunks += "." + str(cH)
                 	dat = fL.recv(s)
-                	print dat
+                	fileContents += dat
 					
 		#close connection to chunk server		
                	s.close()
-
+		open("GFSoutPut/"+filename+fromChunks,"wb").write(fileContents)
+		
 		return dat
 		#reestablish connection to master
 
