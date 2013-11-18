@@ -66,6 +66,8 @@ class Database:
 	# Create a counter for the chunkHandle
 	chunkHandle = 0
 
+	# Create a dictionary that will be used as a location --> chunk lookup, eg. {"10.10.117.10":[127]}
+	locDict = {}
 	
 	# Initialization function that will set up the database from the opLog and data
 	# from the chunkservers
@@ -89,6 +91,8 @@ class Database:
 		print self.toDelete
 		# The current chunk handle
 		print self.chunkHandle
+		# The location lookup dictionary
+		print self.locDict
 
 		activeHosts = []
 		with open(ACTIVEHOSTSFILE, 'r') as activeFile:
@@ -207,6 +211,14 @@ class Database:
 
 				# For every chunk handle in that list, update that chunk objects locations list
 				for chunk in chunkData:
+
+					# If the IP is not already in the location lookup, add it!
+					if IP not in self.locDict.keys():
+						self.locDict[IP] = []
+
+					# Add the chunk to the list of values for the IP key
+					self.locDict[IP].append(chunk)
+
 					# ADD SOME ERROR HANDLING HERE -- IF THE CHUNK DOES NOT EXIST IN THE 
 					# LOOKUP SOMETHING WENT TERRIBLY WRONG!
 					try:
