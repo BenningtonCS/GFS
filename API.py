@@ -148,7 +148,7 @@ class API():
 		dataLength = len(self.splitdata)
                 cH = self.splitdata[-1]
 		#get length of the requested new data to use for append across chunks
-		newData = open(newData,"rb").read()
+		newData = bytearray(open(newData,"rb").read())
 		lenNewData = len(newData)
 		#close connection to master 
         	m.close()
