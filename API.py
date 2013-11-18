@@ -345,11 +345,12 @@ class API():
 					
 		#close connection to chunk server		
                	s.close()
+               	strct = strcut.Struct(len(fileContens))
                	if filename[0] == '/':
                		filePath = "GFSoutPut"
                	else:
                		filePath = "GFSoutPut/"
-		open(filePath+filename+fromChunks[0:17],"wb").write(fileContents)
+		open(filePath+filename+fromChunks[0:17],"wb").write(strct.unpack(fileContents)[0])
 		
 		return dat
 		#reestablish connection to master
