@@ -12,7 +12,7 @@ if sys.argv[1] == "create":
 
 elif sys.argv[1] == "append":
 	newData = sys.argv[3] 
-	API.append(filename, newData, True)
+	API.append(filename, newData)
 
 elif sys.argv[1] == "read":
 	byteOffSet = sys.argv[3]
