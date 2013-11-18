@@ -1,0 +1,98 @@
+<?php
+
+$server = $_GET['server'];
+$logFile = file_get_contents('http://'.$server.':8000/httpServerFiles/chunkserverLog.log');
+?>
+<script type="text/javascript">
+  window.onload = function () {
+    var cpuChart = new CanvasJS.Chart("cpuContainer",
+    {
+
+      title:{
+      text: "CPU | By Minute"
+      },
+       data: [
+      {
+        type: "line",
+
+        dataPoints: [
+        { x: 1, y: 450 },
+        { x: 2, y: 414 },
+        { x: 3, y: 520 },
+        { x: 4, y: 460 },
+        { x: 5, y: 450 },
+        { x: 6, y: 500 }
+        ]
+      }
+      ]
+    });
+
+    cpuChart.render();
+
+var diskChart = new CanvasJS.Chart("diskContainer",
+    {
+
+      title:{
+      text: "Disk | By Hour"
+      },
+       data: [
+      {
+        type: "line",
+
+        dataPoints: [
+        { x: 1, y: 450 },
+        { x: 2, y: 414 },
+        { x: 3, y: 520 },
+        { x: 4, y: 460 },
+        { x: 5, y: 450 },
+        { x: 6, y: 500 } 
+        ]
+      }
+      ]
+    });
+
+    diskChart.render();
+
+
+var networkChart = new CanvasJS.Chart("networkContainer",
+    {
+
+      title:{
+      text: "Network | By Minute"
+      },
+       data: [
+      {
+        type: "line",
+
+        dataPoints: [
+        { x: 1, y: 450 },
+        { x: 2, y: 414 },
+        { x: 3, y: 520 },
+        { x: 4, y: 460 },
+        { x: 5, y: 450 },
+        { x: 6, y: 500 } 
+        ]
+      }
+      ]
+    });
+
+    networkChart.render();
+
+
+  }
+</script>
+
+<h2>Chunkserver | <?=$server?></h2>
+
+<h2>Statistics</h2>
+<div class="row">
+	<div class="col-md-4"><div id="cpuContainer" style="height:200px;"></div></div>
+        <div class="col-md-4"><div id="diskContainer" style="height:200px;"></div></div>
+        <div class="col-md-4"><div id="networkContainer" style="height:200px;"></div></div>
+</div>
+
+<h2>Log</h2>
+<textarea class="form-control" rows="15"><?php
+echo $logFile;
+?>
+</textarea>
