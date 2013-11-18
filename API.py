@@ -150,8 +150,9 @@ class API():
 		#get length of the requested new data to use for append across chunks
 		if flag:
 			dataSize = os.path.getsize(newData)
-			strct = struct.Struct(str(dataSize)+"s")
-			newData = strct.pack((open(newData,"rb").read()))
+		#	strct = struct.Struct(str(dataSize)+"s")
+		#	newData = strct.pack((open(newData,"rb").read()))
+			newData = open(newData,"rb").read()
 			
 		else:
 			dataSize = len(newData)
@@ -350,7 +351,7 @@ class API():
                		filePath = "GFSoutPut"
                	else:
                		filePath = "GFSoutPut/"
-		open(filePath+filename+fromChunks[0:17],"wb").write(strct.unpack(fileContents)[0])
+		open(filePath+filename+fromChunks[0:17],"wb").write(fileContents)
 		
 		return dat
 		#reestablish connection to master
