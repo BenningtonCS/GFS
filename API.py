@@ -335,7 +335,7 @@ class API():
 					
 		#close connection to chunk server		
                	s.close()
-               	if fileName[0] == '/':
+               	if filename[0] == '/':
                		filePath = "GFSoutPut"
                	else:
                		filePath = "GFSoutPut/"
