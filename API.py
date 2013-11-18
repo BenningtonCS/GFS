@@ -278,7 +278,7 @@ class API():
 			#now that the new chunk has been created on all of the servers...
 			#...run append again with the second part of the new data
 			#self.s.close()
-		self.append(filename, newData2, False)
+			self.append(filename, newData2, False)
 					
 
 
