@@ -335,7 +335,11 @@ class API():
 					
 		#close connection to chunk server		
                	s.close()
-		open("GFSoutPut/"+filename+fromChunks,"wb").write(fileContents)
+               	if fileName[0] == '/':
+               		filePath = "GFSoutPut"
+               	else:
+               		filePath = "GFSoutPut/"
+		open(filePath+filename+fromChunks,"wb").write(fileContents)
 		
 		return dat
 		#reestablish connection to master
