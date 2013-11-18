@@ -150,7 +150,7 @@ class API():
 		#get length of the requested new data to use for append across chunks
 		strct = struct.Struct(str(int(os.path.getsize(newData)))+"s")
 		
-		newData = strct.pack((open(newData,"rb").read()))
+		newData = strct.unpack((open(newData,"rb").read()))
 		lenNewData = len(newData)
 		#close connection to master 
         	m.close()
