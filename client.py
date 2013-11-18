@@ -5,25 +5,25 @@ from API import API
 
 API = API()
 	
-	filename = sys.argv[2] 
-	
-	if sys.argv[1] == "create":
-		API.create(filename)
-	
-	elif sys.argv[1] == "append":
-		newData = sys.argv[3] 
-		API.append(filename, newData)
+filename = sys.argv[2] 
 
-	elif sys.argv[1] == "read":
-		byteOffSet = sys.argv[3]
-		bytesToRead = sys.argv[4]
-		API.read(filename, byteOffSet, bytesToRead)
-	
-	elif sys.argv[1] == "delete":
-		API.delete(filename)
+if sys.argv[1] == "create":
+	API.create(filename)
 
-	elif sys.argv[1] == "undelete":
-		API.undelete(filename)
+elif sys.argv[1] == "append":
+	newData = sys.argv[3] 
+	API.append(filename, newData)
+
+elif sys.argv[1] == "read":
+	byteOffSet = sys.argv[3]
+	bytesToRead = sys.argv[4]
+	API.read(filename, byteOffSet, bytesToRead)
+
+elif sys.argv[1] == "delete":
+	API.delete(filename)
+
+elif sys.argv[1] == "undelete":
+	API.undelete(filename)
 
 
 
