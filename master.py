@@ -165,7 +165,7 @@ class handleCommand(threading.Thread):
 			db.data[self.filename].Open = False
 		else:
 			fL.send(self.s, "OPEN")
-			logging.debug('SENT "OPEN")
+			logging.debug('SENT "OPEN"')
 			logging.debug('Failed append: File already open') 
 
 
