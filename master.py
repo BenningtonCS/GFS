@@ -135,6 +135,7 @@ class handleCommand(threading.Thread):
 	# Function that executes the protocol when an APPEND message is received
 	def append(self):
 		if not db.data[self.filename].Open
+			db.data[self.filename].Open = True
 			# Visual confirmation for debugging: confirm init of append()
 			logging.debug('Gathering metadata for chunk append')
 			
@@ -161,6 +162,7 @@ class handleCommand(threading.Thread):
 			logging.debug('SENT == ' + str(appendMessage))
 			# Visual confirmation for debugging: confirm success of append()
 			logging.debug('Append successfully handled')
+			db.data[self.filename].Open = False
 		else:
 			fL.send(self.s, "OPEN")
 			logging.debug('SENT "OPEN")
