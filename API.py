@@ -352,7 +352,7 @@ class API():
                		filePath = "GFSoutPut"
                	else:
                		filePath = "GFSoutPut/"
-		open(filePath+filename+fromChunks[0:17],"wb").write(strct.unpack(fileContents)[0])
+		open(filePath+filename+fromChunks[0:17],"wb").write(fileContents)
 		
 		return dat
 		#reestablish connection to master
