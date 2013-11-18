@@ -162,7 +162,7 @@ class handleCommand(threading.Thread):
 			logging.debug('SENT == ' + str(appendMessage))
 			# Visual confirmation for debugging: confirm success of append()
 			logging.debug('Append successfully handled')
-			database.data[self.filename].Open = False
+			database.data[self.fileName].Open = False
 		else:
 			fL.send(self.s, "OPEN")
 			logging.debug('SENT "OPEN"')
