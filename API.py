@@ -151,7 +151,7 @@ class API():
 		dataSize = os.path.getsize(newData)
 		strct = struct.Struct(str(dataSize)+"s")
 		
-		newData = strct.unpack((open(newData,"rb").read()))
+		newData = strct.pack((open(newData,"rb").read()))
 		lenNewData = int(dataSize)
 		#close connection to master 
         	m.close()
@@ -193,7 +193,7 @@ class API():
 					s.connect((location, TCP_PORT))
 				except:
 					print "ERROR: COULD NOT REOPEN SOCKET"
-				fL.send(s, "APPEND|" + cH + "|" + str(newData1[0]))
+				fL.send(s, "APPEND|" + cH + "|" + newData1)
 				print "first append"
 				SoF = fL.recv(s)
 				#error handling
