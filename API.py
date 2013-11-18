@@ -118,7 +118,7 @@ class API():
 	#sends back the chunk handle and locations of the existing file. The 
 	#client then sends "append" and the new data to the chunk servers which
 	#append the new data to the files.
-	def append(self, filename, newData):
+	def append(self, filename, newData,flag):
 		#lets make the API able to send and recieve messages
 	        m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         	m.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -152,7 +152,8 @@ class API():
 			dataSize = os.path.getsize(newData)
 			strct = struct.Struct(str(dataSize)+"s")
 			newData = strct.pack((open(newData,"rb").read()))"""
-		newData = bytearray(open(newData,"rb").read())
+		if flag:
+			newData = bytearray(open(newData,"rb").read())
 			
 	
 		dataSize = len(newData)
@@ -279,7 +280,7 @@ class API():
 			#now that the new chunk has been created on all of the servers...
 			#...run append again with the second part of the new data
 			#self.s.close()
-			self.append(filename, newData2)
+			self.append(filename, newData2,False)
 					
 
 
