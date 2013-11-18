@@ -14,7 +14,7 @@
 
 #import socket for connection, threading to make threads, time in case we want
 #a delay, and config to keep the protocol standard.
-import socket, threading, time, config, sys, logging
+import socket, threading, time, config, sys, logging, struct, os
 import functionLibrary as fL
 
 fL.debug()
@@ -148,7 +148,9 @@ class API():
 		dataLength = len(self.splitdata)
                 cH = self.splitdata[-1]
 		#get length of the requested new data to use for append across chunks
-		newData = bytearray(open(newData,"rb").read())
+		strct = struct.Struct(int(os.path.getsize(newData))+"s")
+		
+		newData = strct.pack((open(newData,"rb").read()))
 		lenNewData = len(newData)
 		#close connection to master 
         	m.close()
