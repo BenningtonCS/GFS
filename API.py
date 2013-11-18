@@ -151,7 +151,7 @@ class API():
 		dataSize = os.path.getsize(newData)
 		strct = struct.Struct(str(dataSize)+"s")
 		
-		newData = strct.unpack((open(newData,"rb").read()))
+		newData = strct.unpack((open(newData,"rb").read()))[0]
 		lenNewData = int(dataSize)
 		#close connection to master 
         	m.close()
