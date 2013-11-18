@@ -153,7 +153,9 @@ class API():
 			strct = struct.Struct(str(dataSize)+"s")
 			newData = strct.pack((open(newData,"rb").read()))"""
 		if flag:
-			newData = bytearray(open(newData,"rb").read())
+			with open(newData,"rb") as da:
+				newData = bytearray(da.read())
+			
 			
 	
 		dataSize = len(newData)
@@ -352,7 +354,8 @@ class API():
                		filePath = "GFSoutPut"
                	else:
                		filePath = "GFSoutPut/"
-		open(filePath+filename+fromChunks[0:17],"wb").write(fileContents)
+		with open(filePath+filename+fromChunks[0:17],"wb") as e:
+			e.write(fileContents)
 		
 		return dat
 		#reestablish connection to master
