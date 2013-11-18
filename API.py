@@ -96,6 +96,8 @@ class API():
 			#close connection to current chunk server.
 			s.close()
 
+		m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		m.connect((MASTER_ADDRESS, TCP_PORT))
 		if ack == "FAILED":
 			print "ERROR: FILE CREATION FAILED"
 			fL.send(m, "FAILED")
@@ -104,13 +106,6 @@ class API():
 			fL.send(m, "CREATED")
 		m.close()
 		
-		#oplog stuff for questions contact rohail
-	#	try:
-	#		opLog = updateOpLog("OPLOG|CREATE|"+cH+"|"+filename)
-	#		opLog.start()
-	#	except:
-	#		print "COULD NOT UPDATE OPLOG"
-
 	
 	#appends to an existing file by first prompting the client for what 
 	#new data they would like to add to the file (the filename is given 
@@ -251,7 +246,9 @@ class API():
                         	ack = fL.recv(s)
                         #close connection to current chunk server.
                         s.close()
-
+			
+			m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			m.connect((MASTER_ADDRESS, TCP_PORT))
 			#do some acks
                 	if ack == "FAILED":
                         	print "ERROR: CHUNK CREATION FAILED"
@@ -278,6 +275,9 @@ class API():
 		#lets make the API able to send and recieve messages
         	m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         	m.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		#define rData to handle all the strings from multichunks and put it into one.
+		global rData
+		rData = '' 
         	try:
                 	m.connect((MASTER_ADDRESS, TCP_PORT))
         	except:
@@ -323,13 +323,14 @@ class API():
                 	fL.send(s, "READ|" + str(cH) + "|" + str(offset) + "|" + str(bytesToRead))
                 	#print "READ|" + cH + "|" + offset + "|" + bytesToRead
 			#receive and print the contents of the file
-                	dat = fL.recv(s)
-                	print dat
-					
+                	
+			rData = rData + fL.recv(s)
+                	
+		print rData			
 		#close connection to chunk server		
                	s.close()
 
-		return dat
+		#return dat
 		#reestablish connection to master
 
 	#This is the delete function. It takes a filename as a parameter and 
@@ -415,19 +416,5 @@ class API():
 			print data
 		except:
 			print "file list error"
-
-
-#oplog stuff. for questions contact rohail
-class updateOpLog(threading.Thread):
-        def __init__(self, message):
-                threading.Thread.__init__(self)
-                self.m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.message = message
-
-        def run(self):
-                self.m.connect((MASTER_ADDRESS,TCP_PORT))
-                fL.send(self.m, self.message)
-		print "opLog message sent"
-		m.close()
 
 
