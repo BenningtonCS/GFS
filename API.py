@@ -238,7 +238,7 @@ class API():
 				cDataLength = len(splitcData)
 	                	cH = splitcData[-1]
 	                	#close the connection to the master so we can connect to the chunk servers
-	                	m.close()
+	                	#m.close()
 	                	#iterate through each IP address received from the master
 	                	for n in range(0, cDataLength-1):
 	                        	#create a socket to be used to connect to chunk server
