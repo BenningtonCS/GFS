@@ -148,7 +148,7 @@ class API():
 		dataLength = len(self.splitdata)
                 cH = self.splitdata[-1]
 		#get length of the requested new data to use for append across chunks
-		strct = struct.Struct(int(os.path.getsize(newData))+"s")
+		strct = struct.Struct(str(int(os.path.getsize(newData)))+"s")
 		
 		newData = strct.pack((open(newData,"rb").read()))
 		lenNewData = len(newData)
