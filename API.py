@@ -183,9 +183,9 @@ class API():
 				#amount of room left in the current chunk. the second part being the 
 				#rest of the data. 
                                 newData1 = newData[0:remainingSpace]
-				print newData1
+			#	print newData1
                                 newData2 = newData[remainingSpace:]
-				print newData2
+			#	print newData2
 				#tell the chunk server to append the first part of the new data that
 				#will fill up the rest of the remaining space on a chunk
 				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
