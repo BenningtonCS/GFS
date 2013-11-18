@@ -345,7 +345,7 @@ class API():
 					
 		#close connection to chunk server		
                	s.close()
-               	strct = strcut.Struct(len(fileContens))
+               	strct = struct.Struct(len(fileContens))
                	if filename[0] == '/':
                		filePath = "GFSoutPut"
                	else:
