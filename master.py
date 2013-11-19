@@ -128,7 +128,7 @@ class handleCommand(threading.Thread):
 		chunkHandle = database.getChunkHandle()
 		self.lock.release()
 		newChunk = database.createNewChunk(self.msg[1], self.msg[2], chunkHandle)
-		fL.send(self.s, newChunk)
+		fL.send(self.s, str(newChunk))
 
 
 
