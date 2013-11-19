@@ -299,7 +299,7 @@ class API():
 	#the file is on and the inner lists are the locations of each chunk and har far to read on
 	#that chunk. I then pass on the necessary data to the chunk servers which send me back the
 	#contents of the file. 
-	def read(self, filename, byteOffset, bytesToRead):
+	def read(self, filename, byteOffset, bytesToRead, newName):
 		#lets make the API able to send and recieve messages
         	m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         	m.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -360,11 +360,11 @@ class API():
 		#close connection to chunk server		
                	s.close()
                	strct = struct.Struct(str(len(fileContents))+"s")
-               	if filename[0] == '/':
-               		filePath = "GFSoutPut"
+               	if newName[0] == '/':
+               		filePath = config.GFSoutput[0:-1]
                	else:
-               		filePath = "GFSoutPut/"
-		with open(filePath+filename+fromChunks[0:17],"wb") as e:
+               		filePath = config.GFSoutput
+		with open(filePath+newName,"wb") as e:
 			e.write(fileContents)
 		
 		return dat
