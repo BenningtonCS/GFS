@@ -8,6 +8,7 @@ masterip = '10.10.100.144'
 chunkPath = '/data/gfsbin/Chunks'
 chunkSize = 12000 #bytes
 debug = False
+GFSoutput = "GFSoutPut/"
 
 # EOT (End Of Transmission) is an ASCII character whose integer value on an ASCII table
 # is 4. chr() is the function used to convert an integer to an ASCII symbol, so since the
