@@ -50,7 +50,7 @@ class API():
 		#send a CREATE request to the master
 		try:
 			logging.debug("API: Attempting to send CREATE| " + filename)
-			fL.send(m, "CREATE" + filename)
+			fL.send(m, "CREATE|" + filename)
 		except: 
 			logging.error("ERROR: COULD NOT SEND CREATE REQUEST TO MASTER")
 		#receive data back from the master 
