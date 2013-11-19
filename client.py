@@ -17,7 +17,8 @@ elif sys.argv[1] == "append":
 elif sys.argv[1] == "read":
 	byteOffSet = sys.argv[3]
 	bytesToRead = sys.argv[4]
-	API.read(filename, byteOffSet, bytesToRead)
+	newName = sys.argv[5]
+	API.read(filename, byteOffSet, bytesToRead, newName)
 
 elif sys.argv[1] == "delete":
 	API.delete(filename)
