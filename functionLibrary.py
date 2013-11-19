@@ -16,7 +16,7 @@
 #################################################################################
 
 
-import config, sys, logging, socket, random
+import config, sys, logging, socket, random, struct
 
 
 ###############################################################################
@@ -32,7 +32,16 @@ HOSTSFILE = config.hostsfile
 ACTIVEHOSTSFILE = config.activehostsfile
 OPLOG = config.oplog
 chunkPort = config.port
+###############################################################################
 
+#               Length packer/unpacker                                               #
+
+###############################################################################
+
+#this struct packs and unpacks a long long int which we'll use for
+# telling remote machines how much data they're getting
+packer = struct.Struct('q')
+  
 ###############################################################################
 
 #               Verbose (Debug) Handling                                      #
@@ -74,7 +83,7 @@ def chunkdebug():
 
 ###############################################################################
 
-
+"""
 def recv(connection):
 	# Debug message to show the function has been called
 	logging.debug('RECV: Starting recv() function')
@@ -110,7 +119,14 @@ def recv(connection):
 	logging.debug('RECV: Data Parsed Successfully!')
 	# Give back the received data
 	return data
-
+"""
+def recv(connection):
+	msg = ""
+	msgLen = packer.unpack(connection.recv(8))[0]
+	print msgLen
+	while len(msg) < msgLen:
+		msg += connection.recv(2**14)
+	return msg
 
 
 ###############################################################################
@@ -118,10 +134,20 @@ def recv(connection):
 #               TCP SEND FUNCTION 
 
 ###############################################################################
-
+"""
 def send(connection, message):
 	connection.send(message + eot)
+"""
 
+def send(connection, message):
+	totalSent = 0
+	msgLen = len(message)
+	print msgLen
+	packed_msgLen = packer.pack(msgLen)
+	connection.send(packed_msgLen)
+	while totalSent < msgLen:
+		sent = connection.send(message[totalSent:])
+		totalSent += sent
 ###############################################################################
 
 #               RANDOMLY CHOOSE CHUNK SERVER LOCATIONS
@@ -179,9 +205,5 @@ def appendToOpLog(data):
 		except IOError:
 			logging.error("Could not append to: " + OPLOG)
 			listener.logInfo('FATAL', 'Appending to opLog was unsuccessful. Database integrity at risk.')
-
-
-
-
 
 
