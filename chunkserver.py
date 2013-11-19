@@ -52,13 +52,13 @@ class workerThread(connThread):
 		self.remoteAddress = acceptedConn[1] 
 
 	def run(self):
-		c = fL.recv(self.connection) # listens for a command on 
+		command = fL.recv(self.connection) # listens for a command on 
 							# the connection handed 
 							# down from the main 
 							# thread
-		com = c.split('|') # if c has multiple parts, they will be seperated by
+	#	com = c.split('|') # if c has multiple parts, they will be seperated by
 				   # pipes. This will put each part into a list
-		command = com[0]   # the command should be the first part of the message,
+	#	command = com[0]   # the command should be the first part of the message,
 				   # thus the first part of the list
 		logging.debug("Recieved command " + command)
 
@@ -87,7 +87,7 @@ class workerThread(connThread):
 #				logging.debug("send a continue")
 #				chunkHandle = fL.recv(self.connection) # it listens on its 
 #									 # connection for a chunkhandle
-				chunkHandle = com[1] # name of the chunkhandle
+				chunkHandle = fL.recv(self.connection) # name of the chunkhandle
 				logging.debug("recieved name of the chunkhandle: " + chunkHandle)
 				emptySpace = str(mg64 - os.stat(config.chunkPath + "/" + chunkHandle).st_size) # then checks the 
 									         # difference 
@@ -115,11 +115,11 @@ class workerThread(connThread):
 #				fL.send(self.connection, "CONTINUE") # confirms readiness for data
 #				logging.debug("sent continue #1")
 #				chunkHandle = fL.recv(self.connection) # listens for chunkHandle
-				chunkHandle = com[1]
+				chunkHandle = fL.recv(self.connection)
 #				logging.debug("recieved name of the chunkhandle: " + chunkHandle)
 #				fL.send(self.connection, "CONTINUE") # confirms ready state
 #				logging.debug("sent continue #2")
-				byteOffSet = int(com[2]) # listens for a byte 
+				byteOffSet = int(fL.recv(self.connection)) # listens for a byte 
 									     # offset to read from 
 									     # (relative to the 
 									     # beginning of the 
@@ -128,7 +128,7 @@ class workerThread(connThread):
 #				logging.debug("recieved the byte offset number.")
 #				fL.send(self.connection, "CONTINUE") # confirms the desire for EVEN MORE data
 #				logging.debug("sent continue #3") 
-				bytesToRead = int(com[3]) #int(fL.recv(self.connection)) # listens for the 
+				bytesToRead = int(fL.recv(self.connection)) #int(fL.recv(self.connection)) # listens for the 
 									      # number of bytes to read
 				logging.debug("recieved the number of bytes to read")
 				chunk = open(config.chunkPath+"/"+chunkHandle) # opens the designated chunk to read from
@@ -177,7 +177,7 @@ class workerThread(connThread):
 			try:
 #				fL.send(self.connection, "CONTINUE")
 #				logging.debug("Sent continue")
-	                	chunkHandle = com[1] #fL.recv(self.connection) # get the name of the chunk
+	                	chunkHandle = fL.recv(self.connection) #fL.recv(self.connection) # get the name of the chunk
 				logging.debug("recieved name of the chunk")
 	                	open(config.chunkPath + "/" + chunkHandle, 'w').close() # create the file
 	        	except IOError as e:
@@ -196,12 +196,12 @@ class workerThread(connThread):
 #				fL.send(self.connection, "CONTINUE")
 #				logging.debug("sent continue #1")
 #				chunkHandle = fL.recv(self.connection) # name of the chunk
-				chunkHandle = com[1]
+				chunkHandle = fL.recv(self.connection)
 #				logging.debug("Recieved name of the chunk")
 #				fL.send(self.connection, "CONTINUE") 
 #				logging.debug("Sent continue #2") 
 #				data = fL.recv(self.connection)    # data being added
-				data = com[2]
+				data = fL.recv(self.connection)
 				logging.debug("Recieved the data to be added")
 	                	with open(config.chunkPath+"/"+chunkHandle, 'a') as a: # open the chunk
 	                        	a.write(data) 			 # add the data to it
@@ -219,7 +219,7 @@ class workerThread(connThread):
 		elif command == "SANITIZE":
 			# recieves SANITIZE from the scrubber which tells the chunkserver to delete a chunk
                         try:
-                                chunkHandle = com[1] # name of the chunk
+                                chunkHandle = fL.recv(self.connection) # name of the chunk
                                 logging.debug("Recieved name of the chunk")
                                 os.remove(config.chunkPath + '/' + chunkHandle) # remove file from directory
                                 logging.debug("Removed chunk handle.")
