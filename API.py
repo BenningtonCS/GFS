@@ -350,7 +350,7 @@ class API():
                 	fL.send(s, "READ")
                 	fL.send(s, str(cH))
                 	fL.send(str(offset))
-                	fL.send(str(bytesToRead)))
+                	fL.send(str(bytesToRead))
                 	#print "READ|" + cH + "|" + offset + "|" + bytesToRead
 			#receive and print the contents of the file
 			fromChunks += "." + str(cH)
