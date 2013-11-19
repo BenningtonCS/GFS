@@ -349,17 +349,6 @@ class handleCommand(threading.Thread):
 		pass
 
 
-
-	# Function that executes the protocol when an OPLOG message is received
-	def oplog(self):
-		# Visual confirmation for debugging: confirm init of oplog()
-		logging.debug('Initializing oplog append')
-		# Append to the OpLog the <ACTION>|<CHUNKHANDLE>|<FILENAME>
-		fL.appendToOpLog(self.msg[1]+"|"+self.msg[2]+"|"+self.msg[3])
-		# Visual confirmation for debugging: confirm success of oplog()
-		logging.debug('Oplog append successful')
-
-
 	def sanitize(self):
 		database.sanitizeFile(self.fileName)
 
@@ -449,11 +438,7 @@ class handleCommand(threading.Thread):
 		elif self.op == "CLOSE":
 			self.close()
 
-		# If the operation is to update the oplog, OPLOG:
-		elif self.op == "OPLOG":
-			self.oplog()
-
-		# If the operation is to update the oplog, OPLOG:
+		# If the operation is to SANITIZE, initiate cleansing the database:
 		elif self.op == "SANITIZE":
 			self.sanitize()
 
@@ -565,11 +550,10 @@ heartBeat = hB.heartBeat()
 
 if __name__ == "__main__":
 
-	# Define the paths of the host file, activehost file, and oplog from the config file, and
+	# Define the paths of the host file, activehost file from the config file, and
 	# define the port to be used, also from the config file
 	HOSTSFILE = config.hostsfile
 	ACTIVEHOSTSFILE = config.activehostsfile
-	OPLOG = config.oplog
 	chunkPort = config.port
 	EOT = config.eot
 	# Define a thread lock to be used to get and increment chunk handles
