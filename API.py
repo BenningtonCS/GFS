@@ -349,8 +349,8 @@ class API():
 			#send READ request to chunk server
                 	fL.send(s, "READ")
                 	fL.send(s, str(cH))
-                	fL.send(str(offset))
-                	fL.send(str(bytesToRead))
+                	fL.send(s,str(offset))
+                	fL.send(s,str(bytesToRead))
                 	#print "READ|" + cH + "|" + offset + "|" + bytesToRead
 			#receive and print the contents of the file
 			fromChunks += "." + str(cH)
