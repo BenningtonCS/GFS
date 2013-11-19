@@ -6,9 +6,9 @@
 #                        # API Version 1#                                    #
 #                        ################                                    #
 #This is the API version 1. It currently has the create, append, read, delete#
-#and undelete functions. Open and close will be added if desired.            #
-#file will be imported and called from a client file that the client can just#
-#run.                                                                        #
+#and undelete functions. file will be imported and called from a client file #
+#that the user  can just run. there is a command line arguement version of   #
+#client.py in the PPE branch                                                 #
 ##############################################################################
 
 
