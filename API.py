@@ -270,7 +270,7 @@ class API():
 	                                	continue
 	                        	#send CREATE request to the chunk server at the current location
 	                        	fL.send(s, "CREATE")
-	                        	fL.send(S, cH)
+	                        	fL.send(s, cH)
 					global ack
 	                        	ack = fL.recv(s)
 	                ################  	
