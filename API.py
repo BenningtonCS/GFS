@@ -50,7 +50,7 @@ class API():
 		#send a CREATE request to the master
 		try:
 			logging.debug("API: Attempting to send CREATE| " + filename)
-			fL.send(m, "CREATE|" + filename)
+			fL.send(m, "CREATE" + filename)
 		except: 
 			logging.error("ERROR: COULD NOT SEND CREATE REQUEST TO MASTER")
 		#receive data back from the master 
@@ -88,7 +88,8 @@ class API():
 				logging.error("ERROR: COULD NOT CONNECT TO CHUNKSERVER AT ", location)
 				continue
 			#send CREATE request to the chunk server at the current location
-			fL.send(s, "CREATE|" + cH)
+			fL.send(s, "CREATE") 
+			fL.send(s, cH)
 			print "CREATE"
 			#wait to receive a CONTINUE from chunk server to proceed
 			global ack
@@ -175,7 +176,8 @@ class API():
                 	except:
 				print "ERROR: COULD NOT CONNECT TO CHUNK SERVER AT ", location
 			#ask chunk server how much room is left on latest chunk
-			fL.send(self.s, "CHUNKSPACE?|" + cH)
+			fL.send(self.s, "CHUNKSPACE?")
+			fL.send(self.s, cH)
 			#the response is stored in remainingSpace
 			remainingSpace = fL.recv(self.s)
 			#some error handling
@@ -203,7 +205,9 @@ class API():
 					s.connect((location, TCP_PORT))
 				except:
 					print "ERROR: COULD NOT REOPEN SOCKET"
-				fL.send(s, "APPEND|" + cH + "|" + newData1)
+				fL.send(s, "APPEND")
+				fL.send(s, cH)
+				fL.send(s, newData1)
 				print "first append"
 				SoF = fL.recv(s)
 				#error handling
@@ -217,7 +221,9 @@ class API():
 				t = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				t.connect((location, TCP_PORT))
 				try:
-					fL.send(t, "APPEND|" + cH + "|" + newData)
+					fL.send(t, "APPEND")
+					fL.send(t, cH)
+					fL.send(t, newData)
 				except:
 					print "ERROR: COULD NOT SEND APPEND TO CHUNK SERVER"			
 				SoF = fL.recv(t)
@@ -263,7 +269,8 @@ class API():
 	                                	print "ERROR: COULD NOT CONNECT TO CHUNKSERVER AT ", location
 	                                	continue
 	                        	#send CREATE request to the chunk server at the current location
-	                        	fL.send(s, "CREATE|" + cH)
+	                        	fL.send(s, "CREATE")
+	                        	fL.send(S, cH)
 					global ack
 	                        	ack = fL.recv(s)
 	                ################  	
@@ -340,7 +347,10 @@ class API():
 				print "ERROR: COULD NOT CONNECT TO CHUNK SERVER AT ", location
 				continue
 			#send READ request to chunk server
-                	fL.send(s, "READ|" + str(cH) + "|" + str(offset) + "|" + str(bytesToRead))
+                	fL.send(s, "READ")
+                	fL.send(s, str(cH))
+                	fL.send(str(offset))
+                	fL.send(str(bytesToRead)))
                 	#print "READ|" + cH + "|" + offset + "|" + bytesToRead
 			#receive and print the contents of the file
 			fromChunks += "." + str(cH)
