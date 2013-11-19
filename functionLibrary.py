@@ -125,7 +125,7 @@ def recv(connection):
 	msgLen = packer.unpack(connection.recv(8))[0]
 	print msgLen
 	while len(msg) < msgLen:
-		msg += connection.recv(2**14)
+		msg += connection.recv(msgLen-len(msg))
 	return msg
 
 
