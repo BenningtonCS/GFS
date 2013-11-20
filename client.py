@@ -4,10 +4,14 @@ import API,sys
 from API import API
 
 API = API()
-	
+
+
+if (sys.argv[1] == "files"):
+                API.fileList()
+                
 filename = sys.argv[2] 
 
-if sys.argv[1] == "create":
+elif sys.argv[1] == "create":
 	API.create(filename)
 
 elif sys.argv[1] == "append":
