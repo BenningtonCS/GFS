@@ -6,14 +6,14 @@ class GFS {
 		$this->x = stream_socket_client("tcp://10.10.117.109:6666", $errno, $errorMessage);
 	}
 	public function create($filename) {
-		$this->connect;
+		$this->connect();
 		fwrite($this->x, "CREATE|".$filename);
 		$response = stream_get_contents($this->x);
 		echo $response;
 		return $response;
 	}
 	public function append($filename, $data) {
-		$this->connect;
+		$this->connect();
 		fwrite($this->x, "APPEND|".$filename."|".$data);
 	}
 
