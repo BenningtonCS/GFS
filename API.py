@@ -437,9 +437,8 @@ class API():
 		m.close()
 	
 
-	#I have no idea what this is but I wrote an exception for it
 	def fileList(self):
-		#lets make the API able to send and recieve messages
+                #lets make the API able to send and recieve messages
                 m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 m.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 try:
@@ -448,13 +447,13 @@ class API():
                         print "ERROR: COULD NOT CONNECT TO MASTER"
                         exit(0)
 
-		try:
-			fL.send(m, "FILELIST|x")
-			self.data = fL.recv(s)
-			return self.data
-		except:
-			print "file list error"
-
+                try:
+                        fL.send(m, "FILELIST|x")
+                        data = fL.recv(m)
+                        m.close()
+                        print data
+                except:
+                        print "file list error"
 
 #oplog stuff. for questions contact rohail
 class updateOpLog(threading.Thread):
