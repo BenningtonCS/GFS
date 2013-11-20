@@ -10,7 +10,7 @@ if (sys.argv[1] == "files"):
         API.fileList()
               
 
-if sys.argv[1] == "create":
+elif sys.argv[1] == "create":
 	filename = sys.argv[2] 
 	API.create(filename)
 
