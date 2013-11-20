@@ -8,7 +8,7 @@ API = API()
 
 if (sys.argv[1] == "files"):
                 API.fileList()
-                return 0
+                exit()
                 
 filename = sys.argv[2] 
 
