@@ -16,6 +16,12 @@ class GFS {
 		$this->connect();
 		fwrite($this->x, "APPEND|".$filename."|".$data);
 	}
+	public function read($filename) {
+		$this->connect();
+		fwrite($this->x, "READ|".$filename);
+		$response = stream_get_contents($this->x);
+		return $response;
+	}
 
 }
 $gfs = new GFS;
