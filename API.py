@@ -59,6 +59,7 @@ class API():
 		logging.debug("API: Received message: " + self.data)
 		if self.data == "FAIL1":
 			print "THAT FILE EXISTS ALREADY... EXITING API"
+			return 0
 			exit(0)
 		elif self.data == "FAIL2":
 			print "NO SUCH FILE EXISTS FOR CHUNK CREATION"
