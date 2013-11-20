@@ -101,9 +101,11 @@ class API():
 		if ack == "FAILED":
 			print "ERROR: FILE CREATION FAILED"
 			fL.send(m, "FAILED")
+			return 0
 		elif ack == "CREATED":
 			print "File creation successful!"
 			fL.send(m, "CREATED")
+			return 1
 		m.close()
 		
 	
