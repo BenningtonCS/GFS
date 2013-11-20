@@ -69,7 +69,7 @@ class heartBeat:
                         # If the hosts.txt file can not be read, alert the logger
                         except IOError:
                                 logging.error('Could not read from ' + self.HOSTS)
-				listener.logInfo("FILE READ ERROR", "Could not open or read from hosts file")
+				listener.logError("Could not open or read from hosts file")
 				exit(1)
                 # If the hosts.txt file does not exist:
                 else:
