@@ -14,6 +14,6 @@ class GFS {
 
 }
 $gfs = new GFS;
-$gfs->create('hello/2');
+$gfs->create('hello/3');
 $gfs->append('hello/2', '123')
 ?>

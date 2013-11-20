@@ -45,6 +45,7 @@ class API():
                 	m.connect((MASTER_ADDRESS, TCP_PORT))
         	except:
                 	logging.error("ERROR: COULD NOT CONNECT TO MASTER")
+                	return 0
                 	exit(0)
 
 		#send a CREATE request to the master
@@ -53,6 +54,8 @@ class API():
 			fL.send(m, "CREATE|" + filename)
 		except: 
 			logging.error("ERROR: COULD NOT SEND CREATE REQUEST TO MASTER")
+			return 0
+			exit(0)
 		#receive data back from the master 
 		self.data = fL.recv(m)
 		#error if the file trying to be created already exists 
@@ -63,9 +66,11 @@ class API():
 			exit(0)
 		elif self.data == "FAIL2":
 			print "NO SUCH FILE EXISTS FOR CHUNK CREATION"
+			return 0
 			exit(0)
 		elif self.data == "FAIL3":
 			print "CHUNK IS NOT THE LATEST CHUNK"
+			return 0
 			exit(0)
 		print self.data
 		#parse the received data into locations, and chunk handle
@@ -85,7 +90,7 @@ class API():
 			#attempt to connect to the chunk server at the current location
 			try:
 				s.connect((location,TCP_PORT))
-                	except: 
+            except: 
 				logging.error("ERROR: COULD NOT CONNECT TO CHUNKSERVER AT ", location)
 				continue
 			#send CREATE request to the chunk server at the current location
