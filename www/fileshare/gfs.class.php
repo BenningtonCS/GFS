@@ -20,9 +20,4 @@ class GFS {
 }
 $gfs = new GFS;
 
-$create = $gfs->create('hello/7');
-if($create == "CREATE|1") {
-	$gfs->append('hello/7', '123');	
-}
-
 ?>

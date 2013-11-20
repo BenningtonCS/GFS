@@ -210,7 +210,10 @@ class API():
 				#error handling/acks
 				if SoF == "FAILED":
 					print "ERROR WITH APPEND ON CHUNK SERVER SIDE. exiting..."
-					exit(0)				
+					return 0
+					exit(0)
+				else:
+					return 1				
 
 
 		if lenNewData > remainingSpace:

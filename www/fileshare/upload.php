@@ -21,7 +21,11 @@ $gfs = new GFS;
       move_uploaded_file($_FILES["file"]["tmp_name"],
       "files/" . $_FILES["file"]["name"]);
       echo "Stored in: " . "files/" . $_FILES["file"]["name"];
-      $gfs->create($_FILES["file"]["name"]);
+      $gfs = new GFS;
+      $create = $gfs->create($_FILES["file"]["name"]);
+      if($create == "CREATE|1") {
+        $append = $gfs->append(readfile("files/" . $_FILES["file"]["name"])); 
+      }
       }
     }
 //include 'pages/header.php';
