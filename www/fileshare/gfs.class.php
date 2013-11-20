@@ -8,6 +8,7 @@ class GFS {
 	public function create($filename) {
 		fwrite($this->x, "CREATE|".$filename);
 		$response = stream_get_contents($this->x);
+		echo $response;
 		return $response;
 	}
 	public function append($filename, $data) {
