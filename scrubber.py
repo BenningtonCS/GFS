@@ -178,7 +178,7 @@ class Scrubber:
 
 					# If the chunk server responds with a failure message, DO SOMETHING ELSE!
 					elif data == "FAILED":
-						retryAck = self.cleanLocation(location)
+						retryAck = self.cleanLocation(location, handle)
 
 						if retryAck == "SUCCESS":
 							logging.debug("SCRUBBER: Chunk successfully removed from chunkserver")
