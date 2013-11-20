@@ -7,6 +7,8 @@ class GFS {
 	}
 	public function create($filename) {
 		fwrite($this->x, "CREATE|".$filename);
+		$response = stream_get_contents($this->x);
+		return $response;
 	}
 	public function append($filename, $data) {
 		fwrite($this->x, "APPEND|".$filename."|".$data);
@@ -14,6 +16,10 @@ class GFS {
 
 }
 $gfs = new GFS;
-$gfs->create('hello/3');
-$gfs->append('hello/2', '123')
+
+$create = $gfs->create('hello/5');
+if($create == "CREATE|1") {
+	$gfs->append('hello/5', '123');	
+}
+
 ?>

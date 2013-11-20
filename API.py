@@ -90,7 +90,7 @@ class API():
 			#attempt to connect to the chunk server at the current location
 			try:
 				s.connect((location,TCP_PORT))
-            except: 
+			except: 
 				logging.error("ERROR: COULD NOT CONNECT TO CHUNKSERVER AT ", location)
 				continue
 			#send CREATE request to the chunk server at the current location
