@@ -429,8 +429,7 @@ class API():
 			print "file list error"
 
 
-<<<<<<< HEAD
-=======
+
 	def replicate(self, chunkHandle, byteOffset, bytesToRead, readLocation, createLocation):
 
 		#############################################################
@@ -525,4 +524,4 @@ class updateOpLog(threading.Thread):
 		m.close()
 
 
->>>>>>> #76 big commit! Now chunkserver arrival and departure is handled!!!
+
