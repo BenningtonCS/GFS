@@ -365,10 +365,7 @@ class API():
 		#close connection to chunk server		
                	s.close()
                	strct = struct.Struct(str(len(fileContents))+"s")
-               	if newName[0] == '/':
-               		filePath = config.GFSoutput[0:-1]
-               	else:
-               		filePath = config.GFSoutput
+               	
 		with open(filePath+newName,"wb") as e:
 			e.write(fileContents)
 		
