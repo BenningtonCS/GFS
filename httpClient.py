@@ -78,12 +78,6 @@ class processConnection(threading.Thread):
 
 		#elif(msg == "DELETE"):
 
-
-
-
-
-
-		self.connection.send("You sent '" + self.data + "'\n Connection ID:" + str(i))
 		self.connection.close()
 		self.lock.release()
 
