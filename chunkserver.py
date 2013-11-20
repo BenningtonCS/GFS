@@ -218,21 +218,32 @@ class workerThread(connThread):
 
 		elif command == "SANITIZE":
 			# recieves SANITIZE from the scrubber which tells the chunkserver to delete a chunk
-                        try:
-                                chunkHandle = com[1] # name of the chunk
-                                logging.debug("Recieved name of the chunk")
-                                os.remove(config.chunkPath + '/' + chunkHandle) # remove file from directory
-                                logging.debug("Removed chunk handle.")
-                                fL.send(self.connection, "SUCCESS") # send a success
-                                logging.debug("removal successfull!")
-                        except socket.error as e:
-                                logging.error(e)
-                        except IOError as e:
+			try:
+				chunkHandle = com[1] # name of the chunk
+				logging.debug("Recieved name of the chunk")
+				try:
+					os.remove(config.chunkPath + '/' + chunkHandle) # remove file from directory
+					logging.debug("Removed chunk handle.")
+				# If there is an error thrown that the chunk does not exist, we return success
+				# because sanitize is called to remove a chunk from a location. If it does not
+				# exist at that location, then removal is technially achieved.
+				except OSError:
+					fL.send(self.connection, "SUCCESS")
+					logging.debug("chunk already did not exist. sending success")
+					
+				fL.send(self.connection, "SUCCESS") # send a success
+				logging.debug("removal successfull!")
+				
+			except socket.error as e:
+				logging.error(e)
+			except IOError as e:
 				fL.send(self.connection,"FAILED")
 				logging.error(e)
 			except Exception as e:
 				fL.send(self.connection,"FAILED")
 				logging.error(e)
+
+
 
  		else:
  			error = "Received invalid command: " + command
