@@ -504,36 +504,67 @@ def worker():
 # The hostListener will then take the appropriate steps depending on which
 # is the case.
 def hostListener():
+	logging.debug("Start hostListener")
+
+	# Define a list that will hold the IPs of active chunkservers
 	previous = []
 
 	while True:
+		print database.locDict
 		# Run the heartBeat to get an updated list of active chunkservers
 		heartBeat.pumpBlood()
 
+		logging.debug("Reading from activehosts.txt...")
 		# Read the active servers out of the activehosts file.
 		with open(ACTIVEHOSTSFILE, 'r') as hosts:
 			active = hosts.read().splitlines()
 
+		logging.debug("Check for chunkserver arrivals")
+
+		toAppend = []
 		# To see if anything has been added, check to see whether something
 		# exists now that did not exist previously.
 		for item in active:
 			if item not in previous:
-				print item
-				# PUT IN WHAT YOU WANT IT TO DO TO SOMETHING THAT JUST ARRIVED
-				# PROBABLY SOME KIND OF CHUNKSERVER INTERROGATION
+				logging.debug(str(item) + " joined!")
+				# Interrogate the chunk server to find out what it has on it, 
+				# and update the databased based on its contents.
+				database.interrogateChunkServer(item)
+				# Add the now active item to the toAppend list, so it accurate
+				# the next time the loop runs.
+				logging.debug("Appending to 'previous' list")
+				toAppend.append(item)
 
+		# Append all the IPs from the list of new IPs to the previous list
+		# so it is accurate the next time the loop runs.
+		for item in toAppend:
+			previous.append(item)
 
+		logging.debug("Check for chunkserver departures")
+
+		toRemove = []
 		# To see if anything left, check to see whether something does not
 		# exist now that existed previously.
 		for item in previous:
 			if item not in active:
-				print item
-				# PUT IN WHAT YOU WANT IT TO TO SOMETHING THAT LEFT 
-				# LIKELY UPDATE DATABASE AND CREATE REPLICAS IF NEEDED
+				logging.debug(str(item) + " departed!")
+				# Call the function that will handle the database update
+				# and replication, if needed.
+				database.chunkserverDeparture(item)
+				# Add the item to the toRemove list, so it is accurate
+				# the next time the loop runs.
+				logging.debug("Removing from 'previous' list")
+				toRemove.append(item)
+
+		# Remove all the IPs from the list of departed IPs to the previous list
+		# so it is accurate the next time the loop runs
+		for item in toRemove:
+			previous.remove(item)
+
 
 		# As this does not need to be run continuously, we can define
 		# how often we wish to run it.
-		time.sleep(120)
+		time.sleep(30)
 
 
 

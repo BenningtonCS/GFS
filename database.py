@@ -16,7 +16,7 @@
 
 
 import functionLibrary as fL
-import config, logging, socket
+import config, logging, socket, API, random
 
 
 
@@ -25,6 +25,9 @@ ACTIVEHOSTSFILE = config.activehostsfile
 OPLOG = config.oplog
 chunkPort = config.port
 EOT = config.eot
+
+
+api = API.API()
 
 ###############################################################################
 
@@ -72,11 +75,19 @@ class Database:
 	# Initialization function that will set up the database from the opLog and data
 	# from the chunkservers
 	def initialize(self):
+
+		activeHosts = []
+		with open(ACTIVEHOSTSFILE, 'r') as activeFile:
+			activeHosts = activeFile.read().splitlines()
+
+
 		logging.debug('Initializing database')
 		# Populate the database by parsing the operations log
 		self.readFromOpLog()
-		# Get/update the locations of all the chunks from the chunkservers
-		self.interrogateChunkServers()
+
+		for item in activeHosts:
+			# Get/update the locations of all the chunks from the chunkservers
+			self.interrogateChunkServer(item)
 		# Now that the database is setup, go through the used chunkhandles and 
 		# set the chunk handle counter to the next unused number
 		self.updateChunkCounter()
@@ -94,9 +105,7 @@ class Database:
 		# The location lookup dictionary
 		print self.locDict
 
-		activeHosts = []
-		with open(ACTIVEHOSTSFILE, 'r') as activeFile:
-			activeHosts = activeFile.read().splitlines()
+		
 
 		if len(activeHosts) < 3:
 			logging.critical("LESS THAN THREE CHUNKSERVERS ARE ACTIVE. OPERATIONS MAY BE LIMITED OR INACCESSIBLE.")
@@ -177,64 +186,180 @@ class Database:
 
 	# Communicates with all the chunkservers and requests the chunkhandles of all the chunks
 	# residing on them. It then appends the locations of a chunk into the appropriate chunk object.
-	def interrogateChunkServers(self):
-		logging.debug('Initialize interrogateChunkServers()')
-		# Read the contents of the activehosts file into a list
-		with open(ACTIVEHOSTSFILE, "r") as hosts:
-			hostList = hosts.read().splitlines()
+	def interrogateChunkServer(self, IP):
+		logging.debug('Initialize interrogateChunkServer()')
 
-		for IP in hostList:
-			# COULD USE A TRY/EXCEPT IN HERE PROBABLY IN CASE THE CONNECTION DOES NOT WORK
-			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-			data = " "
-			try:
-				s.connect((IP, chunkPort))
-				logging.debug('Connection Established: ' + str(IP) + ' on port ' + str(chunkPort))
-				fL.send(s, 'CONTENTS?')
-				logging.debug('Sent chunkserver a CONTENTS? message')
-				data = fL.recv(s)
-			except:
-				logging.error("interrogateChunkServers failed to connect to " + IP)
 
-			
-			s.close()
-			logging.debug('Received response from chunkserver')
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		data = " "
+		try:
+			s.connect((IP, chunkPort))
+			logging.debug('Connection Established: ' + str(IP) + ' on port ' + str(chunkPort))
+			fL.send(s, 'CONTENTS?')
+			logging.debug('Sent chunkserver a CONTENTS? message')
+			data = fL.recv(s)
+		except:
+			logging.error("interrogateChunkServer failed to connect to " + IP)
 
-			# If the chunkserver has nothing on it, it should return whitespace. If this is the case, 
-			# then nothing in the database can be updated, so it will continue onto the next IP.
-			# If the chunkserver returns something other than whitespace (a message formatted chunk1|chunk2|... )
-			# then the data can be processed.
-			if data != " ":
-				# Convert the pipe separated string into a list
-				chunkData = data.split('|')
+		
+		s.close()
+		logging.debug('Received response from chunkserver')
 
-				# For every chunk handle in that list, update that chunk objects locations list
-				for chunk in chunkData:
 
-					# If the IP is not already in the location lookup, add it!
-					if IP not in self.locDict.keys():
-						self.locDict[IP] = []
+		# If the IP is not already in the location lookup, add it!
+		if IP not in self.locDict.keys():
+			self.locDict[IP] = []
 
+
+		# If the chunkserver has nothing on it, it should return whitespace. If this is the case, 
+		# then nothing in the database can be updated, so it will continue onto the next IP.
+		# If the chunkserver returns something other than whitespace (a message formatted chunk1|chunk2|... )
+		# then the data can be processed.
+		if data != " ":
+			# Convert the pipe separated string into a list
+			chunkData = data.split('|')
+
+			# For every chunk handle in that list, update that chunk objects locations list
+			for chunk in chunkData:
+
+				# If the IP is not already in the location lookup, add it!
+				if IP not in self.locDict.keys():
+					self.locDict[IP] = []
 					# Add the chunk to the list of values for the IP key
 					self.locDict[IP].append(chunk)
 
-					# ADD SOME ERROR HANDLING HERE -- IF THE CHUNK DOES NOT EXIST IN THE 
-					# LOOKUP SOMETHING WENT TERRIBLY WRONG!
-					try:
-						# Find which file the chunk is associated with in the lookup dictionary
-						fileName = self.lookup[chunk]
+				else:
+					assChnks = self.locDict[IP]
+					
+					if chunk not in assChnks:
+						# Add the chunk to the list of values for the IP key
+						self.locDict[IP].append(chunk)
 
-						# From the file name we found the chunk to be associated with in the
-						# lookup, we can append the current IP to the list of chunk locations
-						# in the chunk object within the file object dictionary.
-						self.data[fileName].chunks[chunk].locations.append(IP)
-						logging.debug('Appended location to chunk ' + str(chunk) + ' location list')
+				# ADD SOME ERROR HANDLING HERE -- IF THE CHUNK DOES NOT EXIST IN THE 
+				# LOOKUP SOMETHING WENT TERRIBLY WRONG!
+				try:
+					# Find which file the chunk is associated with in the lookup dictionary
+					fileName = self.lookup[chunk]
 
-					except KeyError:
-						logging.warning('Chunk: ' + str(chunk) + ' on ' + str(IP) + ' is not associated with a file in the database. Ignoring chunk and moving on...')
+					# From the file name we found the chunk to be associated with in the
+					# lookup, we can append the current IP to the list of chunk locations
+					# in the chunk object within the file object dictionary.
+					self.data[fileName].chunks[chunk].locations.append(IP)
+					logging.debug('Appended location to chunk ' + str(chunk) + ' location list')
 
-		logging.debug('interrogateChunkServers() complete')
+				except KeyError:
+					logging.warning('Chunk: ' + str(chunk) + ' on ' + str(IP) + ' is not associated with a file in the database. Ignoring chunk and moving on...')
+
+		logging.debug('interrogateChunkServer() complete')
+
+
+
+	# This function should handle the event when a chunkserver is deemed to have left
+	# the cluser. It updates all relevant metadata and initiates replication if needed.
+	def chunkserverDeparture(self, IP):
+		logging.debug("Begin chunkserverDeparture()")
+		# Get the chunks that were stored at that location
+		associatedChunks = self.locDict[IP]
+		print associatedChunks
+		logging.debug("Got all chunks associated with the departed IP")
+		# Go through all the chunks that were stored at that location and remove the IP
+		# from it's list of locations.
+		for chunk in associatedChunks:
+			try:
+				# Get the file the chunk belongs to
+				fileName = self.lookup[chunk]
+				logging.debug("file name lookup successful")
+
+				# Remove the location from the chunk's location list
+				self.data[fileName].chunks[chunk].locations.remove(IP)
+				logging.debug("Old location removal successful")
+				# Find the places where the chunk is still stored.
+				locs = self.data[fileName].chunks[chunk].locations
+				logging.debug("Got list of chunk locations")
+				# Get the length of the locations list
+				lenLoc = len(locs)
+				logging.debug("Found length of list")
+				# Define the size of a chunk
+				chunkSize = config.chunkSize
+
+				# The byte offset should be 0, since we want to copy everything from the 
+				# very beginning of the chunk to the very end.
+				byteOffset = "0"
+
+
+				# Make sure that the chunk is actually stored somewhere.
+				if lenLoc == 0:
+					logging.critical('FATAL: CHUNK ' + chunk + ' OF FILE ' + fileName + ' IS NO LONGER IN THE SYSTEM')
+
+				# Check to see if the chunk has less than three copies. If it has less than three, 
+				# it needs to be replicated!
+				elif lenLoc < 3:
+					logging.debug("There are less than three copies of the chunk. Generating replicas...")
+					for x in range(3-lenLoc):
+						# Get a location where the new chunk will be put
+						newLocation = self.chooseReplicaHost(locs)
+
+						logging.debug("Successfully chose new loction: " + str(newLocation))
+						# In the case where multiple replicas must be created, we want to make sure
+						# we do not put the replicas in the same place, so we will add the new location
+						# to the list of used locations
+						locs.append(newLocation)
+						logging.debug("Appended newLocation to list of locations")
+						# Have a replica be created via the API
+						flg = api.replicate(chunk, byteOffset, chunkSize, locs[0], newLocation)
+						logging.debug("API call completed")
+						# Check the flag to make sure the replication was successful
+						if flg == 1:
+							logging.debug("Flag == 1")
+							# Update the database and locDict to reflect new chunk location
+							self.data[fileName].chunks[chunk].locations.append(newLocation)
+
+							logging.debug("locations updated in database data")
+							# If the IP is not already in the location lookup, add it!
+							if newLocation not in self.locDict.keys():
+								self.locDict[newLocation] = []
+
+							# Add the chunk to the list of values for the IP key
+							self.locDict[newLocation].append(chunk)
+							logging.debug("locations updated in locDict")
+
+			except KeyError:
+				logging.warning("key: " + str(chunk) + " does not exist. Probably an orphan chunk")
+
+
+
+	def chooseReplicaHost(self, usedHosts):
+		logging.debug("Beginning chooseReplicaHost()")
+		try:
+			# Get a list of all the hosts available
+			with open(ACTIVEHOSTSFILE, 'r') as file:
+				hostsList = file.read().splitlines()
+
+			logging.debug("Successful parse of activehosts")
+
+		except IOError:
+			# Handle this error better in the future --> similar to how heartBeat.py
+			# needs to handle for this case..
+			logging.error( ACTIVEHOSTSFILE + ' does not exist')
+
+		logging.debug("Removing hosts that already have the chunk")
+		# Remove the IPs that already have a replica of the chunk on them
+		for host in usedHosts:
+			hostsList.remove(host)
+
+		logging.debug("Getting the length of the host list")
+		# Find how many unused hosts there are in the list
+		lengthList = len(hostsList)
+
+		logging.debug("Randomizing..")
+		# Randomize between the limits
+		randomInt = random.randint(0, lengthList)
+
+		# Return the randomized host
+		return hostsList[randomInt%lengthList]
+
+
 
 
 
@@ -313,6 +438,8 @@ class Database:
 				string = ''
 				# Append the chunkserver locations to the chunk's location list
 				for location in locations:
+					self.locDict[location].append(chunkHandle)
+
 					logging.debug('adding locations to new chunk')
 					self.data[fileName].chunks[chunkHandle].locations.append(location)
 					logging.debug('Appending locations to chunk ' + str(chunkHandle) + ' locations list')

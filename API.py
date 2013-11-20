@@ -429,3 +429,100 @@ class API():
 			print "file list error"
 
 
+<<<<<<< HEAD
+=======
+	def replicate(self, chunkHandle, byteOffset, bytesToRead, readLocation, createLocation):
+
+		#############################################################
+		####### CREATE A NEW CHUNK FOR THE REPLICA TO LIVE IN #######
+		#############################################################
+
+		#create a socket to be used to connect to chunk server
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		#attempt to connect to the chunk server at the current location
+		try:
+			s.connect((createLocation,TCP_PORT))
+		except:
+			print "ERROR: COULD NOT CONNECT TO CHUNKSERVER AT ", createLocation
+
+		#send CREATE request to the chunk server at the current location
+		fL.send(s, "CREATE|" + chunkHandle)
+
+		global ack
+		ack = fL.recv(s)
+		#close connection to current chunk server.
+		s.close()
+
+		if ack == "FAILED":
+			print "ERROR: CHUNK CREATION FAILED"
+
+		elif ack == "CREATED":
+			print "Chunk creation successful!"
+		
+		else:
+			print "UNKNOWN ACK == ", ack
+
+
+		#####################################################
+		####### READ CHUNK DATA OUT OF EXISTING CHUNK #######
+		#####################################################
+
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		try:
+			s.connect((readLocation,TCP_PORT))
+		except:
+			print "ERROR: COULD NOT CONNECT TO CHUNK SERVER AT ", readLocation
+
+		#send READ request to chunk server
+		fL.send(s, "READ|" + str(chunkHandle) + "|" + str(byteOffset) + "|" + str(bytesToRead))
+
+		# Receive the data that is the entire chunk contents. Because we are
+		# only replicating a single chunk, we do not need to have a multi-chunk 
+		# read capability, because if we are reading from more than one chunk to 
+		# replicate a single chunk, something is very wrong!
+		data = fL.recv(s)
+
+		#close connection to chunk server		
+		s.close()
+
+
+		###########################################################
+		####### APPEND THE READ DATA INTO THE CREATED CHUNK #######
+		###########################################################
+
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.connect((createLocation, TCP_PORT))
+		try:
+			fL.send(s, "APPEND|" + chunkHandle + "|" + data)
+		except:
+			print "ERROR: COULD NOT SEND APPEND TO CHUNK SERVER"			
+		SoF = fL.recv(s)
+		s.close()
+
+		# Check to see if the append was successful or not
+		if SoF == "FAILED":
+			print "ERROR WITH APPEND ON CHUNK SERVER SIDE. exiting..."
+
+		elif SoF == "SUCCESS":
+			return 1
+
+
+
+
+
+
+#oplog stuff. for questions contact rohail
+class updateOpLog(threading.Thread):
+        def __init__(self, message):
+                threading.Thread.__init__(self)
+                self.m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.message = message
+
+        def run(self):
+                self.m.connect((MASTER_ADDRESS,TCP_PORT))
+                fL.send(self.m, self.message)
+		print "opLog message sent"
+		m.close()
+
+
+>>>>>>> #76 big commit! Now chunkserver arrival and departure is handled!!!
