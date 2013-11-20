@@ -8,7 +8,11 @@ class GFS {
 	public function create($filename) {
 		fwrite($this->x, "CREATE|".$filename);
 	}
+	public function append($filename, $data) {
+		fwrite($this->x, "APPEND|".$filename."|".$data);
+	}
+
 }
 $gfs = new GFS;
-$gfs->create('hello');
+$gfs->create('hello/world');
 ?>

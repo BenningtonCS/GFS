@@ -69,8 +69,8 @@ class processConnection(threading.Thread):
 		dataSplit = self.data.split('|')
 		msg = dataSplit[0]
 		print self.data
-		#if(msg == "CREATE"):
-			#API.create(dataSplit[1])
+		if(msg == "CREATE"):
+			API.create(dataSplit[1])
 
 		#elif(msg == "APPEND"):
 
