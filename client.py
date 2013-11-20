@@ -25,6 +25,11 @@ elif sys.argv[1] == "delete":
 
 elif sys.argv[1] == "undelete":
 	API.undelete(filename)
+	
+elif (sys.argv[1] == "files"):
+                API.fileList()
+        
+       
 
 
 
