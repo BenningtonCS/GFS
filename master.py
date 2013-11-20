@@ -124,7 +124,7 @@ class handleCommand(threading.Thread):
 		chunkHandle = database.getChunkHandle()
 		self.lock.release()
 		newChunk = database.createNewChunk(self.msg[1], self.msg[2], chunkHandle)
-		if newChunk = -2:
+		if newChunk == -2:
 			logging.error("Could not find file to create chunk")
 			fL.send(self.s, "FAIL2")
 		else:
