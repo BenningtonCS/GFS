@@ -165,6 +165,11 @@ def chooseHosts():
 			hostsList = file.read().splitlines()
 		# Find how many hosts there are in the list
 		lengthList = len(hostsList)
+		
+		if lengthList < 3:
+			logging.error("Error, not enough active hosts to properly distribute chunks")
+			exit(0)
+		
 		# Randomize between the limits
 		randomInt = random.randint(0, lengthList)
 		# Visual confirmation for debugging: confirm success of chooseHosts()
