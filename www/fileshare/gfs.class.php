@@ -18,9 +18,9 @@ class GFS {
 }
 $gfs = new GFS;
 
-$create = $gfs->create('hello/5');
+$create = $gfs->create('hello/6');
 if($create == "CREATE|1") {
-	$gfs->append('hello/5', '123');	
+	$gfs->append('hello/6', '123');	
 }
 
 ?>
