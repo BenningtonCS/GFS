@@ -1,5 +1,6 @@
 <?php
-
+include 'gfs.class.php';
+$gfs = new GFS;
   if ($_FILES["file"]["error"] > 0)
     {
     echo "Return Code: " . $_FILES["file"]["error"] . "<br>";
@@ -20,6 +21,11 @@
       move_uploaded_file($_FILES["file"]["tmp_name"],
       "files/" . $_FILES["file"]["name"]);
       echo "Stored in: " . "files/" . $_FILES["file"]["name"];
+      $gfs->create($_FILES["file"]["name"]);
       }
     }
+//include 'pages/header.php';
+//include 'pages/upload.php';
+//include 'pages/footer.php';
+
 ?>
