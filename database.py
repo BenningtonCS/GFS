@@ -1,4 +1,4 @@
-#################################################################################
+f#################################################################################
 #                                                                               
 #               GFS Distributed File System HeartBeat				
 #________________________________________________________________________________
@@ -66,6 +66,8 @@ class Database:
 	# Create a counter for the chunkHandle
 	chunkHandle = 0
 
+	# Create a dictionary that will be used as a location --> chunk lookup, eg. {"10.10.117.10":[127]}
+	locDict = {}
 	
 	# Initialization function that will set up the database from the opLog and data
 	# from the chunkservers
@@ -89,6 +91,8 @@ class Database:
 		print self.toDelete
 		# The current chunk handle
 		print self.chunkHandle
+		# The location lookup dictionary
+		print self.locDict
 
 		activeHosts = []
 		with open(ACTIVEHOSTSFILE, 'r') as activeFile:
@@ -207,6 +211,14 @@ class Database:
 
 				# For every chunk handle in that list, update that chunk objects locations list
 				for chunk in chunkData:
+
+					# If the IP is not already in the location lookup, add it!
+					if IP not in self.locDict.keys():
+						self.locDict[IP] = []
+
+					# Add the chunk to the list of values for the IP key
+					self.locDict[IP].append(chunk)
+
 					# ADD SOME ERROR HANDLING HERE -- IF THE CHUNK DOES NOT EXIST IN THE 
 					# LOOKUP SOMETHING WENT TERRIBLY WRONG!
 					try:
@@ -255,8 +267,9 @@ class Database:
 			self.data[fileName] = file
 			# Update the opLog that a new file was created
 			fL.appendToOpLog("CREATEFILE|-1|" + fileName)
-			self.createNewChunk(fileName, -1, cH)
+			result = self.createNewChunk(fileName, -1, cH)
 			logging.debug('createNewFile() ==> new file successfully added to database')
+			return result
 
 	# createNewChunk is given a file name and a triggering chunk. It checks to see if a 
 	# new chunk has already been created, and if it hasn't, it creates one and returns
@@ -283,6 +296,8 @@ class Database:
 			if handleOfFullChunk != -1:
 				latestChunk = self.findLatestChunk(fileName)
 
+			#string to be returned
+			result = ''
 			# Check to see if the triggering chunk is in the list of chunk handles associated
 			# with that file. If it is, that means a new chunk must be created
 			if int(handleOfFullChunk) == int(latestChunk) or int(handleOfFullChunk) == -1:
@@ -297,14 +312,12 @@ class Database:
 				locations = fL.chooseHosts().split("|")
 				logging.debug(locations)
 
-				#string to be returned
-				string = ''
 				# Append the chunkserver locations to the chunk's location list
 				for location in locations:
 					logging.debug('adding locations to new chunk')
 					self.data[fileName].chunks[chunkHandle].locations.append(location)
 					logging.debug('Appending locations to chunk ' + str(chunkHandle) + ' locations list')
-					string += location+"|"
+					result += location+"|"
 				logging.debug('file: ' + fileName + ' chunk: ' + str(self.data[fileName].chunks[chunkHandle]))
 
 				# Add the chunk to the chunk/file lookup
@@ -314,15 +327,21 @@ class Database:
 
 				# Update the opLog that a new chunk was created
 				fL.appendToOpLog("CREATECHUNK|" + chunkHandle + "|" + fileName)
-				string += chunkHandle
+				result += chunkHandle
 				#If this completed successfully, return a 1.
-				return string
-
+				return result
 			# The full chunk is not the latest chunk, so a new chunk has already been created for 
 			# the file. We dont want to branch a file into multiple chunks, so we let the master know
 			# that a new chunk already exists to append to.
 			else:
-				return -3
+				#We just build the same type of string as if we created a new chunk, with the already
+				#existing chunk, then we return it to the master.
+				for location in self.data[fileName].chunks[latestChunk].locations:
+					result += location + "|"
+				result += str(latestChunk)
+				return result
+
+				
 
 
 	# This function is called to get and increment the current chunk handle from soft state
@@ -434,5 +453,6 @@ class Database:
 
 
 
-
+	def getFiles(self):
+		return self.data.keys()
 

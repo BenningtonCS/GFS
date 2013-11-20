@@ -249,7 +249,10 @@ class API():
 				#receive data back from master
 				cData = fL.recv(m)
 				#parse this data and handle it very similarly as the in the create function
-				
+				if self.data == "FAIL2":
+					print "NO SUCH FILE EXISTS FOR CHUNK CREATION"
+					exit(0)
+
 				splitcData = cData.split("|")
 				cDataLength = len(splitcData)
 	                	cH = splitcData[-1]

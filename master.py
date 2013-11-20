@@ -86,10 +86,6 @@ class handleCommand(threading.Thread):
 			logging.error("No file exists for a chunk to be created for")
 			fL.send(self.s, "FAIL2")
 
-		elif createFileFlag== -3:
-			logging.error("Chunk is not the latest chunk. New chunk has been created that can be appended to.")
-			fL.send(self.s, "FAIL3")
-
 
 		# Get the locations for a specified chunk
 		locations = database.data[self.fileName].chunks[chunkHandle].locations
@@ -128,7 +124,11 @@ class handleCommand(threading.Thread):
 		chunkHandle = database.getChunkHandle()
 		self.lock.release()
 		newChunk = database.createNewChunk(self.msg[1], self.msg[2], chunkHandle)
-		fL.send(self.s, str(newChunk))
+		if newChunk = -2:
+			logging.error("Could not find file to create chunk")
+			fL.send(self.s, "FAIL2")
+		else:
+			fL.send(self.s, str(newChunk))
 
 
 
@@ -403,7 +403,7 @@ class handleCommand(threading.Thread):
 	# Function that executes the protocol when FILELIST message is received	
 	def fileList(self):
 		# call the database object's returnData method
-		list = str(database.returnData())
+		list = str(database.getFiles())
 		fL.send(self.s, list)
 
 
@@ -513,6 +513,52 @@ def worker():
 
 
 
+
+#######################################################################
+
+#                       THREADED HOSTS CHECKER
+
+#######################################################################
+
+# The hostListener will check to see if the activehosts file has changed 
+# since the previous time it was run. If the activehosts file has changed, 
+# that indicates that a chunkserver has either left or joined the cluster.
+# The hostListener will then take the appropriate steps depending on which
+# is the case.
+def hostListener():
+	previous = []
+
+	while True:
+		# Run the heartBeat to get an updated list of active chunkservers
+		heartBeat.pumpBlood()
+
+		# Read the active servers out of the activehosts file.
+		with open(ACTIVEHOSTSFILE, 'r') as hosts:
+			active = hosts.read().splitlines()
+
+		# To see if anything has been added, check to see whether something
+		# exists now that did not exist previously.
+		for item in active:
+			if item not in previous:
+				print item
+				# PUT IN WHAT YOU WANT IT TO DO TO SOMETHING THAT JUST ARRIVED
+				# PROBABLY SOME KIND OF CHUNKSERVER INTERROGATION
+
+
+		# To see if anything left, check to see whether something does not
+		# exist now that existed previously.
+		for item in previous:
+			if item not in active:
+				print item
+				# PUT IN WHAT YOU WANT IT TO TO SOMETHING THAT LEFT 
+				# LIKELY UPDATE DATABASE AND CREATE REPLICAS IF NEEDED
+
+		# As this does not need to be run continuously, we can define
+		# how often we wish to run it.
+		time.sleep(120)
+
+
+
 #######################################################################
 
 #                       MAIN 			
@@ -549,8 +595,16 @@ if __name__ == "__main__":
 	WORKERS = 5
 
 
+	listenerFlag = 0
+
 	# Initiate the worker threads as daemon threads
 	for i in range(WORKERS):
+		if listenerFlag == 0:
+			listenerFlag = 1
+			r = threading.Thread(target=hostListener)
+			r.daemon = True
+			r.start()
+
 		t = threading.Thread(target=worker)
 		t.daemon = True
 		t.start()
