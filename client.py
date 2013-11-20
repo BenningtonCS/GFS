@@ -12,7 +12,7 @@ if (sys.argv[1] == "files"):
                 
 filename = sys.argv[2] 
 
-elif sys.argv[1] == "create":
+if sys.argv[1] == "create":
 	API.create(filename)
 
 elif sys.argv[1] == "append":
