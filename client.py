@@ -8,10 +8,11 @@ API = API()
 
 if (sys.argv[1] == "files"):
                 API.fileList()
+                return 0
                 
 filename = sys.argv[2] 
 
-if sys.argv[1] == "create":
+elif sys.argv[1] == "create":
 	API.create(filename)
 
 elif sys.argv[1] == "append":
@@ -31,7 +32,7 @@ elif sys.argv[1] == "undelete":
 	API.undelete(filename)
 	
 elif (sys.argv[1] == "files"):
-                API.fileList()
+	API.fileList()
         
        
 
