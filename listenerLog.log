@@ -1,0 +1,15 @@
+CPU: 12.5
+MEMORY: vmem(total=16566480896L, available=15924547584L, percent=3.9, used=5615886336L, free=10950594560L, active=3852312576, inactive=1341505536, buffers=207314944L, cached=4766638080)
+MEMORY: swap(total=16907235328L, used=0L, free=16907235328L, percent=0.0, sin=0, sout=0)
+NETWORK: iostat(bytes_sent=7417673572, bytes_recv=19185031648, packets_sent=28679181, packets_recv=133380736, errin=0, errout=0, dropin=648110, dropout=0)
+DISK: usage(total=482367037440, used=13056016384, free=445166723072, percent=2.7)
+CPU: 86.8
+MEMORY: vmem(total=16566480896L, available=15926050816L, percent=3.9, used=5614395392L, free=10952085504L, active=3853053952, inactive=1341509632, buffers=207314944L, cached=4766650368)
+MEMORY: swap(total=16907235328L, used=0L, free=16907235328L, percent=0.0, sin=0, sout=0)
+NETWORK: iostat(bytes_sent=7423946734, bytes_recv=19185247766, packets_sent=28684433, packets_recv=133382714, errin=0, errout=0, dropin=648110, dropout=0)
+DISK: usage(total=482367037440, used=13056016384, free=445166723072, percent=2.7)
+CPU: 0.0
+MEMORY: vmem(total=16566480896L, available=15904866304L, percent=4.0, used=5649666048L, free=10916814848L, active=3884007424, inactive=1346965504, buffers=214192128L, cached=4773859328)
+MEMORY: swap(total=16907235328L, used=0L, free=16907235328L, percent=0.0, sin=0, sout=0)
+NETWORK: iostat(bytes_sent=11305677043, bytes_recv=19349320409, packets_sent=32027450, packets_recv=134853317, errin=0, errout=0, dropin=649605, dropout=0)
+DISK: usage(total=482367037440, used=13059641344, free=445163098112, percent=2.7)
