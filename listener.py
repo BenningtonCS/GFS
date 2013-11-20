@@ -50,10 +50,15 @@ fL.debug()
 # The time that the program waits before running again is given in an argument.
 delayTime = listenerConfig.delayTime
 
-# name of the log in which all of the (non-error related) information
-# is stored.
+# name of the log in which all of the information about the system (such as the 
+# CPU and memory) is stored
 logName = listenerConfig.logName
 logging.debug("Name of listen log: " + logName)
+
+# Every error is logged to a different log, the name of which is also given in 
+# the configuration log.
+errorLog = listenerConfig.errorLogName
+logging.debug("Name of the error log: " + errorLog)
 
 # "files" is a list of files that need to be in the directory. 
 files = listenerConfig.files
@@ -70,8 +75,19 @@ logging.debug(str(totItems) + " items per line in log.")
 
 ###########################
 
+def logError(info):
+	# If you are using the listener in another program to log an error (such
+	# as, if there is a file missing), use this function! If the listener is 
+	# imported as listener, then this should be used as:
+	# 	listener.logError("What the error is. Be descriptive!")
+
+	with open(errorLog, 'a') as a:
+		a.write(str(info) + '\n')
+		logging.debug("Logged " + str(info) + " to the error log.")
+
 def logInfo(lineNum, info):
-        # logs info from each function below this one into a listener log
+        # logs CPU, network, disk, and memory to a file to be used for display
+	# on the web
 
         # put the information from the listener log into a var called data
         with open(logName, 'r') as r:
@@ -113,13 +129,16 @@ def logInfo(lineNum, info):
 	
 def getCPU(lineNum):
 	# gets the percent of the CPU in use
-	line = lineNum# the line of the log in which all of the CPU information is stored
+
+	# the line of the log in which all of the CPU information is stored
+	line = lineNum
 	cpuPercent = psutil.cpu_percent()
 	logging.debug("CPU percent : " + str(cpuPercent))
 	logInfo(line, cpuPercent)
 
 def getMemory(lineNum):
 	# gets the percent of virtual memory in use
+
 	line = lineNum
 	vm = psutil.virtual_memory()
 	# pick out the percent from the psutil output
@@ -130,6 +149,7 @@ def getMemory(lineNum):
 
 def getNetwork(lineNum):
 	# gets the number of bytes sent and recieved over the network
+
 	line = lineNum
 	network = psutil.net_io_counters()
 	# get the sent information
@@ -142,6 +162,7 @@ def getNetwork(lineNum):
 def getDisk(lineNum):
 	# gets the space used and space available from the disk
 	# the output is logged in the form of : USED / AVAILABLE
+
 	line = lineNum
 	disk = psutil.disk_usage('/')
 	# get the disk used from the psutil output
@@ -187,7 +208,8 @@ def filesMissing():
 	else:
 		for item in missing:	
 			# for each item that is missing, log a critical error
-			logging.critical("File " + str(item) + " is missing!!")
+#			logging.critical("File " + str(item) + " is missing!!")
+			logError("FILE MISSING : " + str(item))
 
 
 ###########################
