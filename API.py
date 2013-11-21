@@ -366,7 +366,7 @@ class API():
                	s.close()
                	strct = struct.Struct(str(len(fileContents))+"s")
                	
-		with open(filePath+newName,"wb") as e:
+		with open(newName,"wb") as e:
 			e.write(fileContents)
 		
 		return dat
