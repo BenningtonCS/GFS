@@ -1,9 +1,11 @@
 <?php
 
 $server = $_GET['server'];
-$logFile = file_get_contents('http://'.$server.':8000/httpServerFiles/chunkserverLog.log');
+$logFile = file_get_contents('http://10.10.100.143:8000/listenerLog.log');
 $logFile = explode("\n", $logFile);
-$cpu = $logFile[1];
+$cpu = $logFile[0];
+$memory = $logFile[1];
+$
 ?>
 <script type="text/javascript">
   window.onload = function () {
@@ -21,7 +23,7 @@ $cpu = $logFile[1];
 <?php
 $cpu = explode("|", $cpu);
 for($i=0;$i<60;$i++) {
-  echo '{ x: '.$i.', y: '.$cpu[$i].'},';
+  echo '{ x: '.$i.', y: '.$cpu[$i].'}, ';
 
 }
 ?>
@@ -36,19 +38,20 @@ var diskChart = new CanvasJS.Chart("diskContainer",
     {
 
       title:{
-      text: "Disk | By Hour"
+      text: "Memory | By Minute"
       },
        data: [
       {
         type: "line",
 
         dataPoints: [
-        { x: 1, y: 450 },
-        { x: 2, y: 414 },
-        { x: 3, y: 520 },
-        { x: 4, y: 460 },
-        { x: 5, y: 450 },
-        { x: 6, y: 500 } 
+<?php
+$memory = explode("|", $memory);
+for($i=0;$i<60;$i++) {
+  echo '{ x: '.$i.', y: '.$memory[$i].'}, ';
+
+}
+?>
         ]
       }
       ]
