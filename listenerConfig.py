@@ -4,6 +4,10 @@
 # system information
 logName = "listenerLog.log"
 
+# the full log is the same as logName, but
+# it keeps a full record of everything
+fullLog = "listenerFull.log"
+
 # name of log where errors are stored
 errorLogName = "listenerErrors.log"
 
@@ -12,7 +16,7 @@ numberOfItemsPerLine = 60
 
 # delay time (in seconds) between when the
 # code runs again
-delayTime = 1
+delayTime = 10
 
 # files that are deemed necessary to be
 # present. If these files are missing from
