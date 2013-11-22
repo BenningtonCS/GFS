@@ -1,11 +1,11 @@
 <?php
 
 $server = $_GET['server'];
-$logFile = file_get_contents('http://10.10.100.143:8000/listenerLog.log');
+$logFile = file_get_contents('http://'.$server.':8000/listenerLog.log');
 $logFile = explode("\n", $logFile);
 $cpu = $logFile[0];
 $memory = $logFile[1];
-$
+$disk = $logFile[3];
 ?>
 <script type="text/javascript">
   window.onload = function () {
@@ -64,19 +64,21 @@ var networkChart = new CanvasJS.Chart("networkContainer",
     {
 
       title:{
-      text: "Network | By Minute"
+      text: "Disk Usage | By Minute"
       },
        data: [
       {
         type: "line",
 
         dataPoints: [
-        { x: 1, y: 450 },
-        { x: 2, y: 414 },
-        { x: 3, y: 520 },
-        { x: 4, y: 460 },
-        { x: 5, y: 450 },
-        { x: 6, y: 500 } 
+<?php
+$disk = explode("|", $disk);
+for($i=0;$i<60;$i++) {
+  $d = explode("/", $disk[$i]);
+  echo '{ x: '.$i.', y: '.($d[0]*100/$d[1]).'}, ';
+
+}
+?>
         ]
       }
       ]

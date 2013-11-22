@@ -233,11 +233,11 @@ def getDisk(lineNum):
 	used = u[:-1]
 	logging.debug("Disk used : " + str(used))
 	# get the free space from the psutil output
-	f = str(disk.free)
+	t = str(disk.total)
 	# remove 'L'
-	free = f[:-1]
-	logging.debug("Disk free : " + str(free))
-	info = used + '/' + free
+	total = t[:-1]
+	logging.debug("Disk free : " + str(total))
+	info = used + '/' + total
 	logInfo(line, info)
 
 def filesMissing():
