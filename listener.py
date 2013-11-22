@@ -226,7 +226,7 @@ def getDisk(lineNum):
 	# the output is logged in the form of : USED / AVAILABLE
 
 	line = lineNum
-	disk = psutil.disk_usage('/')
+	disk = psutil.disk_usage('/data')
 	# get the disk used from the psutil output
 	u = str(disk.used)
 	# remove the last character ('L') so that the data is only numbers

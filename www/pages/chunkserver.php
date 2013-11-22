@@ -1,6 +1,7 @@
 <?php
 
 $server = $_GET['server'];
+$chunkServerLog = file_get_contents('http://'.$server.':8000/httpServerFiles/chunkserverLog.log');
 $logFile = file_get_contents('http://'.$server.':8000/listenerLog.log');
 $logFile = explode("\n", $logFile);
 $cpu = $logFile[0];
@@ -101,6 +102,6 @@ for($i=0;$i<60;$i++) {
 
 <h2>Log</h2>
 <textarea class="form-control" rows="15"><?php
-echo $logFile;
+echo $chunkServerLog;
 ?>
 </textarea>
