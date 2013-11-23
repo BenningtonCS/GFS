@@ -336,19 +336,6 @@ class handleCommand(threading.Thread):
 
 
 
-
-
-	# Function that executes the protocol when an OPEN message is received
-	def open(self):
-		pass
-		
-		
-		
-	# Function that executes the protocol when a CLOSE message is received
-	def close(self):
-		pass
-
-
 	def sanitize(self):
 		database.sanitizeFile(self.fileName)
 
