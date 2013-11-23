@@ -22,6 +22,7 @@
 
 import socket, time, os, config, logging, sys, listener
 import functionLibrary as fL
+
 #import debugging
 fL.debug()
 
@@ -147,6 +148,7 @@ class heartBeat:
                                 if IP not in activeServers:
                                         with open(self.AHOSTS, "a") as file:
                                                 file.write(IP + "\n")
+                        return 1
 		# Handle the timeout (chunk server alive but not resonding) and connection (server dead) errors
 		except (socket.timeout, socket.error):
 			print "</3"
@@ -155,13 +157,14 @@ class heartBeat:
                         if IP in activeServers:
 				# If it is, remove it from the list
                                 activeServers.remove(IP)
-			# Clear the previous activehosts.txt file and replace it with the list of active servers, 
-			# which now excludes the failed chunkserver
-                        with open(self.AHOSTS, "w") as file:
-                                newList = ""
-                                for item in activeServers:
-                                        newList += item + "\n"
-                                file.write(newList)
+        			# Clear the previous activehosts.txt file and replace it with the list of active servers, 
+        			# which now excludes the failed chunkserver
+                                with open(self.AHOSTS, "w") as file:
+                                        newList = ""
+                                        for item in activeServers:
+                                                newList += item + "\n"
+                                        file.write(newList)
+                        return -1
 
 
         # Makes sure that all the IPs in the active hosts still exist in the  
