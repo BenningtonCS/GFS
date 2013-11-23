@@ -335,7 +335,8 @@ class handleCommand(threading.Thread):
 			fL.send(self.s, "FAILED2")
 
 
-
+	# When a sanitize request is received, alert the database to delete the 
+	# given file name
 	def sanitize(self):
 		database.sanitizeFile(self.fileName)
 
@@ -397,23 +398,23 @@ class handleCommand(threading.Thread):
 		logging.debug('Received operation: ' + str(self.op))
 
 
-		# If the operation is to CREATE:
+		# Initiate the protocol to create a file/initial chunk
 		if self.op == "CREATE":
 			self.create()
 
-		# If the operation is to DELETE:
+		# Initiate the protocol to mark a specified file for deletion
 		elif self.op == "DELETE":
 			self.delete()
 
-		# If the operation is to UNDELETE:
+		# Initiate the protocol to unmark a specififed file for deletion
 		elif self.op == "UNDELETE":
 			self.undelete()
 
-		# If the operation is to APPEND:
+		# Initiate the protocol to get metadata to allow for a data append
 		elif self.op == "APPEND":
 			self.append()
 
-		# If the operation is to READ:
+		# Initiate the protocol to retrieve the metadata for a specified file read
 		elif self.op == "READ":
 			self.read()
 
@@ -425,7 +426,7 @@ class handleCommand(threading.Thread):
 		elif self.op == "GETDELETEDATA":
 			self.getDeleteData()
 
-		# If the operation is to get the list of all the chunks in a file, do so!
+		# If the operation is to get the list of all the chunks associated with a file, do so!
 		elif self.op == "GETALLCHUNKS":
 			self.getAllChunks()
 
@@ -433,9 +434,11 @@ class handleCommand(threading.Thread):
 		elif self.op == "GETLOCATIONS":
 			self.getAllLocations()
 
+		# Initiate the protocol to get a list of all the files currently in the database
 		elif self.op == "FILELIST":
 			self.fileList()
 						
+		# Initiate the protocol to create a new chunk (not a new file). Called on a multichunk append
 		elif self.op == "CREATECHUNK":
 			self.createChunk()		
 
@@ -581,7 +584,8 @@ if __name__ == "__main__":
 	# Define the number of worker threads to be activated
 	WORKERS = 5
 
-
+	# Create a flag that will allow a single host-listener
+	# thread to be started, instead of multiple.
 	listenerFlag = 0
 
 	# Initiate the worker threads as daemon threads
