@@ -1,33 +1,43 @@
 #################################################################################
 #                                                                               
-#               GFS Distributed File System HeartBeat				
+#               GFS Distributed File System Database				
 #________________________________________________________________________________
+#  
+# Authors:      Erick Daniszewski ; Klemente Gilbert-Espada
+# Date:         5 November 2013 
+# File:         database.py 
 #                                                                              
-# Authors:      Erick Daniszewski 
-#		Klemente Gilbert-Espada                                             
-#                                                                              
-# Date:         5 November 2013                                                
-# File:         database.py                                                   
-#                                                                              
-# Summary:      database.py creates and maintains the metadata for all the 
-#		chunks in the file system. 
+# Summary:		database.py creates and maintains the metadata for all the 
+#				chunks in the file system. 
 #                                        
 #################################################################################
 
-
 import functionLibrary as fL
-import config, logging, socket, API, random
+import config, logging, socket, API, random, listener, heartBeat
 
 
 
+###############################################################################
+
+#               SETUP                
+
+###############################################################################
+
+
+# Define the common parameters from the config file
 HOSTSFILE = config.hostsfile
 ACTIVEHOSTSFILE = config.activehostsfile
 OPLOG = config.oplog
 chunkPort = config.port
 EOT = config.eot
 
-
+# Initiallize an instance of the API, to be used for chunk replication
 api = API.API()
+# Initialize an instance of the heartBeat, to be used for ensuring connection 
+# to chunkserver is actually active.
+hB = heartBeat.heartBeat()
+
+
 
 ###############################################################################
 
@@ -35,7 +45,7 @@ api = API.API()
 
 ###############################################################################
 
-# This is the object that is stored in the data dictionary. It's key will be the
+# The file object is stored in the data dictionary, keyed to its associated
 # fileName. The object holds its fileName, a delete flag, and a dictionary of 
 # the chunks associated with it, where the chunk handle is the key, and the 
 # chunk object is the value.
@@ -46,7 +56,7 @@ class File:
 		self.delete = False
 		self.Open = False
 
-# The chunk object is stored in the chunk library of the File object, keyed to 
+# The chunk object is stored in the chunk dictionary of the File object, keyed to 
 # its chunk handle. The chunk object stores the locations where the chunks are 
 # being stored.
 class Chunk:
@@ -55,39 +65,47 @@ class Chunk:
 
 
 
+# The database object stores all of the metadata for the chunks and contains all the 
+# opertions assocaited with database management and manipulation
 class Database:
-	# Create an empty dictionary to store the chunks, keyed to the file name, eg. {"file1": fileObject}
-	data = {}
 
+	# Create an empty dictionary to store file objects, keyed to the file name, eg. {"file1": fileObject}
+	data = {}
 	# Create an empty dictionary to be used as a chunk --> fileName lookup, eg. {"127":"file3"}
 	lookup = {}
-
 	# Create an empty list that will hold fileNames of files flagged for deletion, so
 	# the scrubber does not need to waste resources parsing through the data dictionary
 	toDelete = []
-
 	# Create a counter for the chunkHandle
 	chunkHandle = 0
-
 	# Create a dictionary that will be used as a location --> chunk lookup, eg. {"10.10.117.10":[127]}
 	locDict = {}
 	
-	# Initialization function that will set up the database from the opLog and data
-	# from the chunkservers
+	# Initialization function that will set up the in-memory database from parsing the opLog and 
+	# from querying the chunkservers
 	def initialize(self):
-
-		activeHosts = []
-		with open(ACTIVEHOSTSFILE, 'r') as activeFile:
-			activeHosts = activeFile.read().splitlines()
-
-
 		logging.debug('Initializing database')
+
+
+		# Get a list of active hosts from an active hosts list
+		try:
+			with open(ACTIVEHOSTSFILE, 'r') as activeFile:
+				activeHosts = activeFile.read().splitlines()
+
+		# If unable to read the file, log the error and alert the listener
+		except IOError:
+			logging.error(ACTIVEHOSTSFILE + " was unable to be read.")
+			listener.logError("DATABASE: Unable to read active hosts on initialize.")
+			# Define activeHosts to be empty so initialization can continue.
+			activeHosts = []
+
+
 		# Populate the database by parsing the operations log
 		self.readFromOpLog()
 
 		for item in activeHosts:
 			# Get/update the locations of all the chunks from the chunkservers
-			self.interrogateChunkServer(item)
+			self.interrogateChunkServer(item, 0)
 		# Now that the database is setup, go through the used chunkhandles and 
 		# set the chunk handle counter to the next unused number
 		self.updateChunkCounter()
@@ -95,22 +113,23 @@ class Database:
 
 		####### DEBUG MESSAGES TO MAKE SURE THINGS INITIALIZED AS EXPECTED #######
 		# The database dictionary
-		print self.data
+		logging.debug(self.data)
 		# The lookup dictionary
-		print self.lookup
+		logging.debug(self.lookup)
 		# The list of files to delete
-		print self.toDelete
+		logging.debug(self.toDelete)
 		# The current chunk handle
-		print self.chunkHandle
+		logging.debug(self.chunkHandle)
 		# The location lookup dictionary
-		print self.locDict
+		logging.debug(self.locDict)
+		##########################################################################
 
 		
 
+		# Logs and displays a critical warning that an insufficient number of chunkservers
+		# are active, which would lead to poor replication strategies and poor performance
 		if len(activeHosts) < 3:
-			logging.critical("LESS THAN THREE CHUNKSERVERS ARE ACTIVE. OPERATIONS MAY BE LIMITED OR INACCESSIBLE.")
-
-		##########################################################################
+			logging.critical("\nLESS THAN THREE CHUNKSERVERS ARE ACTIVE. OPERATIONS MAY BE LIMITED OR INACCESSIBLE.\n")
 
 		logging.debug('Database initialized')
 
@@ -120,9 +139,24 @@ class Database:
 	# so it can return to where it left off (convert data in a hard state to soft state, essentially)
 	def readFromOpLog(self):
 		logging.debug('Initialize readFromOpLog()')
-		# Read the contents of the oplog into a list
-		with open(OPLOG, 'r') as oplog:
-			opLog = oplog.read().splitlines()
+
+
+		try:
+			# Read the contents of the oplog into a list
+			with open(OPLOG, 'r') as oplog:
+				opLog = oplog.read().splitlines()
+
+		# If the database in unable to read the opLog, log it, and alert the listener
+		except IOError:
+			logging.critical(OPLOG + " was unable to be read.")
+			listener.logError("DATABASE: Unable to read oplog on initialize.")
+			# If we are unable to read from the opLog, something went terribly wrong
+			# and we no longer have a map from files -> chunks. Alert the fatal error
+			# and exit, to minimize the risk of writing over existing chunks further 
+			# down the line.
+			logging.error("Database could not be built reliably. To maintain integrity of existing chunks, exiting database.")
+			exit(0)
+
 
 		logging.debug('Got contents of opLog')
 		# For every entry in the opLog
@@ -131,7 +165,6 @@ class Database:
 			# 		[<OPERATION>, <CHUNKHANDLE>, <FILENAME>]
 			#		[ 	   0    ,       1      ,      2    ]
 			lineData = line.split("|")
-
 
 			# If the operation was to create a file, create a new file object and 
 			# add it to the database dictionary
@@ -184,26 +217,75 @@ class Database:
 
 		logging.debug('readFromOpLog() complete')
 
+
+
+	# Function that will allow you to remove an element from the active hosts list.
+	def remFromAhosts(self, IP):
+		# If the # of attempts exceeds the retry limit, remove the server from the active
+		# hosts list.
+		with open(self.AHOSTS, "r") as fileActive:
+			activeServers = fileActive.read().splitlines()
+
+		# Remove the failing IP from the list of active IPs
+		activeServers.remove(IP)
+
+		# Rewrite the active hosts list, now without the failing IP on it.
+		with open(self.AHOSTS, "w") as newActive:
+			newList = ""
+			for item in activeServers:
+				newList += item + "\n"
+			file.write(newList)
+
+
 	# Communicates with all the chunkservers and requests the chunkhandles of all the chunks
 	# residing on them. It then appends the locations of a chunk into the appropriate chunk object.
-	def interrogateChunkServer(self, IP):
+	def interrogateChunkServer(self, IP, retry):
 		logging.debug('Initialize interrogateChunkServer()')
 
-
+		# Create an instance of a TCP socket
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		# Define the variable that will hold the the data received from the chunkservers
 		data = " "
 		try:
 			s.connect((IP, chunkPort))
 			logging.debug('Connection Established: ' + str(IP) + ' on port ' + str(chunkPort))
+			# Request the chunk contents of the specified chunkserver
 			fL.send(s, 'CONTENTS?')
 			logging.debug('Sent chunkserver a CONTENTS? message')
+			# Received the chunk contents of the speicified chunkserver
 			data = fL.recv(s)
+			# Close the socket connection
+			s.close()
+
+		# If the database is unable to connect to the chunkservers, retry the connection
+		# If the retry fails, remove it from the list of activehosts and move on.
 		except:
-			logging.error("interrogateChunkServer failed to connect to " + IP)
+			# Make sure the socket connection is closed before doing anything, so if 
+			# a retry occurs, the socket will not already be in use.
+			s.close()
+			# heartBeat the chunkserver. If that indicates it is alive, try to 
+			# interrogate the chunkserver again. If not, remove if from the active 
+			# hosts list and move on.
+			if retry < 3:
+				# It the heartBeat indicated the chunkserver is still alive, try again.
+				if hB.heartBeat(IP) == 1:
+					self.intterogateChunkServer(IP, retry + 1)
+					logging.debug('Retry connect to chunkserver for interrogation')
+				else:
+					self.remFromAhosts(IP)
+					logging.warning('Heartbeat indicates chunkserver dead. Not interrogating, moving on.')
+					return -1
+
+			else:
+				self.remFromAhosts(IP)
+				# Log the fact that we were unable to connect to a chunkserver
+				logging.error("interrogateChunkServer failed to connect to " + IP)
+				return -1
+
 
 		
-		s.close()
+		
 		logging.debug('Received response from chunkserver')
 
 
@@ -219,25 +301,27 @@ class Database:
 		if data != " ":
 			# Convert the pipe separated string into a list
 			chunkData = data.split('|')
+			# In the event that data is formatted poorly with additional | characters, we want to get rid of null elements
+			chunkData = filter(None, chunkData)
 
 			# For every chunk handle in that list, update that chunk objects locations list
 			for chunk in chunkData:
 
-				# If the IP is not already in the location lookup, add it!
+				# If the IP is not already in the location lookup even though it should be, add it!
 				if IP not in self.locDict.keys():
 					self.locDict[IP] = []
 					# Add the chunk to the list of values for the IP key
 					self.locDict[IP].append(chunk)
 
+				# If the location does already exist, append the current chunk to its list of chunk values
 				else:
 					assChnks = self.locDict[IP]
-					
+					# But first, make sure that chunk isn't already in the values, so you don't get
+					# multiple copies of the same chunk in the lookup.
 					if chunk not in assChnks:
 						# Add the chunk to the list of values for the IP key
 						self.locDict[IP].append(chunk)
 
-				# ADD SOME ERROR HANDLING HERE -- IF THE CHUNK DOES NOT EXIST IN THE 
-				# LOOKUP SOMETHING WENT TERRIBLY WRONG!
 				try:
 					# Find which file the chunk is associated with in the lookup dictionary
 					fileName = self.lookup[chunk]
@@ -260,8 +344,17 @@ class Database:
 	def chunkserverDeparture(self, IP):
 		logging.debug("Begin chunkserverDeparture()")
 		# Get the chunks that were stored at that location
-		associatedChunks = self.locDict[IP]
-		print associatedChunks
+		try:
+			associatedChunks = self.locDict[IP]
+
+		except KeyError:
+			logging.error('The given IP was not found in the location dictionary. Unable to get metadata related to this location. Moving on..')
+			# Set associatedChunks to be empty so it can continue through the function
+			# and move on to the next IP
+			associatedChunks = []
+
+
+		logging.debug(associatedChunks)
 		logging.debug("Got all chunks associated with the departed IP")
 		# Go through all the chunks that were stored at that location and remove the IP
 		# from it's list of locations.
@@ -274,7 +367,7 @@ class Database:
 				# Remove the location from the chunk's location list
 				self.data[fileName].chunks[chunk].locations.remove(IP)
 				logging.debug("Old location removal successful")
-				# Find the places where the chunk is still stored.
+				# Get a list of the places where the chunk is still stored.
 				locs = self.data[fileName].chunks[chunk].locations
 				logging.debug("Got list of chunk locations")
 				# Get the length of the locations list
@@ -291,13 +384,20 @@ class Database:
 				# Make sure that the chunk is actually stored somewhere.
 				if lenLoc == 0:
 					logging.critical('FATAL: CHUNK ' + chunk + ' OF FILE ' + fileName + ' IS NO LONGER IN THE SYSTEM')
+					# Do we want to have it remove the file from the database? Dead chunkservers may still have the chunks
+					# on them, so we could wait until the chunkservers come back up and replicate? This goes along with
+					# the question of what we do with orphan chunks..
 
 				# Check to see if the chunk has less than three copies. If it has less than three, 
 				# it needs to be replicated!
 				elif lenLoc < 3:
 					logging.debug("There are less than three copies of the chunk. Generating replicas...")
+					# For as many replicas as need to be made
 					for x in range(3-lenLoc):
 						# Get a location where the new chunk will be put
+						###########################################################
+						# WHAT TO DO IF THERE ARE NO OTHER PLACES TO CHOOSE FROM? #
+						###########################################################
 						newLocation = self.chooseReplicaHost(locs)
 
 						logging.debug("Successfully chose new loction: " + str(newLocation))
@@ -352,13 +452,15 @@ class Database:
 		# Find how many unused hosts there are in the list
 		lengthList = len(hostsList)
 
+		################################################################
+		# THIS WILL NEED TO BE UPDATED ONCE LOAD BALANCING IS IN PLACE #
+		################################################################
 		logging.debug("Randomizing..")
 		# Randomize between the limits
 		randomInt = random.randint(0, lengthList)
 
 		# Return the randomized host
 		return hostsList[randomInt%lengthList]
-
 
 
 
@@ -370,13 +472,13 @@ class Database:
 		if self.lookup.keys() == []:
 			self.chunkHandle = 0
 		else:
-			# Get the max chunk handle from the database, and add one to get the new chunkhandle
+			# Get the max chunk handle from the database, and add one to get the current chunkhandle
 			self.chunkHandle = int(max(self.lookup.keys())) + 1
 
 
 
-	# createNewFile adds a new file key and file object to the database, but does not
-	# create any chunks associated with that file.
+	# createNewFile adds a new file key and file object to the database, and creates a new
+	# empty chunk which can then be appended to.
 	def createNewFile(self, fileName, cH):
 		# Check to see if the fileName already exists
 		if fileName in self.data:
@@ -392,6 +494,7 @@ class Database:
 			self.data[fileName] = file
 			# Update the opLog that a new file was created
 			fL.appendToOpLog("CREATEFILE|-1|" + fileName)
+			# Create a new chunk to be associated with the file just created
 			self.createNewChunk(fileName, -1, cH)
 			logging.debug('createNewFile() ==> new file successfully added to database')
 
@@ -414,9 +517,9 @@ class Database:
 			# it will not erroneously make a chunk.
 			latestChunk = -2
 
-			# If the handleOfFullChunk is not the flag for a file create (where no latest
-			# chunk would exist), then find the chunk with the highest chunk handle (the 
-			# chunk with the highest sequence number)
+			# If the handleOfFullChunk is not the flag for a file create, -1, (where no latest
+			# chunk should exist as the file was Just created), then find the chunk with the 
+			# highest chunk handle (the chunk with the highest sequence number)
 			if handleOfFullChunk != -1:
 				latestChunk = self.findLatestChunk(fileName)
 
@@ -432,11 +535,13 @@ class Database:
 				self.data[fileName].chunks[chunkHandle] = chunk
 				# Get the three locations where the chunk will be stored
 				locations = fL.chooseHosts().split("|")
+				locations = filter(None, locations)
 				logging.debug(locations)
 
 				#string to be returned
 				string = ''
-				# Append the chunkserver locations to the chunk's location list
+				# Append the chunkserver locations to the chunk's location list and update
+				# the location-->chunk lookup
 				for location in locations:
 					self.locDict[location].append(chunkHandle)
 
@@ -446,15 +551,16 @@ class Database:
 					string += location+"|"
 				logging.debug('file: ' + fileName + ' chunk: ' + str(self.data[fileName].chunks[chunkHandle]))
 
+
 				# Add the chunk to the chunk/file lookup
 				self.lookup[chunkHandle] = fileName
 
-				print self.data[fileName].chunks[chunkHandle].locations
+				logging.debug(self.data[fileName].chunks[chunkHandle].locations)
 
 				# Update the opLog that a new chunk was created
 				fL.appendToOpLog("CREATECHUNK|" + chunkHandle + "|" + fileName)
 				string += chunkHandle
-				#If this completed successfully, return a 1.
+				#If this completed successfully, return the string to send.
 				return string
 
 			# The full chunk is not the latest chunk, so a new chunk has already been created for 
@@ -476,8 +582,8 @@ class Database:
 	# the chunkservers
 	def getChunkLocations(self, chunkHandle):
 		logging.debug('Initialize getChunkLocations()')
-		# Find the file name associated with the chunk
 		logging.debug("chunkHandle is " + chunkHandle)
+		# Find the file name associated with the chunk
 		fileName = self.lookup[chunkHandle]
 		# Return the list of locations belonging to that chunk
 		return self.data[fileName].chunks[chunkHandle].locations
@@ -572,7 +678,7 @@ class Database:
 			logging.error("The file to be deleted does not exist.")
 
 
-
+	# A function that returns all of the file names that are currently in the database
 	def getFiles(self):
 		return self.data.keys()
 

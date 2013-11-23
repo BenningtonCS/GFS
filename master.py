@@ -511,7 +511,7 @@ def hostListener():
 				logging.debug(str(item) + " joined!")
 				# Interrogate the chunk server to find out what it has on it, 
 				# and update the databased based on its contents.
-				database.interrogateChunkServer(item)
+				database.interrogateChunkServer(item, 0)
 				# Add the now active item to the toAppend list, so it accurate
 				# the next time the loop runs.
 				logging.debug("Appending to 'previous' list")
