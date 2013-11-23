@@ -417,14 +417,6 @@ class handleCommand(threading.Thread):
 		elif self.op == "READ":
 			self.read()
 
-		# If the operation is to OPEN:
-		elif self.op == "OPEN":
-			self.open()
-
-		# If the operation is to CLOSE:
-		elif self.op == "CLOSE":
-			self.close()
-
 		# If the operation is to SANITIZE, initiate cleansing the database:
 		elif self.op == "SANITIZE":
 			self.sanitize()
