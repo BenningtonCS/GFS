@@ -666,6 +666,14 @@ class Database:
 			if fileName in self.toDelete:
 				self.toDelete.remove(fileName)
 
+			# We want to remove it from the location-->chunk lookup as well. 
+			# For all the keyed locations, we want to remove any chunk value that belongs to 
+			# a file being deleted.
+			for key in self.locDict:
+				for chunk in associatedChunks:
+					if chunk in self.locDict[key]:
+						self.locDict[key].remove(chunk)
+
 			# Delete the specified key/value pair from the database.
 			del self.data[fileName]
 
