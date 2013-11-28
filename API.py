@@ -284,7 +284,7 @@ class API():
                 elif ack == "CREATED":
                         print "Chunk creation successful!"
                         fL.send(m, "CREATED")
-                       m.close()
+				m.close()
         
         #now that the new chunk has been created on all of the servers...
         #...run append again with the second part of the new data
