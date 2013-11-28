@@ -216,6 +216,8 @@ class API():
 		                        exit(0)
 		                #close connection to chunk server
 		                s.close()
+		                global cont
+		                cont = True
 		                
 		        elif (lenNewData <= remainingSpace):
 		                t = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -231,7 +233,7 @@ class API():
 		                        exit(0)                                
 
 		###################
-        if lenNewData > remainingSpace:
+        if(cont == True):
                 m  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 try:
                         m.connect((MASTER_ADDRESS, TCP_PORT))
@@ -284,15 +286,15 @@ class API():
                 elif ack == "CREATED":
                         print "Chunk creation successful!"
                         fL.send(m, "CREATED")
-				m.close()
+                m.close()
         
         #now that the new chunk has been created on all of the servers...
         #...run append again with the second part of the new data
         #self.s.close()
-        try:
-                self.append(filename, newData2,False)
-        except UnboundLocalError:
-                pass					
+		        try:
+		                self.append(filename, newData2,False)
+	    	    except UnboundLocalError:
+	        	        pass					
 
 
 	#reads an existing file by taking the filename, byte offset, and the number of bytes the client
