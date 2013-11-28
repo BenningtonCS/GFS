@@ -14,7 +14,7 @@
 
 #import socket for connection, threading to make threads, time in case we want
 #a delay, and config to keep the protocol standard.
-import socket, threading, time, config, sys, logging
+import struct, socket, threading, time, config, sys, logging
 import functionLibrary as fL
 
 fL.debug()

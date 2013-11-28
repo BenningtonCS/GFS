@@ -79,9 +79,9 @@ class processConnection(threading.Thread):
 				data = bytearray(file.read())
 			API.append(dataSplit[1], data)
 		elif(msg == "READ"):
-			read = API.read(dataSplit[1], 0, -1, dataSplit[1])
-			if(read):
-				self.connection.send(read)
+			API.read(dataSplit[1], 0, -1, dataSplit[1])
+			#if(read):
+			#	self.connection.send(read)
 		#elif(msg == "READ"):
 
 		#elif(msg == "DELETE"):
