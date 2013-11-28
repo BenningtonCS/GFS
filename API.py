@@ -269,8 +269,8 @@ class API():
                         	try:
                                 	s.connect((location,TCP_PORT))
                         	except:
-                         	       print "ERROR: COULD NOT CONNECT TO CHUNKSERVER AT ", location
-                                	continue
+					print "ERROR: COULD NOT CONNECT TO CHUNKSERVER AT ", location
+					continue
                         	#send CREATE request to the chunk server at the current location
                         	fL.send(s, "CREATE|" + cH)
                         	global ack
