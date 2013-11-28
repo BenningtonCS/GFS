@@ -75,7 +75,7 @@ class processConnection(threading.Thread):
 			if(create == 1):
 				self.connection.send("CREATE|1")
 		elif(msg == "APPEND"):
-			API.append(dataSplit[1], dataSplit[2])
+			API.append(dataSplit[1], dataSplit[2:])
 		elif(msg == "READ"):
 			read = API.read(dataSplit[1], 0, -1)
 			if(read):
