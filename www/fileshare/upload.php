@@ -24,7 +24,8 @@ $gfs = new GFS;
       $gfs = new GFS;
       $create = $gfs->create($_FILES["file"]["name"]);
       if($create == "CREATE|1") {
-        $append = $gfs->append($_FILES["file"]["name"], pack("l", readfile("files/" . $_FILES["file"]["name"]))); 
+        $filecontents = file_get_contents("files/" . $_FILES["file"]["name"]);
+        $append = $gfs->append($_FILES["file"]["name"], $filecontents); 
       }
       }
     }

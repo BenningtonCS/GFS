@@ -341,7 +341,7 @@ class API():
 		#close connection to chunk server		
                	s.close()
 
-		#return dat
+		return rData
 		#reestablish connection to master
 
 	#This is the delete function. It takes a filename as a parameter and 

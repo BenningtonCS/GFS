@@ -10,6 +10,7 @@
 
 # Import necessary libraries
 import socket, threading, API
+import functionLibrary as fL
 from API import API
 
 
@@ -65,7 +66,7 @@ class processConnection(threading.Thread):
 	# and releases the thread lock.
 	def run(self):
 		self.lock.acquire()
-		self.data = self.connection.recv(1024)
+		self.data = fL.recv(self.connection)
 		dataSplit = self.data.split('|')
 		msg = dataSplit[0]
 		print self.data
@@ -76,8 +77,9 @@ class processConnection(threading.Thread):
 		elif(msg == "APPEND"):
 			API.append(dataSplit[1], dataSplit[2])
 		elif(msg == "READ"):
-			API.read(dataSplit[1], 0, -1)
-
+			read = API.read(dataSplit[1], 0, -1)
+			if(read):
+				self.connection.send(read)
 		#elif(msg == "READ"):
 
 		#elif(msg == "DELETE"):
