@@ -281,12 +281,12 @@ class API():
 
                 		#do some acks
                 		if ack == "FAILED":
-                        	print "ERROR: CHUNK CREATION FAILED"
-                        	fL.send(m, "FAILED")
-                	elif ack == "CREATED":
-                        	print "Chunk creation successful!"
-                        	fL.send(m, "CREATED")
-               		m.close()
+	                        	print "ERROR: CHUNK CREATION FAILED"
+        	                	fL.send(m, "FAILED")
+                		elif ack == "CREATED":
+                        		print "Chunk creation successful!"
+                        		fL.send(m, "CREATED")
+               			m.close()
         
         	#now that the new chunk has been created on all of the servers...
         	#...run append again with the second part of the new data
