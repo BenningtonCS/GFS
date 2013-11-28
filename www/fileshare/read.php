@@ -4,7 +4,7 @@ include 'gfs.class.php';
 //include 'pages/header.php';
 $gfs = new GFS;
 
-$gfs->read("10.jpg");
+$gfs->read("24.jpg");
 //$read = explode("|", $read);
 //if($read[0] == $_GET['fileName']) {
 //	$link = $read[1];
