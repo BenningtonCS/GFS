@@ -69,7 +69,6 @@ class processConnection(threading.Thread):
 		self.data = fL.recv(self.connection)
 		dataSplit = self.data.split('|')
 		msg = dataSplit[0]
-		print self.data
 		if(msg == "CREATE"):
 			create = API.create(dataSplit[1])
 			if(create == 1):
