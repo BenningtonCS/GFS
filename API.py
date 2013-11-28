@@ -233,67 +233,67 @@ class API():
 		                        exit(0)                                
 
 		###################
-        if(cont == True):
-                m  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                try:
-                        m.connect((MASTER_ADDRESS, TCP_PORT))
-                        print "connected to master"
-                except:
-                        print "ERROR: COULD NOT CONNECT TO MASTER DURING APPEND ACROSS CHUNKS"
-                        exit(0)
-                #tell the master to create a new chunk for the remaining data
-                try:
-                        fL.send(m, "CREATECHUNK|" + filename + "|" + cH)
-                except:
-                        print "ERROR: COULD NOT CREATE NEW CHUNK TO APPEND TO"
-                #receive data back from master
-                cData = fL.recv(m)
-                #parse this data and handle it very similarly as the in the create function
-                if self.data == "FAIL2":
-                        print "NO SUCH FILE EXISTS FOR CHUNK CREATION"
-                        exit(0)
+        	if(cont == True):
+                	m  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                	try:
+                        	m.connect((MASTER_ADDRESS, TCP_PORT))
+                        	print "connected to master"
+                	except:
+                        	print "ERROR: COULD NOT CONNECT TO MASTER DURING APPEND ACROSS CHUNKS"
+                        	exit(0)
+                	#tell the master to create a new chunk for the remaining data
+               		try:
+                        	fL.send(m, "CREATECHUNK|" + filename + "|" + cH)
+                	except:
+                        	print "ERROR: COULD NOT CREATE NEW CHUNK TO APPEND TO"
+                	#receive data back from master
+                	cData = fL.recv(m)
+                	#parse this data and handle it very similarly as the in the create function
+                	if self.data == "FAIL2":
+                        	print "NO SUCH FILE EXISTS FOR CHUNK CREATION"
+                        	exit(0)
 
-                splitcData = cData.split("|")
-                cDataLength = len(splitcData)
-                cH = splitcData[-1]
-                #close the connection to the master so we can connect to the chunk servers
-                #m.close()
-                #iterate through each IP address received from the master
-                for n in range(0, cDataLength-1):
-                        #create a socket to be used to connect to chunk server
-                        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                        #designate the IP for this iteration
-                        location = splitcData[n]
-                        print location
-                        #attempt to connect to the chunk server at the current location
-                        try:
-                                s.connect((location,TCP_PORT))
-                        except:
-                                print "ERROR: COULD NOT CONNECT TO CHUNKSERVER AT ", location
-                                continue
-                        #send CREATE request to the chunk server at the current location
-                        fL.send(s, "CREATE|" + cH)
-                        global ack
-                        ack = fL.recv(s)
+                	splitcData = cData.split("|")
+                	cDataLength = len(splitcData)
+                	cH = splitcData[-1]
+                	#close the connection to the master so we can connect to the chunk servers
+                	#m.close()
+                	#iterate through each IP address received from the master
+                	for n in range(0, cDataLength-1):
+                        	#create a socket to be used to connect to chunk server
+                        	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        	#designate the IP for this iteration
+                        	location = splitcData[n]
+                        	print location
+                        	#attempt to connect to the chunk server at the current location
+                        	try:
+                                	s.connect((location,TCP_PORT))
+                        	except:
+                         	       print "ERROR: COULD NOT CONNECT TO CHUNKSERVER AT ", location
+                                	continue
+                        	#send CREATE request to the chunk server at the current location
+                        	fL.send(s, "CREATE|" + cH)
+                        	global ack
+                        	ack = fL.recv(s)
         ################          
-                #close connection to current chunk server.
-                s.close()
+                		#close connection to current chunk server.
+                		s.close()
 
-                #do some acks
-                if ack == "FAILED":
-                        print "ERROR: CHUNK CREATION FAILED"
-                        fL.send(m, "FAILED")
-                elif ack == "CREATED":
-                        print "Chunk creation successful!"
-                        fL.send(m, "CREATED")
-                m.close()
+                		#do some acks
+                		if ack == "FAILED":
+                        	print "ERROR: CHUNK CREATION FAILED"
+                        	fL.send(m, "FAILED")
+                	elif ack == "CREATED":
+                        	print "Chunk creation successful!"
+                        	fL.send(m, "CREATED")
+               		m.close()
         
-        #now that the new chunk has been created on all of the servers...
-        #...run append again with the second part of the new data
-        #self.s.close()
-		try:
+        	#now that the new chunk has been created on all of the servers...
+        	#...run append again with the second part of the new data
+        	#self.s.close()
+			try:
 				self.append(filename, newData2,False)
-		except UnboundLocalError:
+			except UnboundLocalError:
 				pass					
 
 
