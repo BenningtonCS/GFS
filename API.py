@@ -103,6 +103,7 @@ class API():
 		elif ack == "CREATED":
 			print "File creation successful!"
 			fL.send(m, "CREATED")
+			return 1
 		m.close()
 		
 		#oplog stuff for questions contact rohail
