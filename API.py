@@ -102,17 +102,17 @@ class API():
 			#close connection to current chunk server.
 			s.close()
 
-		m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		m.connect((MASTER_ADDRESS, TCP_PORT))
-		if ack == "FAILED":
-			print "ERROR: FILE CREATION FAILED"
-			fL.send(m, "FAILED")
-			return 0
-		elif ack == "CREATED":
-			print "File creation successful!"
-			fL.send(m, "CREATED")
-			return 1
-		m.close()
+			m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			m.connect((MASTER_ADDRESS, TCP_PORT))
+			if ack == "FAILED":
+				print "ERROR: FILE CREATION FAILED"
+				fL.send(m, "FAILED")
+				return 0
+			elif ack == "CREATED":
+				print "File creation successful!"
+				fL.send(m, "CREATED")
+				return 1
+			m.close()
 		
 	
 	#appends to an existing file by first prompting the client for what 
