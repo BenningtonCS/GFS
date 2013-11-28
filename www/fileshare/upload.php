@@ -24,8 +24,8 @@ $gfs = new GFS;
       $gfs = new GFS;
       $create = $gfs->create($_FILES["file"]["name"]);
       if($create == "CREATE|1") {
-        $filecontents = file_get_contents("files/" . $_FILES["file"]["name"]);
-        $append = $gfs->append($_FILES["file"]["name"], $filecontents); 
+        //$filecontents = file_get_contents("files/" . $_FILES["file"]["name"]);
+        $append = $gfs->append($_FILES["file"]["name"], "/var/www/fileshare/files/" . $_FILES["file"]["name"]); 
       }
       }
     }
