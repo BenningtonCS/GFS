@@ -282,68 +282,74 @@ class API():
 	#the file is on and the inner lists are the locations of each chunk and har far to read on
 	#that chunk. I then pass on the necessary data to the chunk servers which send me back the
 	#contents of the file. 
-	def read(self, filename, byteOffset, bytesToRead):
-		#lets make the API able to send and recieve messages
-        	m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        	m.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		#define rData to handle all the strings from multichunks and put it into one.
-		global rData
-		rData = '' 
-        	try:
-                	m.connect((MASTER_ADDRESS, TCP_PORT))
-        	except:
-                	print "ERROR: COULD NOT CONNECT TO MASTER"
-                	exit(0)
-		#send READ request to the master
-		try:
-			fL.send(m, "READ|" + filename + "|" + str(byteOffset) + "|" + str(bytesToRead))
-		except:
-			print "ERROR: COULD NOT SEND READ REQUEST TO MASTER"
-		#recieve data from the master
-		self.data = fL.recv(m)
-		#print self.data
-		#split the data into a list
-		self.splitdata = self.data.split("|")
-		#remove the first element of the list because it is irrelevant
-		self.splitdata = self.splitdata[1:]
-		#close connection to master
-		m.close()
-		#iterate through the list
-		for q in self.splitdata:
-			#split the list into smaller parts
-			secondSplit = q.split("*")
-			#print secondSplit
-			#set the location...
-			location = secondSplit[0]
-			#print "location = ", location
-			#...and the chunk handle
-			cH = secondSplit[1]
-			#print "cH = ", cH
-			#...and the offset
-			offset = secondSplit[2]
-			#print "offset = ", offset
-			#close connection to master
-			#connect to the chunk server
-			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			try:
-				s.connect((location,TCP_PORT))
-			except:
-				print "ERROR: COULD NOT CONNECT TO CHUNK SERVER AT ", location
-				continue
-			#send READ request to chunk server
-                	fL.send(s, "READ|" + str(cH) + "|" + str(offset) + "|" + str(bytesToRead))
-                	#print "READ|" + cH + "|" + offset + "|" + bytesToRead
-			#receive and print the contents of the file
-                	
-			rData = rData + fL.recv(s)
-                	
-		print rData			
-		#close connection to chunk server		
-               	s.close()
 
-		return rData
-		#reestablish connection to master
-
+    def read(self, filename, byteOffset, bytesToRead, newName):
+            #lets make the API able to send and recieve messages
+            m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            m.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            try:
+                    m.connect((MASTER_ADDRESS, TCP_PORT))
+            except:
+                    print "ERROR: COULD NOT CONNECT TO MASTER"
+                    exit(0)
+            #send READ request to the master
+            try:
+                    fL.send(m, "READ|" + filename + "|" + str(byteOffset) + "|" + str(bytesToRead))
+            except:
+                    print "ERROR: COULD NOT SEND READ REQUEST TO MASTER"
+            #recieve data from the master
+            self.data = fL.recv(m)
+            #print self.data
+            #split the data into a list
+            self.splitdata = self.data.split("|")
+            #remove the first element of the list because it is irrelevant
+            self.splitdata = self.splitdata[1:]
+            #close connection to master
+            m.close()
+            #iterate through the list
+            fromChunks = ""
+            fileContents = ""
+            for q in self.splitdata:
+                    #split the list into smaller parts
+                    secondSplit = q.split("*")
+                    #print secondSplit
+                    #set the location...
+                    location = secondSplit[0]
+                    #print "location = ", location
+                    #...and the chunk handle
+                    cH = secondSplit[1]
+                    #print "cH = ", cH
+                    #...and the offset
+                    offset = secondSplit[2]
+                    #print "offset = ", offset
+                    #close connection to master
+                    #connect to the chunk server
+                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    try:
+                            s.connect((location,TCP_PORT))
+                    except:
+                            print "ERROR: COULD NOT CONNECT TO CHUNK SERVER AT ", location
+                            continue
+                    #send READ request to chunk server
+                    fL.send(s, "READ")
+                    fL.send(s, str(cH))
+                    fL.send(s,str(offset))
+                    fL.send(s,str(bytesToRead))
+                    #print "READ|" + cH + "|" + offset + "|" + bytesToRead
+                    #receive and print the contents of the file
+                    fromChunks += "." + str(cH)
+                    dat = fL.recv(s)
+                    fileContents += dat
+                                    
+            #close connection to chunk server                
+                   s.close()
+                   strct = struct.Struct(str(len(fileContents))+"s")
+                   
+            with open(newName,"wb") as e:
+                    e.write(fileContents)
+            
+            return dat
+                #reestablish connection to master
 	#This is the delete function. It takes a filename as a parameter and 
 	#deletes the given file from our GFS implementation. When a DELETE 
 	#request is sent to the master it marks the file for deletion. The 
