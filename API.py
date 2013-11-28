@@ -291,10 +291,10 @@ class API():
         #now that the new chunk has been created on all of the servers...
         #...run append again with the second part of the new data
         #self.s.close()
-				try:
-						self.append(filename, newData2,False)
-				except UnboundLocalError:
-						pass					
+		try:
+				self.append(filename, newData2,False)
+		except UnboundLocalError:
+				pass					
 
 
 	#reads an existing file by taking the filename, byte offset, and the number of bytes the client
