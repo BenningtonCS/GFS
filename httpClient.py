@@ -75,9 +75,9 @@ class processConnection(threading.Thread):
 			if(create == 1):
 				self.connection.send("CREATE|1")
 		elif(msg == "APPEND"):
-			with open(dataSplit[2], 'rb') as file:
-				data = bytearray(file.read())
-			API.append(dataSplit[1], data)
+			#with open(dataSplit[2], 'rb') as file:
+			#	data = bytearray(file.read())
+			API.append(dataSplit[1], dataSplit[2])
 		elif(msg == "READ"):
 			API.read(dataSplit[1], 0, -1, dataSplit[1])
 			#if(read):

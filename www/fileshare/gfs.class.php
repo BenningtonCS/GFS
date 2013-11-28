@@ -19,9 +19,9 @@ class GFS {
 	}
 	public function read($filename) {
 		$this->connect();
-		fwrite($this->x, "READ|".$filename.$this-eot);
-		$response = stream_get_contents($this->x);
-		return $response;
+		fwrite($this->x, "READ|".$filename.$this->eot);
+		//$response = stream_get_contents($this->x);
+		//return $response;
 	}
 
 }
