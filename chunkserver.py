@@ -201,10 +201,13 @@ class workerThread(connThread):
 #				fL.send(self.connection, "CONTINUE") 
 #				logging.debug("Sent continue #2") 
 #				data = fL.recv(self.connection)    # data being added
-				data = com[2]
+				data = "|".join(com[2:])
+				length = str(len(data))
+				logging.error(length)
 				logging.debug("Recieved the data to be added")
 	                	with open(config.chunkPath+"/"+chunkHandle, 'a') as a: # open the chunk
-	                        	a.write(data) 			 # add the data to it
+	                        	#for item in data:
+					a.write(data)		 # add the data to it
 	                except socket.error as e:
 				logging.error(e)
 			except IOError as e:

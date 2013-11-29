@@ -68,20 +68,21 @@ class processConnection(threading.Thread):
 		self.lock.acquire()
 		self.data = fL.recv(self.connection)
 		dataSplit = self.data.split('|')
-		print dataSplit[2:]
+		print self.data
 		msg = dataSplit[0]
 		if(msg == "CREATE"):
 			create = API.create(dataSplit[1])
 			if(create == 1):
 				self.connection.send("CREATE|1")
 		elif(msg == "APPEND"):
-			#with open(dataSplit[2], 'rb') as file:
-			#	data = bytearray(file.read())
-			API.append(dataSplit[1], dataSplit[2])
+			print "append"
+			append = API.append(dataSplit[1], dataSplit[2], True)
+			if(append):
+				self.connection.send("1")
 		elif(msg == "READ"):
-			API.read(dataSplit[1], 0, -1, dataSplit[1])
-			#if(read):
-			#	self.connection.send(read)
+			read = API.read(dataSplit[1], 0, -1, "/var/www/fileshare/download/"+dataSplit[1])
+			if(read):
+				self.connection.send("1")
 		#elif(msg == "READ"):
 
 		#elif(msg == "DELETE"):
