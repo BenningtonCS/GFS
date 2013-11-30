@@ -444,7 +444,7 @@ class API():
                         fL.send(m, "FILELIST|x")
                         data = fL.recv(m)
                         m.close()
-                        print data
+                        return data
                 except:
                         print "file list error"
 
