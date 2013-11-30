@@ -36,6 +36,11 @@ class API():
 	#the data "CREATE". The chunkservers then make an empty chunk at
 	#each of those locations. Takes the filename as an argument.
 	def create(self,filename):
+		#return an error if some wise guy tries to put a pipe in the file name.
+		if "|" in filename:
+			print "Invalid character in filename. Please retry with a different filename. exiting..."
+			exit(0)
+
 		logging.debug("API: Starting create function.")
 		#lets make the API able to send and recieve messages
 		logging.debug("API: Creating socket.")
