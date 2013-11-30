@@ -1,3 +1,8 @@
+<?php
+ini_set('meemory_limit', '96M');
+ini_set('post_max_size', '64M');
+ini_set('upload_max_filesize', '64M');
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>

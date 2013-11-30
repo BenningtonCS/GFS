@@ -1,21 +1,21 @@
 <?php
 
 include 'gfs.class.php';
-//include 'pages/header.php';
+include 'pages/header.php';
 $gfs = new GFS;
 
-$gfs->read("24.jpg");
-//$read = explode("|", $read);
-//if($read[0] == $_GET['fileName']) {
-//	$link = $read[1];
-//}
-//else {
-//	$link = "#";
-//}
+$read = $gfs->read($_GET['fileName']);
+if($read == "1") {
+	$link = "download/".$_GET['fileName'];
+}
+else {
+	$link = "#";
+}
 ?>
-<a href="#">Download File</a>
+<h1>Download File</h3>
+<a class="btn btn-primary" href="<?=$link?>">Download File</a>
 <?php
 
-//include 'pages/footer.php';
+include 'pages/footer.php';
 
 ?>
