@@ -79,12 +79,25 @@ class processConnection(threading.Thread):
 			append = API.append(dataSplit[1], dataSplit[2], True)
 			if(append):
 				self.connection.send("1")
+				print "1 sent for append"
 		elif(msg == "READ"):
 			read = API.read(dataSplit[1], 0, -1, "/var/www/fileshare/download/"+dataSplit[1])
 			if(read):
 				self.connection.send("1")
-		#elif(msg == "READ"):
+		elif(msg == "STREAM"):
+			stream = API.stream(dataSplit[1], 0, -1, "/var/www/fileshare/download/"+dataSplit[1])
+			if(stream):
+				self.connection.send("1")
 
+		elif(msg == "FILELIST"):
+			filelist = API.fileList()
+			filelist = filelist[1:-1]
+			split = filelist.split(', ')
+			string = ""
+			for i in split:
+				string += str(i[1:-1]) + "|"
+			if(filelist):
+				self.connection.send(string)
 		#elif(msg == "DELETE"):
 
 		self.connection.close()

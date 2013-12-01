@@ -370,6 +370,7 @@ class API():
 		return 1
 		#reestablish connection to master
 
+
 	#This is the delete function. It takes a filename as a parameter and 
 	#deletes the given file from our GFS implementation. When a DELETE 
 	#request is sent to the master it marks the file for deletion. The 
