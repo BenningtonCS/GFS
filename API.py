@@ -96,7 +96,6 @@ class API():
 			fL.send(s, "CREATE|" + cH)
 			print "CREATE"
 			#wait to receive a CONTINUE from chunk server to proceed
-			global ack
 			ack = fL.recv(s)
 			#close connection to current chunk server.
 			s.close()
@@ -110,12 +109,7 @@ class API():
 			return 1
 		m.close()
 		
-		#oplog stuff for questions contact rohail
-	#	try:
-	#		opLog = updateOpLog("OPLOG|CREATE|"+cH+"|"+filename)
-	#		opLog.start()
-	#	except:
-	#		print "COULD NOT UPDATE OPLOG"
+
 
 	
 	#appends to an existing file by first prompting the client for what 
