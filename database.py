@@ -332,8 +332,28 @@ class Database:
 					self.data[fileName].chunks[chunk].locations.append(IP)
 					logging.debug('Appended location to chunk ' + str(chunk) + ' location list')
 
+				# If the chunk is not recognized in the master's database, the chunk is an orphan (does not
+				# belong to a file). In this case, the chunk should be removed.
 				except KeyError:
-					logging.warning('Chunk: ' + str(chunk) + ' on ' + str(IP) + ' is not associated with a file in the database. Ignoring chunk and moving on...')
+					# Create an instance of a TCP socket
+					s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+					s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+					s.connect((IP, chunkPort))
+					logging.debug('Connection Established: ' + str(IP) + ' on port ' + str(chunkPort))
+					# Tell the chunkserver to sanitize the chunk
+					fL.send(s, 'SANITIZE|' + str(chunk))
+					logging.debug('Sent chunkserver a SANITIZE message')
+					# Received the chunk contents of the speicified chunkserver
+					data = fL.recv(s)
+
+					if data == "SUCCESS":
+						logging.debug("Orphan removal successful")
+						self.locDict[IP].remove(chunk)
+					elif data == "FAILED":
+						logging.debug("Orphan removal failed.")
+					# Close the socket connection
+					s.close()
+		
 
 		logging.debug('interrogateChunkServer() complete')
 
