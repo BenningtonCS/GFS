@@ -57,6 +57,7 @@ logging.debug("Name of listen log: " + logName)
 
 # name of log that contains all data stored
 fullLog = listenerConfig.fullLog
+logging.debug("Name of the full listener log: " + fullLog)
 
 # Every error is logged to a different log, the name of which is also given in 
 # the configuration log.
@@ -100,10 +101,23 @@ def logInfo(lineNum, info):
         # logs CPU, network, disk, and memory to a file to be used for display
 	# on the web
 
+	# before making this ever-changing log, log everything to one main log
+	logAll(lineNum, info)
+
         # put the information from the listener log into a var called data
-        with open(logName, 'r') as r:
-                data = r.readlines()
-        logging.debug("Read " + str(data) + " from the log.")
+	while 1:
+                try:
+                # try to open the log
+                        with open(logName, 'r') as r:
+                                data = r.readlines()
+                        logging.debug("Read " + str(data) + " from the log.")
+                        break
+                except IOError:
+                # if the log does not exist, it will create this file
+                        logging.debug(str(logName) + " does not exist!! Creating...")
+                        with open(logName, 'a') as a:
+                                pass
+                        logging.debug(str(logName) + " has now been created.")
 
         # split the data from the line spefied  at the pipe and newline character 
         try: l = re.split('[|\n]', data[int(lineNum)])
@@ -152,13 +166,20 @@ def logAll(lineNum, info):
 
         # read what is currently in the log file and put it into a list
         # called data
-        try:
-                with open(fullLog, 'r') as r:
-                        data = r.readlines()
-                logging.debug("Read " + str(data) + " from the log.")
-        except IOError:
-                logging.debug(str(fullLog) + " does not exist!!")
-                exit()
+	while 1:
+	        try:
+		# try to open the full log
+        	        with open(fullLog, 'r') as r:
+                	        data = r.readlines()
+	                logging.debug("Read " + str(data) + " from the log.")
+			break
+        	except IOError:
+		# if the full log does not exist, it will create this file
+                	logging.debug(str(fullLog) + " does not exist!! Creating...")
+			with open(fullLog, 'a') as a:
+				pass
+			logging.debug(str(fullLog) + " has now been created.")
+		
 
         # split the data from the line spefied  at the pipe and newline character 
         try: l = re.split('[|\n]', data[int(lineNum)])
@@ -270,7 +291,6 @@ def filesMissing():
 	else:
 		for item in missing:	
 			# for each item that is missing, log a critical error
-#			logging.critical("File " + str(item) + " is missing!!")
 			logError("FILE MISSING : " + str(item))
 
 
