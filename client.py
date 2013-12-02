@@ -17,13 +17,15 @@ while 1:
 	elif (operation == "append"):
 		filename = raw_input("What is the name of the target file? : ")
 		newData = raw_input("What data would you like to add to the file? : ")
-		API.append(filename, newData)
+		flag = raw_input("flag: ")
+		API.append(filename, newData, flag)
 
 	elif (operation == "read"):
 		filename = raw_input("What is the name of the target file? : ")
 		byteOffSet = raw_input("What is your desired byte offset? : ")
 		bytesToRead = raw_input("How many bytes would you like to read? : ")
-		API.read(filename, byteOffSet, bytesToRead)
+		newName = raw_input("new name? : ")
+		API.read(filename, byteOffSet, bytesToRead, newName)
 	
 	elif (operation == "delete"):
 		filename = raw_input("What is the name of the target file? : ")
@@ -43,7 +45,7 @@ while 1:
 		print "That is an invalid operation. Please try again."
 		continue
 
-	time.sleep(2)
+
 	#again = raw_input("Would you like to perform another operation? : ")	
 
 	#if again == "no":
