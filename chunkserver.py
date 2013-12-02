@@ -24,7 +24,7 @@ fL.chunkdebug()
 
 
 mg64 = config.chunkSize # 64 megabytes in binary
-	
+chunkPath = config.chunkPath # get the chunk path prefix from config file
 ADDRESS = '' # set address to the local IP
 PORT = config.port # carry out all communications on port 9666
 
@@ -89,7 +89,7 @@ class workerThread(connThread):
 #									 # connection for a chunkhandle
 				chunkHandle = fL.recv(self.connection) # name of the chunkhandle
 				logging.debug("recieved name of the chunkhandle: " + chunkHandle)
-				emptySpace = str(mg64 - os.stat(config.chunkPath + "/" + chunkHandle).st_size) # then checks the 
+				emptySpace = str(mg64 - os.stat(chunkPath + "/" + chunkHandle).st_size) # then checks the 
 									         # difference 
 									         # between the 
 									         # file's size and 
@@ -131,7 +131,7 @@ class workerThread(connThread):
 				bytesToRead = int(fL.recv(self.connection)) #int(fL.recv(self.connection)) # listens for the 
 									      # number of bytes to read
 				logging.debug("recieved the number of bytes to read")
-				chunk = open(config.chunkPath+"/"+chunkHandle) # opens the designated chunk to read from
+				chunk = open(chunkPath+"/"+chunkHandle) # opens the designated chunk to read from
 				chunk.seek(int(byteOffSet)) # goes to the specified byte offset
 				fileContent = chunk.read(bytesToRead) # stuffs all the stuff to be 
 								      # read into a variable
@@ -152,7 +152,7 @@ class workerThread(connThread):
 		elif command == "CONTENTS?":
 			try:
 				output = ""
-				for files in os.walk(config.chunkPath): # read every file
+				for files in os.walk(chunkPath): # read every file
 					output = str('|'.join(item for item in files[-1])) # turn the list into a string
 					print output
 				if output == "":		     # if there is nothing in the dir
@@ -179,7 +179,7 @@ class workerThread(connThread):
 #				logging.debug("Sent continue")
 	                	chunkHandle = fL.recv(self.connection) #fL.recv(self.connection) # get the name of the chunk
 				logging.debug("recieved name of the chunk")
-	                	open(config.chunkPath + "/" + chunkHandle, 'w').close() # create the file
+	                	open(chunkPath + "/" + chunkHandle, 'w').close() # create the file
 	        	except IOError as e:
 				logging.error(e)
 				fL.send(self.connection, "FAILED")
@@ -201,10 +201,13 @@ class workerThread(connThread):
 #				fL.send(self.connection, "CONTINUE") 
 #				logging.debug("Sent continue #2") 
 #				data = fL.recv(self.connection)    # data being added
-				data = fL.recv(self.connection)
+				data = "|".join(com[2:])
+				length = str(len(data))
+				logging.error(length)
 				logging.debug("Recieved the data to be added")
-	                	with open(config.chunkPath+"/"+chunkHandle, 'a') as a: # open the chunk
-	                        	a.write(data) 			 # add the data to it
+	                	with open(chunkPath+"/"+chunkHandle, 'a') as a: # open the chunk
+	                        	#for item in data:
+					a.write(data)		 # add the data to it
 	                except socket.error as e:
 				logging.error(e)
 			except IOError as e:
@@ -218,22 +221,30 @@ class workerThread(connThread):
 
 		elif command == "SANITIZE":
 			# recieves SANITIZE from the scrubber which tells the chunkserver to delete a chunk
-                        try:
-                                chunkHandle = fL.recv(self.connection) # name of the chunk
-                                logging.debug("Recieved name of the chunk")
-                                os.remove(config.chunkPath + '/' + chunkHandle) # remove file from directory
-                                logging.debug("Removed chunk handle.")
-                                fL.send(self.connection, "SUCCESS") # send a success
-                                logging.debug("removal successfull!")
-                        except socket.error as e:
-                                logging.error(e)
-                        except IOError as e:
+			try:
+				chunkHandle = com[1] # name of the chunk
+				logging.debug("Recieved name of the chunk")
+				try:
+					os.remove(chunkPath + '/' + chunkHandle) # remove file from directory
+					logging.debug("Removed chunk handle.")
+				# If there is an error thrown that the chunk does not exist, we return success
+				# because sanitize is called to remove a chunk from a location. If it does not
+				# exist at that location, then removal is technially achieved.
+				except OSError:
+					fL.send(self.connection, "SUCCESS")
+					logging.debug("chunk already did not exist. sending success")
+					
+				fL.send(self.connection, "SUCCESS") # send a success
+				logging.debug("removal successfull!")
+				
+			except socket.error as e:
+				logging.error(e)
+			except IOError as e:
 				fL.send(self.connection,"FAILED")
 				logging.error(e)
 			except Exception as e:
 				fL.send(self.connection,"FAILED")
 				logging.error(e)
-
  		else:
  			error = "Received invalid command: " + command
  			logging.error(error)

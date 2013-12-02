@@ -36,6 +36,11 @@ class API():
 	#the data "CREATE". The chunkservers then make an empty chunk at
 	#each of those locations. Takes the filename as an argument.
 	def create(self,filename):
+		#return an error if some wise guy tries to put a pipe in the file name.
+		if "|" in filename:
+			print "Invalid character in filename. Please retry with a different filename. exiting..."
+			exit(0)
+
 		logging.debug("API: Starting create function.")
 		#lets make the API able to send and recieve messages
 		logging.debug("API: Creating socket.")
@@ -71,7 +76,7 @@ class API():
 		self.splitdata = self.data.split("|")
 		dataLength = len(self.splitdata)
 		cH = self.splitdata[-1]
-
+		global ack
 		logging.debug("API: about to begin for loop, " + str(dataLength -1) + "iterations")
 		#iterate through each IP address received from the master
 		for n in range(0, dataLength-1):
@@ -92,7 +97,6 @@ class API():
 			fL.send(s, cH)
 			print "CREATE"
 			#wait to receive a CONTINUE from chunk server to proceed
-			global ack
 			ack = fL.recv(s)
 			#close connection to current chunk server.
 			s.close()
@@ -103,14 +107,10 @@ class API():
 		elif ack == "CREATED":
 			print "File creation successful!"
 			fL.send(m, "CREATED")
+			return 1
 		m.close()
 		
-		#oplog stuff for questions contact rohail
-	#	try:
-	#		opLog = updateOpLog("OPLOG|CREATE|"+cH+"|"+filename)
-	#		opLog.start()
-	#	except:
-	#		print "COULD NOT UPDATE OPLOG"
+
 
 	
 	#appends to an existing file by first prompting the client for what 
@@ -119,6 +119,13 @@ class API():
 	#sends back the chunk handle and locations of the existing file. The 
 	#client then sends "append" and the new data to the chunk servers which
 	#append the new data to the files.
+
+	# The fileName parameter specifies which file will be append to, the newData
+	# parameter specifies which data, if manually input, and the flag parameter 
+	# specifies whether or not newData is a file name or not. If flag == 1, newData
+	# will be taken as the name of a file, and the contents of that file will be
+	# appended. If flag != 1, newData will be taken to be the desired append input.
+
 	def append(self, filename, newData,flag):
 		#lets make the API able to send and recieve messages
 	        m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -153,15 +160,13 @@ class API():
 			dataSize = os.path.getsize(newData)
 			strct = struct.Struct(str(dataSize)+"s")
 			newData = strct.pack((open(newData,"rb").read()))"""
-		if flag:
+		if flag == 1:
 			with open(newData,"rb") as da:
-				newData = bytearray(da.read())
-			
-			
+				newData = da.read()
 	
 		dataSize = len(newData)
-		
-		
+		logging.debug("dataSize == "dataSize)
+
 		
 		lenNewData = int(dataSize)
 		#close connection to master 
@@ -193,10 +198,12 @@ class API():
 			if (lenNewData > remainingSpace):   
 				#...split the data into two parts, the first part being equal to the
 				#amount of room left in the current chunk. the second part being the 
-				#rest of the data. 
-                                newData1 = newData[0:remainingSpace]
-			#	print newData1
-                                newData2 = newData[remainingSpace:]
+
+				#rest of the data.
+				cut = remainingSpace
+                                newData1 = newData[0:cut]
+				print "Sending data of length:" + str(len(newData1))
+                                newData2 = newData[cut:]
 			#	print newData2
 				#tell the chunk server to append the first part of the new data that
 				#will fill up the rest of the remaining space on a chunk
@@ -233,60 +240,58 @@ class API():
 					exit(0)				
 
 		###################
-			if lenNewData > remainingSpace:
-				m  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	                        try:
-	                        	m.connect((MASTER_ADDRESS, TCP_PORT))
-					print "connected to master"
-	                        except:
-	                                print "ERROR: COULD NOT CONNECT TO MASTER DURING APPEND ACROSS CHUNKS"
-	                                exit(0)
-				#tell the master to create a new chunk for the remaining data
-				try:
-					fL.send(m, "CREATECHUNK|" + filename + "|" + cH)
-				except:
-					print "ERROR: COULD NOT CREATE NEW CHUNK TO APPEND TO"
-				#receive data back from master
-				cData = fL.recv(m)
-				#parse this data and handle it very similarly as the in the create function
-				if self.data == "FAIL2":
-					print "NO SUCH FILE EXISTS FOR CHUNK CREATION"
-					exit(0)
-
-				splitcData = cData.split("|")
-				cDataLength = len(splitcData)
-	                	cH = splitcData[-1]
-	                	#close the connection to the master so we can connect to the chunk servers
-	                	#m.close()
-	                	#iterate through each IP address received from the master
-	                	for n in range(0, cDataLength-1):
-	                        	#create a socket to be used to connect to chunk server
-	                        	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	                        	#designate the IP for this iteration
-	                        	location = splitcData[n]
-	                        	print location
-	                        	#attempt to connect to the chunk server at the current location
-	                        	try:
-	                                	s.connect((location,TCP_PORT))
-	                        	except:
-	                                	print "ERROR: COULD NOT CONNECT TO CHUNKSERVER AT ", location
-	                                	continue
-	                        	#send CREATE request to the chunk server at the current location
-	                        	fL.send(s, "CREATE")
-	                        	fL.send(s, cH)
-					global ack
-	                        	ack = fL.recv(s)
-	                ################  	
-	                        #close connection to current chunk server.
+		if lenNewData > remainingSpace:
+			m  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        try:
+                        	m.connect((MASTER_ADDRESS, TCP_PORT))
+				print "connected to master"
+                        except:
+                                print "ERROR: COULD NOT CONNECT TO MASTER DURING APPEND ACROSS CHUNKS"
+                                exit(0)
+			#tell the master to create a new chunk for the remaining data
+			try:
+				fL.send(m, "CREATECHUNK|" + filename + "|" + cH)
+			except:
+				print "ERROR: COULD NOT CREATE NEW CHUNK TO APPEND TO"
+			#receive data back from master
+			cData = fL.recv(m)
+			#parse this data and handle it very similarly as the in the create function
+			if self.data == "FAIL2":
+				print "NO SUCH FILE EXISTS FOR CHUNK CREATION"
+				exit(0)
+			splitcData = cData.split("|")
+			cDataLength = len(splitcData)
+                	cH = splitcData[-1]
+                	#close the connection to the master so we can connect to the chunk servers
+                	#m.close()
+                	#iterate through each IP address received from the master
+                	for n in range(0, cDataLength-1):
+                        	#create a socket to be used to connect to chunk server
+                        	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        	#designate the IP for this iteration
+                        	location = splitcData[n]
+                        	print location
+                        	#attempt to connect to the chunk server at the current location
+                        	try:
+                                	s.connect((location,TCP_PORT))
+                        	except:
+                                	print "ERROR: COULD NOT CONNECT TO CHUNKSERVER AT ", location
+                                	continue
+                        	#send CREATE request to the chunk server at the current location
+                        	fL.send(s, "CREATE|" + cH)
+				global ack
+                        	ack = fL.recv(s)
+                ################  	
+                        #close connection to current chunk server.
 	                        s.close()
-	
+
 				#do some acks
 	                	if ack == "FAILED":
 	                        	print "ERROR: CHUNK CREATION FAILED"
-	                        	fL.send(m, "FAILED")
+#	                        	fL.send(m, "FAILED")
 	                	elif ack == "CREATED":
 	                        	print "Chunk creation successful!"
-	                        	fL.send(m, "CREATED")
+#	                        	fL.send(m, "CREATED")
 	               		m.close()
 			
 			#now that the new chunk has been created on all of the servers...
@@ -296,7 +301,7 @@ class API():
 				self.append(filename, newData2,False)
 			except UnboundLocalError:
 				pass
-
+		return 1
 
 	#reads an existing file by taking the filename, byte offset, and the number of bytes the client
 	#wants to read as args. This information is passed on to the master which sends back a list
@@ -304,6 +309,13 @@ class API():
 	#the file is on and the inner lists are the locations of each chunk and har far to read on
 	#that chunk. I then pass on the necessary data to the chunk servers which send me back the
 	#contents of the file. 
+
+	# fileName specifies the file you would like to read from
+	# byteOffset specifies the point where you would like to start reading from
+	# bytesToRead specifies how much of the file you would like to read. -1 will return everything from 
+	#		byteOffset until the end.
+	# newName specifies the name of the file to write the read data to. This file will be created in 
+	#		the directory housing the API.
 	def read(self, filename, byteOffset, bytesToRead, newName):
 		#lets make the API able to send and recieve messages
         	m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -320,7 +332,7 @@ class API():
 			print "ERROR: COULD NOT SEND READ REQUEST TO MASTER"
 		#recieve data from the master
 		self.data = fL.recv(m)
-		#print self.data
+		print self.data
 		#split the data into a list
 		self.splitdata = self.data.split("|")
 		#remove the first element of the list because it is irrelevant
@@ -350,7 +362,7 @@ class API():
 				s.connect((location,TCP_PORT))
 			except:
 				print "ERROR: COULD NOT CONNECT TO CHUNK SERVER AT ", location
-				continue
+				exit(0)
 			#send READ request to chunk server
                 	fL.send(s, "READ")
                 	fL.send(s, str(cH))
@@ -358,19 +370,22 @@ class API():
                 	fL.send(s,str(bytesToRead))
                 	#print "READ|" + cH + "|" + offset + "|" + bytesToRead
 			#receive and print the contents of the file
-			fromChunks += "." + str(cH)
+			#fromChunks += "." + str(cH)
                 	dat = fL.recv(s)
-                	fileContents += dat
+			print str(len(dat)) + "from" + location
+                #	fileContents += dat
 					
 		#close connection to chunk server		
-               	s.close()
-               	strct = struct.Struct(str(len(fileContents))+"s")
+	               	s.close()
+#              	strct = struct.Struct(str(len(fileContents))+"s")
                	
-		with open(newName,"wb") as e:
-			e.write(fileContents)
+			with open(newName,"ab") as e:
+				e.write(dat)
+				e.close()
 		
-		return dat
+		return 1
 		#reestablish connection to master
+
 
 	#This is the delete function. It takes a filename as a parameter and 
 	#deletes the given file from our GFS implementation. When a DELETE 
@@ -452,6 +467,8 @@ class API():
                         data = fL.recv(m)
                         m.close()
                         print data
+
+                        return data
                 except:
                         print "file list error"
 

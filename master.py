@@ -342,31 +342,8 @@ class handleCommand(threading.Thread):
 			fL.send(self.s, "FAILED2")
 
 
-
-
-
-	# Function that executes the protocol when an OPEN message is received
-	def open(self):
-		pass
-		
-		
-		
-	# Function that executes the protocol when a CLOSE message is received
-	def close(self):
-		pass
-
-
-
-	# Function that executes the protocol when an OPLOG message is received
-	def oplog(self):
-		# Visual confirmation for debugging: confirm init of oplog()
-		logging.debug('Initializing oplog append')
-		# Append to the OpLog the <ACTION>|<CHUNKHANDLE>|<FILENAME>
-		fL.appendToOpLog(self.msg[1]+"|"+self.msg[2]+"|"+self.msg[3])
-		# Visual confirmation for debugging: confirm success of oplog()
-		logging.debug('Oplog append successful')
-
-
+	# When a sanitize request is received, alert the database to delete the 
+	# given file name
 	def sanitize(self):
 		database.sanitizeFile(self.fileName)
 
@@ -428,39 +405,27 @@ class handleCommand(threading.Thread):
 		logging.debug('Received operation: ' + str(self.op))
 
 
-		# If the operation is to CREATE:
+		# Initiate the protocol to create a file/initial chunk
 		if self.op == "CREATE":
 			self.create()
 
-		# If the operation is to DELETE:
+		# Initiate the protocol to mark a specified file for deletion
 		elif self.op == "DELETE":
 			self.delete()
 
-		# If the operation is to UNDELETE:
+		# Initiate the protocol to unmark a specififed file for deletion
 		elif self.op == "UNDELETE":
 			self.undelete()
 
-		# If the operation is to APPEND:
+		# Initiate the protocol to get metadata to allow for a data append
 		elif self.op == "APPEND":
 			self.append()
 
-		# If the operation is to READ:
+		# Initiate the protocol to retrieve the metadata for a specified file read
 		elif self.op == "READ":
 			self.read()
 
-		# If the operation is to OPEN:
-		elif self.op == "OPEN":
-			self.open()
-
-		# If the operation is to CLOSE:
-		elif self.op == "CLOSE":
-			self.close()
-
-		# If the operation is to update the oplog, OPLOG:
-		elif self.op == "OPLOG":
-			self.oplog()
-
-		# If the operation is to update the oplog, OPLOG:
+		# If the operation is to SANITIZE, initiate cleansing the database:
 		elif self.op == "SANITIZE":
 			self.sanitize()
 
@@ -468,7 +433,7 @@ class handleCommand(threading.Thread):
 		elif self.op == "GETDELETEDATA":
 			self.getDeleteData()
 
-		# If the operation is to get the list of all the chunks in a file, do so!
+		# If the operation is to get the list of all the chunks associated with a file, do so!
 		elif self.op == "GETALLCHUNKS":
 			self.getAllChunks()
 
@@ -476,9 +441,11 @@ class handleCommand(threading.Thread):
 		elif self.op == "GETLOCATIONS":
 			self.getAllLocations()
 
+		# Initiate the protocol to get a list of all the files currently in the database
 		elif self.op == "FILELIST":
 			self.fileList()
 						
+		# Initiate the protocol to create a new chunk (not a new file). Called on a multichunk append
 		elif self.op == "CREATECHUNK":
 			self.createChunk()		
 
@@ -526,36 +493,65 @@ def worker():
 # The hostListener will then take the appropriate steps depending on which
 # is the case.
 def hostListener():
+	logging.debug("Start hostListener")
+
+	# Define a list that will hold the IPs of active chunkservers
 	previous = []
 
 	while True:
+		print database.locDict
 		# Run the heartBeat to get an updated list of active chunkservers
 		heartBeat.pumpBlood()
 
+		logging.debug("Reading from activehosts.txt...")
 		# Read the active servers out of the activehosts file.
 		with open(ACTIVEHOSTSFILE, 'r') as hosts:
 			active = hosts.read().splitlines()
 
+		logging.debug("Check for chunkserver arrivals")
+
+		toAppend = []
 		# To see if anything has been added, check to see whether something
 		# exists now that did not exist previously.
 		for item in active:
 			if item not in previous:
-				print item
-				# PUT IN WHAT YOU WANT IT TO DO TO SOMETHING THAT JUST ARRIVED
-				# PROBABLY SOME KIND OF CHUNKSERVER INTERROGATION
+				logging.debug(str(item) + " joined!")
+				# Interrogate the chunk server to find out what it has on it, 
+				# and update the databased based on its contents.
+				database.interrogateChunkServer(item, 0)
+				# Add the now active item to the toAppend list, so it accurate
+				# the next time the loop runs.
+				logging.debug("Appending to 'previous' list")
+				toAppend.append(item)
 
+		# Append all the IPs from the list of new IPs to the previous list
+		# so it is accurate the next time the loop runs.
+		for item in toAppend:
+			previous.append(item)
 
+		logging.debug("Check for chunkserver departures")
+
+		toRemove = []
 		# To see if anything left, check to see whether something does not
 		# exist now that existed previously.
 		for item in previous:
 			if item not in active:
-				print item
-				# PUT IN WHAT YOU WANT IT TO TO SOMETHING THAT LEFT 
-				# LIKELY UPDATE DATABASE AND CREATE REPLICAS IF NEEDED
+				logging.debug(str(item) + " departed!")
+				# Call the function that will handle the database update
+				# and replication, if needed.
+				database.chunkserverDeparture(item)
+				# Add the item to the toRemove list, so it is accurate
+				# the next time the loop runs.
+				logging.debug("Removing from 'previous' list")
+				toRemove.append(item)
 
+		# Remove all the IPs from the list of departed IPs to the previous list
+		# so it is accurate the next time the loop runs
+		for item in toRemove:
+			previous.remove(item)
 		# As this does not need to be run continuously, we can define
 		# how often we wish to run it.
-		time.sleep(120)
+		time.sleep(30)
 
 
 
@@ -572,11 +568,10 @@ heartBeat = hB.heartBeat()
 
 if __name__ == "__main__":
 
-	# Define the paths of the host file, activehost file, and oplog from the config file, and
+	# Define the paths of the host file, activehost file from the config file, and
 	# define the port to be used, also from the config file
 	HOSTSFILE = config.hostsfile
 	ACTIVEHOSTSFILE = config.activehostsfile
-	OPLOG = config.oplog
 	chunkPort = config.port
 	EOT = config.eot
 	# Define a thread lock to be used to get and increment chunk handles
@@ -594,6 +589,9 @@ if __name__ == "__main__":
 	# Define the number of worker threads to be activated
 	WORKERS = 5
 
+	# Create a flag that will allow a single host-listener
+	# thread to be started, instead of multiple.
+	listenerFlag = 0
 
 	listenerFlag = 0
 

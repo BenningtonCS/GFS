@@ -20,7 +20,7 @@
 #################################################################################
 
 
-import API, time, scrubber, socket, config
+import API, time, scrubber, socket, config, os
 import functionLibrary as fL
 
 # Initiate an instance of the API object
@@ -58,7 +58,7 @@ for x in range(itr):
 for x in range(itr):
 	# Try appending to a chunk!
 	try:
-		api.append(fileName + str(x), toAppend)
+		api.append(fileName + str(x), toAppend, 0)
 		time.sleep(dly)
 
 	except:
@@ -66,12 +66,17 @@ for x in range(itr):
 
 	# Try reading from the chunk!
 	try:
-		results = api.read(fileName + str(x), 0, -1)
+		api.read(fileName + str(x), 0, -1, "e2eread")
 		time.sleep(dly)
 	except:
 		errorList.append('READ - Unable to read from file: ' + fileName + str(x))	
 
-	if results != toAppend:
+	with open("e2eread", 'r') as readFile:
+		data = readFile.read()
+
+	os.remove('e2eread')
+
+	if data != toAppend:
 		errorList.append('APPEND/READ - ' + fileName + str(x) + ': Message appended does not match message read.')
 
 

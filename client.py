@@ -8,7 +8,6 @@ API = API()
 
 if (sys.argv[1] == "files"):
         API.fileList()
-              
 
 elif sys.argv[1] == "create":
 	filename = sys.argv[2] 
@@ -37,9 +36,3 @@ elif sys.argv[1] == "undelete":
 elif (sys.argv[1] == "files"):
 	filename = sys.argv[2] 
 	API.fileList()
-        
-       
-
-
-
-
