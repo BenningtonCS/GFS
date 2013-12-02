@@ -102,10 +102,10 @@ class API():
 
 		if ack == "FAILED":
 			print "ERROR: FILE CREATION FAILED"
-#			fL.send(m, "FAILED")
+			fL.send(m, "FAILED")
 		elif ack == "CREATED":
 			print "File creation successful!"
-#				fL.send(m, "CREATED")
+			fL.send(m, "CREATED")
 			return 1
 		m.close()
 		
@@ -118,6 +118,12 @@ class API():
 	#sends back the chunk handle and locations of the existing file. The 
 	#client then sends "append" and the new data to the chunk servers which
 	#append the new data to the files.
+	#
+	# The fileName parameter specifies which file will be append to, the newData
+	# parameter specifies which data, if manually input, and the flag parameter 
+	# specifies whether or not newData is a file name or not. If flag == 1, newData
+	# will be taken as the name of a file, and the contents of that file will be
+	# appended. If flag != 1, newData will be taken to be the desired append input.
 	def append(self, filename, newData,flag):
 		#lets make the API able to send and recieve messages
 	        m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -152,7 +158,7 @@ class API():
 			dataSize = os.path.getsize(newData)
 			strct = struct.Struct(str(dataSize)+"s")
 			newData = strct.pack((open(newData,"rb").read()))"""
-		if flag:
+		if flag == 1:
 			with open(newData,"rb") as da:
 				newData = da.read()
 			
@@ -297,6 +303,13 @@ class API():
 	#the file is on and the inner lists are the locations of each chunk and har far to read on
 	#that chunk. I then pass on the necessary data to the chunk servers which send me back the
 	#contents of the file. 
+
+	# fileName specifies the file you would like to read from
+	# byteOffset specifies the point where you would like to start reading from
+	# bytesToRead specifies how much of the file you would like to read. -1 will return everything from 
+	#		byteOffset until the end.
+	# newName specifies the name of the file to write the read data to. This file will be created in 
+	#		the directory housing the API.
 	def read(self, filename, byteOffset, bytesToRead, newName):
 		#lets make the API able to send and recieve messages
         	m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -444,6 +457,7 @@ class API():
                         fL.send(m, "FILELIST|x")
                         data = fL.recv(m)
                         m.close()
+                        print data
                         return data
                 except:
                         print "file list error"
