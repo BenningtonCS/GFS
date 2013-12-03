@@ -472,11 +472,9 @@ class Database:
 
 				# For every chunk handle in that list, update that chunk objects locations list
 				for chunk in chunkData:
-
-					# If the IP is not already in the location lookup, add it!
+				# If the IP is not already in the location lookup, add it!
 					if IP not in self.locDict.keys():
 						self.locDict[IP] = []
-
 					# Add the chunk to the list of values for the IP key
 					self.locDict[IP].append(chunk)
 
