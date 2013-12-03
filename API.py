@@ -93,8 +93,7 @@ class API():
 				logging.error("ERROR: COULD NOT CONNECT TO CHUNKSERVER AT ", location)
 				continue
 			#send CREATE request to the chunk server at the current location
-			fL.send(s, "CREATE") 
-			fL.send(s, cH)
+			fL.send(s, "CREATE|" + cH)
 			print "CREATE"
 			#wait to receive a CONTINUE from chunk server to proceed
 			ack = fL.recv(s)
@@ -119,13 +118,12 @@ class API():
 	#sends back the chunk handle and locations of the existing file. The 
 	#client then sends "append" and the new data to the chunk servers which
 	#append the new data to the files.
-
+	#
 	# The fileName parameter specifies which file will be append to, the newData
 	# parameter specifies which data, if manually input, and the flag parameter 
 	# specifies whether or not newData is a file name or not. If flag == 1, newData
 	# will be taken as the name of a file, and the contents of that file will be
 	# appended. If flag != 1, newData will be taken to be the desired append input.
-
 	def append(self, filename, newData,flag):
 		#lets make the API able to send and recieve messages
 	        m = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -163,10 +161,12 @@ class API():
 		if flag == 1:
 			with open(newData,"rb") as da:
 				newData = da.read()
+			
+			
 	
 		dataSize = len(newData)
-		logging.debug("dataSize ==" + dataSize)
-
+		
+		print dataSize
 		
 		lenNewData = int(dataSize)
 		#close connection to master 
@@ -181,8 +181,7 @@ class API():
                 	except:
 				print "ERROR: COULD NOT CONNECT TO CHUNK SERVER AT ", location
 			#ask chunk server how much room is left on latest chunk
-			fL.send(self.s, "CHUNKSPACE?")
-			fL.send(self.s, cH)
+			fL.send(self.s, "CHUNKSPACE?|" + cH)
 			#the response is stored in remainingSpace
 			remainingSpace = fL.recv(self.s)
 			#some error handling
@@ -198,7 +197,6 @@ class API():
 			if (lenNewData > remainingSpace):   
 				#...split the data into two parts, the first part being equal to the
 				#amount of room left in the current chunk. the second part being the 
-
 				#rest of the data.
 				cut = remainingSpace
                                 newData1 = newData[0:cut]
@@ -212,9 +210,7 @@ class API():
 					s.connect((location, TCP_PORT))
 				except:
 					print "ERROR: COULD NOT REOPEN SOCKET"
-				fL.send(s, "APPEND")
-				fL.send(s, cH)
-				fL.send(s, newData1)
+				fL.send(s, "APPEND|" + cH + "|" + newData1)
 				print "first append"
 				SoF = fL.recv(s)
 				#error handling
@@ -228,16 +224,14 @@ class API():
 				t = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				t.connect((location, TCP_PORT))
 				try:
-					fL.send(t, "APPEND")
-					fL.send(t, cH)
-					fL.send(t, newData)
+					fL.send(t, "APPEND|" + cH + "|" + newData)
 				except:
 					print "ERROR: COULD NOT SEND APPEND TO CHUNK SERVER"			
 				SoF = fL.recv(t)
 				#error handling/acks
 				if SoF == "FAILED":
 					print "ERROR WITH APPEND ON CHUNK SERVER SIDE. exiting..."
-					exit(0)				
+					exit(0)
 
 		###################
 		if lenNewData > remainingSpace:
@@ -364,10 +358,7 @@ class API():
 				print "ERROR: COULD NOT CONNECT TO CHUNK SERVER AT ", location
 				exit(0)
 			#send READ request to chunk server
-                	fL.send(s, "READ")
-                	fL.send(s, str(cH))
-                	fL.send(s,str(offset))
-                	fL.send(s,str(bytesToRead))
+                	fL.send(s, "READ|" + str(cH) + "|" + str(offset) + "|" + str(bytesToRead))
                 	#print "READ|" + cH + "|" + offset + "|" + bytesToRead
 			#receive and print the contents of the file
 			#fromChunks += "." + str(cH)
@@ -467,7 +458,6 @@ class API():
                         data = fL.recv(m)
                         m.close()
                         print data
-
                         return data
                 except:
                         print "file list error"
@@ -484,5 +474,4 @@ class updateOpLog(threading.Thread):
                 fL.send(self.m, self.message)
 		print "opLog message sent"
 		m.close()
-
 

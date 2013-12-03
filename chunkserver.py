@@ -52,13 +52,13 @@ class workerThread(connThread):
 		self.remoteAddress = acceptedConn[1] 
 
 	def run(self):
-		command = fL.recv(self.connection) # listens for a command on 
+		c = fL.recv(self.connection) # listens for a command on 
 							# the connection handed 
 							# down from the main 
 							# thread
-	#	com = c.split('|') # if c has multiple parts, they will be seperated by
+		com = c.split('|') # if c has multiple parts, they will be seperated by
 				   # pipes. This will put each part into a list
-	#	command = com[0]   # the command should be the first part of the message,
+		command = com[0]   # the command should be the first part of the message,
 				   # thus the first part of the list
 		logging.debug("Recieved command " + command)
 
@@ -87,7 +87,7 @@ class workerThread(connThread):
 #				logging.debug("send a continue")
 #				chunkHandle = fL.recv(self.connection) # it listens on its 
 #									 # connection for a chunkhandle
-				chunkHandle = fL.recv(self.connection) # name of the chunkhandle
+				chunkHandle = com[1] # name of the chunkhandle
 				logging.debug("recieved name of the chunkhandle: " + chunkHandle)
 				emptySpace = str(mg64 - os.stat(chunkPath + "/" + chunkHandle).st_size) # then checks the 
 									         # difference 
@@ -115,11 +115,11 @@ class workerThread(connThread):
 #				fL.send(self.connection, "CONTINUE") # confirms readiness for data
 #				logging.debug("sent continue #1")
 #				chunkHandle = fL.recv(self.connection) # listens for chunkHandle
-				chunkHandle = fL.recv(self.connection)
+				chunkHandle = com[1]
 #				logging.debug("recieved name of the chunkhandle: " + chunkHandle)
 #				fL.send(self.connection, "CONTINUE") # confirms ready state
 #				logging.debug("sent continue #2")
-				byteOffSet = int(fL.recv(self.connection)) # listens for a byte 
+				byteOffSet = int(com[2]) # listens for a byte 
 									     # offset to read from 
 									     # (relative to the 
 									     # beginning of the 
@@ -128,7 +128,7 @@ class workerThread(connThread):
 #				logging.debug("recieved the byte offset number.")
 #				fL.send(self.connection, "CONTINUE") # confirms the desire for EVEN MORE data
 #				logging.debug("sent continue #3") 
-				bytesToRead = int(fL.recv(self.connection)) #int(fL.recv(self.connection)) # listens for the 
+				bytesToRead = int(com[3]) #int(fL.recv(self.connection)) # listens for the 
 									      # number of bytes to read
 				logging.debug("recieved the number of bytes to read")
 				chunk = open(chunkPath+"/"+chunkHandle) # opens the designated chunk to read from
@@ -177,7 +177,7 @@ class workerThread(connThread):
 			try:
 #				fL.send(self.connection, "CONTINUE")
 #				logging.debug("Sent continue")
-	                	chunkHandle = fL.recv(self.connection) #fL.recv(self.connection) # get the name of the chunk
+	                	chunkHandle = com[1] #fL.recv(self.connection) # get the name of the chunk
 				logging.debug("recieved name of the chunk")
 	                	open(chunkPath + "/" + chunkHandle, 'w').close() # create the file
 	        	except IOError as e:
@@ -196,7 +196,7 @@ class workerThread(connThread):
 #				fL.send(self.connection, "CONTINUE")
 #				logging.debug("sent continue #1")
 #				chunkHandle = fL.recv(self.connection) # name of the chunk
-				chunkHandle = fL.recv(self.connection)
+				chunkHandle = com[1]
 #				logging.debug("Recieved name of the chunk")
 #				fL.send(self.connection, "CONTINUE") 
 #				logging.debug("Sent continue #2") 
@@ -245,6 +245,9 @@ class workerThread(connThread):
 			except Exception as e:
 				fL.send(self.connection,"FAILED")
 				logging.error(e)
+
+
+
  		else:
  			error = "Received invalid command: " + command
  			logging.error(error)
