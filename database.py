@@ -708,15 +708,15 @@ class Database:
 
 	# A function that returns all of the file names that are currently in the database
 	def getFiles(self):
-        message = ''
+		message = ''
 
-        for fileName in self.data.keys():
-                message += '|' + fileName + '*'
+		for fileName in self.data.keys():
+			message += '|' + fileName + '*'
 
-                for chunk in self.data[fileName].chunks.keys():
-                        message += chunk + '*'
+			for chunk in self.data[fileName].chunks.keys():
+				message += chunk + '*'
 
-                        for location in self.data[fileName].chunks[chunk].locations:
-                                message += location + '*'
+				for location in self.data[fileName].chunks[chunk].locations:
+					message += location + '*'
 
-        return message
+		return message
