@@ -1,1 +1,4 @@
 /data/gfsbin/chunkserver.py
+/data/gfsbin/listener.py
+/data/gfsbin/httpServer.py
+/data/PackRat/httpServer.py

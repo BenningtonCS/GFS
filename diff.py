@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 
 import os
+import PackRatConfig as PRconfig
+
 
 def checkDiff(PL,SL):
 		li = []
@@ -15,8 +17,8 @@ def checkDiff(PL,SL):
 
 def main():
 
-	piman = open("/data/gfsbin/manifest.txt") 
-	servman = open("/data/temp/manifest.txt") 
+	piman = open(PRconfig.path+"/manifest.txt") 
+	servman = open(PRconfig.path+"/temp/manifest.txt") 
 
 	if piman.readline() == servman.readline():
 
@@ -27,8 +29,8 @@ def main():
 	piman.close()
 	servman.close()
 
-	piman = open("/data/gfsbin/manifest.txt") 
-	servman =  open("/data/temp/manifest.txt") 
+	piman = open(PRconfig.path+"/manifest.txt") 
+	servman =  open(PRconfig.path+"/temp/manifest.txt") 
 
 
 	piL = []
@@ -64,7 +66,7 @@ def main():
 			os.remove(c)
 			print "===>Deleted ", c ,"\n"
 
-	NewFi = open("/data/gfsbin/neededFiles.txt", "w")
+	NewFi = open(PRconfig.path+"/neededFiles.txt", "w")
 
 
 	for item in toPull:
@@ -79,7 +81,7 @@ def main():
 		NewFi.write(item)
 		NewFi.write("\n")
 		
-	NewFi.write("/data/gfsbin/manifest.txt\n")
+	NewFi.write(PRconfig.path+"/manifest.txt\n")
 	 	
 	piman.close()
 	servman.close()

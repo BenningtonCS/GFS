@@ -3,14 +3,14 @@
 
 
 
-if [ -f "/data/gfsbin/neededFiles.txt" ]
+if [ -f "/data/PackRat/neededFiles.txt" ]
 then
-	file="/data/gfsbin/neededFiles.txt"
+	file="/data/PackRat/neededFiles.txt"
 	while IFS= read -r line
 	do
 		
 		
-		scp -r pi@10.10.100.144:$line /data/gfsbin
+		scp -r pi@10.10.100.144:$line /data/PackRat
 		if [ "$line" ]
 		then
 			if [ -f $line ]

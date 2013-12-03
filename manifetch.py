@@ -22,4 +22,4 @@ with open("quesoFiesta.sh", "r") as hostfile:
 	USER = USER[1].strip()
 
 # Securely copy the manifest from the master server to the /data/temp directory on the raspberry pi client
-os.system("scp " + USER + "@" + SERVER + ":/data/gfsbin/manifest.txt /data/temp/manifest.txt")
+os.system("scp " + USER + "@" + SERVER + ":/data/PackRat/manifest.txt /data/PackRat/temp/manifest.txt")

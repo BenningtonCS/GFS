@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import os
+import os, logging
+
 
 disk = os.statvfs("/data")
 capacity = disk.f_bsize * disk.f_blocks

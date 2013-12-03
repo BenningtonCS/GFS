@@ -1,6 +1,6 @@
 #!/bin/sh
 
-SERVER=10.10.100.144
+SERVER='10.10.100.144'
 USER=pi
 ./manifetch.py
 ./diff.py
