@@ -38,10 +38,10 @@ with open("machineFunction.txt","r") as machineList:
  		if thisMachineIp == SplitLine[0]:
  			machineType =  SplitLine[1]
 print machineType
-if machineType == "C":
+if "C" in machineType:
 	with open('hitlistC.txt','r') as w:
         	content = w.readlines()
-elif machineType == "M":
+elif "M" in machineType:
 	with open('hitlistM.txt','r') as w:
 		content = w.readlines()
 
