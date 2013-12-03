@@ -124,7 +124,6 @@ class Database:
 		logging.debug(self.locDict)
 		##########################################################################
 
-
 		
 
 		# Logs and displays a critical warning that an insufficient number of chunkservers
@@ -469,11 +468,9 @@ class Database:
 		for host in usedHosts:
 			hostsList.remove(host)
 
-		
 		logging.debug("Getting the length of the host list")
 		# Find how many unused hosts there are in the list
 		lengthList = len(hostsList)
-
 
 		################################################################
 		# THIS WILL NEED TO BE UPDATED ONCE LOAD BALANCING IS IN PLACE #
@@ -518,10 +515,8 @@ class Database:
 			# Update the opLog that a new file was created
 			fL.appendToOpLog("CREATEFILE|-1|" + fileName)
 			# Create a new chunk to be associated with the file just created
-			result = self.createNewChunk(fileName, -1, cH)
+			self.createNewChunk(fileName, -1, cH)
 			logging.debug('createNewFile() ==> new file successfully added to database')
-			#return the chunk
-			return result
 
 	# createNewChunk is given a file name and a triggering chunk. It checks to see if a 
 	# new chunk has already been created, and if it hasn't, it creates one and returns
@@ -562,11 +557,11 @@ class Database:
 				locations = fL.chooseHosts().split("|")
 				locations = filter(None, locations)
 				logging.debug(locations)
+
 				#string to be returned
 				string = ''
 				# Append the chunkserver locations to the chunk's location list and update
 				# the location-->chunk lookup
-
 				for location in locations:
 					self.locDict[location].append(chunkHandle)
 
@@ -584,7 +579,6 @@ class Database:
 
 				# Update the opLog that a new chunk was created
 				fL.appendToOpLog("CREATECHUNK|" + chunkHandle + "|" + fileName)
-
 				string += chunkHandle
 				#If this completed successfully, return the string to send.
 				return string
@@ -593,14 +587,7 @@ class Database:
 			# the file. We dont want to branch a file into multiple chunks, so we let the master know
 			# that a new chunk already exists to append to.
 			else:
-				#We just build the same type of string as if we created a new chunk, with the already
-				#existing chunk, then we return it to the master.
-				for location in self.data[fileName].chunks[latestChunk].locations:
-					string += location + "|"
-				string += str(latestChunk)
-				return string
-
-				
+				return -3
 
 
 	# This function is called to get and increment the current chunk handle from soft state
@@ -718,28 +705,18 @@ class Database:
 		except KeyError:
 			logging.error("The file to be deleted does not exist.")
 
+
 	# A function that returns all of the file names that are currently in the database
 	def getFiles(self):
-		message = ''
+        message = ''
 
-		for fileName in self.data.keys():
-			message += '|' + fileName + '*'
+        for fileName in self.data.keys():
+                message += '|' + fileName + '*'
 
-			for chunk in self.data[fileName].chunks.keys():
-				message += chunk + '*'
+                for chunk in self.data[fileName].chunks.keys():
+                        message += chunk + '*'
 
-				for location in self.data[fileName].chunks[chunk].locations:
-					message += location + '*'
+                        for location in self.data[fileName].chunks[chunk].locations:
+                                message += location + '*'
 
-		return message
-
-
-
-
-
-
-
-
-
-
-
+        return message
