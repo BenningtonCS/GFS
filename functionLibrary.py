@@ -32,17 +32,7 @@ HOSTSFILE = config.hostsfile
 ACTIVEHOSTSFILE = config.activehostsfile
 OPLOG = config.oplog
 chunkPort = config.port
-###############################################################################
-
-#               Length packer/unpacker                                               #
-
-###############################################################################
-
-#this struct packs and unpacks a long long int which we'll use for
-# telling remote machines how much data they're getting
-packer = struct.Struct('q')
-  
-#eotlen = len(eot)
+eotlen = len(eot)
 ###############################################################################
 
 #               Verbose (Debug) Handling                                      #
@@ -170,6 +160,7 @@ def send(connection, message):
 	while totalSent < msgLen:
 		sent = connection.send(message[totalSent:])
 		totalSent += sent
+
 ###############################################################################
 
 #               RANDOMLY CHOOSE CHUNK SERVER LOCATIONS
@@ -187,11 +178,6 @@ def chooseHosts():
 			hostsList = file.read().splitlines()
 		# Find how many hosts there are in the list
 		lengthList = len(hostsList)
-		
-		if lengthList < 3:
-			logging.error("Error, not enough active hosts to properly distribute chunks")
-			exit(0)
-		
 		# Randomize between the limits
 		randomInt = random.randint(0, lengthList)
 		# Visual confirmation for debugging: confirm success of chooseHosts()
@@ -232,6 +218,8 @@ def appendToOpLog(data):
 		except IOError:
 			logging.error("Could not append to: " + OPLOG)
 			listener.logInfo('FATAL', 'Appending to opLog was unsuccessful. Database integrity at risk.')
+
+
 
 ###############################################################################
 

@@ -86,6 +86,10 @@ class handleCommand(threading.Thread):
 			logging.error("No file exists for a chunk to be created for")
 			fL.send(self.s, "FAIL2")
 
+		elif createFileFlag== -3:
+			logging.error("Chunk is not the latest chunk. New chunk has been created that can be appended to.")
+			fL.send(self.s, "FAIL3")
+
 
 		# Get the locations for a specified chunk
 		locations = database.data[self.fileName].chunks[chunkHandle].locations
@@ -124,49 +128,38 @@ class handleCommand(threading.Thread):
 		chunkHandle = database.getChunkHandle()
 		self.lock.release()
 		newChunk = database.createNewChunk(self.msg[1], self.msg[2], chunkHandle)
-		if newChunk == -2:
-			logging.error("Could not find file to create chunk")
-			fL.send(self.s, "FAIL2")
-		else:
-			fL.send(self.s, str(newChunk))
+		fL.send(self.s, newChunk)
 
 
 
 	# Function that executes the protocol when an APPEND message is received
 	def append(self):
-		if not database.data[self.fileName].Open:
-			database.data[self.fileName].Open = True
-			# Visual confirmation for debugging: confirm init of append()
-			logging.debug('Gathering metadata for chunk append')
-			
-			# We know that we will only be appending to the lastest chunk, since a new
-			# chunk should only be created when an old chunk fills up, so we find the 
-			# handle of the latest chunk for a given file.
-			latestChunkHandle = database.findLatestChunk(self.fileName)
-			# Then we get the locations where that chunk is stored
-			locations = database.getChunkLocations(latestChunkHandle)
-	
-			# Define an empty string that will hold the message we send back to the client
-			appendMessage = ''
-	
-			# Parse the locations list into a pipe separated string
-			for item in locations:
-				appendMessage += item + '|'
-	
-			# Add the chunk handle to the message we will send to the client
-			appendMessage += str(latestChunkHandle)
-	
-			#send our message
-			fL.send(self.s, appendMessage)
-			# Visual confirmation for debugging: confirm send of a list of storage hosts and chunk handle
-			logging.debug('SENT == ' + str(appendMessage))
-			# Visual confirmation for debugging: confirm success of append()
-			logging.debug('Append successfully handled')
-			database.data[self.fileName].Open = False
-		else:
-			fL.send(self.s, "OPEN")
-			logging.debug('SENT "OPEN"')
-			logging.debug('Failed append: File already open') 
+		# Visual confirmation for debugging: confirm init of append()
+		logging.debug('Gathering metadata for chunk append')
+		
+		# We know that we will only be appending to the lastest chunk, since a new
+		# chunk should only be created when an old chunk fills up, so we find the 
+		# handle of the latest chunk for a given file.
+		latestChunkHandle = database.findLatestChunk(self.fileName)
+		# Then we get the locations where that chunk is stored
+		locations = database.getChunkLocations(latestChunkHandle)
+
+		# Define an empty string that will hold the message we send back to the client
+		appendMessage = ''
+
+		# Parse the locations list into a pipe separated string
+		for item in locations:
+			appendMessage += item + '|'
+
+		# Add the chunk handle to the message we will send to the client
+		appendMessage += str(latestChunkHandle)
+
+		#send our message
+		fL.send(self.s, appendMessage)
+		# Visual confirmation for debugging: confirm send of a list of storage hosts and chunk handle
+		logging.debug('SENT == ' + str(appendMessage))
+		# Visual confirmation for debugging: confirm success of append()
+		logging.debug('Append successfully handled')
 
 
 
@@ -549,6 +542,8 @@ def hostListener():
 		# so it is accurate the next time the loop runs
 		for item in toRemove:
 			previous.remove(item)
+
+
 		# As this does not need to be run continuously, we can define
 		# how often we wish to run it.
 		time.sleep(30)
@@ -591,8 +586,6 @@ if __name__ == "__main__":
 
 	# Create a flag that will allow a single host-listener
 	# thread to be started, instead of multiple.
-	listenerFlag = 0
-
 	listenerFlag = 0
 
 	# Initiate the worker threads as daemon threads
@@ -638,6 +631,5 @@ if __name__ == "__main__":
 			print "Exiting Now."
 			logging.info("Master stopped by keyboard interrupt")
 			break
-
 
 
