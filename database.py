@@ -469,22 +469,6 @@ class Database:
 		for host in usedHosts:
 			hostsList.remove(host)
 
-
-				# For every chunk handle in that list, update that chunk objects locations list
-				for chunk in chunkData:
-
-					# If the IP is not already in the location lookup, add it!
-					if IP not in self.locDict.keys():
-						self.locDict[IP] = []
-
-					# Add the chunk to the list of values for the IP key
-					self.locDict[IP].append(chunk)
-
-					# ADD SOME ERROR HANDLING HERE -- IF THE CHUNK DOES NOT EXIST IN THE 
-					# LOOKUP SOMETHING WENT TERRIBLY WRONG!
-					try:
-						# Find which file the chunk is associated with in the lookup dictionary
-						fileName = self.lookup[chunk]
 		
 		logging.debug("Getting the length of the host list")
 		# Find how many unused hosts there are in the list
