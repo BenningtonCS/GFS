@@ -12,10 +12,10 @@ with open("machineFunction.txt","r") as machineList:
  		if thisMachineIp == SplitLine[0]:
  			machineType =  SplitLine[1]
 
-if machineType == "C":
+if "C" in machineType:
  with open('whizzifestC.txt','r') as w:
   content = w.readlines()
-elif machineType == "M":
+elif "M" in machineType:
  with open('whizzifestM.txt','r') as w:
   content = w.readlines()
 # open the whizzifest.txt file that has been manually generated. This 
