@@ -16,7 +16,7 @@ if machineType == "C":
  	with open('whizzifestC.txt') as w:
         content = w.readlines()
 elif machineType == "M":
- with open('whizzifestM.txt') as w:
+    with open('whizzifestM.txt') as w:
         content = w.readlines()
 # open the whizzifest.txt file that has been manually generated. This 
 # puts the file into a list named content, each line being its own item.
