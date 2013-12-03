@@ -1,20 +1,49 @@
-GFS
-===
+Cheese Whiz Design
+===================
 
-Visit http://backus.bennington.edu
+###Terms:
+
+**Cheese Whiz** - Working name for the "runner" program that makes sure the processes that should be running are running.
+
+**Whizzifest** - The manifest which contains the names and locations (formatted as processName|destination) of the processes that should be active in the current version.
+
+###Requirements:
+
+1. Cheese Whiz should be able to periodically check what processes are running, and which are not running, in relation to what should be running.
+
+2. The list of programs that should be running will be created and maintained manually
+
+3. It should be able to start the programs that should be running and are not, and terminate the programs that are running and should not be.
+
+4. It should do all of this automatically and periodically.
+
+
+###Components:
+
+* **Chron Job** - allows for automacy and periodicity
+	
+	the chron job activates the process that reads whizzifest
+	
+* **Read whizzifest** - reads and sends the manifest of programs that should be running
+
+	read whizzifest is activated by the chron job and passes a list of names and destinations to the process that checks running processes
+	
+* **Check running processes** - checks which processes are running, returns what is not running that should be
+
+	check running processes receives a list of names and destinations from the read whizzifest process and passes a string of processes that are not running but should be to the run inactive process
+	
+* **Run inactive** - runs inactive processes that should be active and terminates active processes that should be inactive
+
+	the run inactive process gets a string of processes that need to be executed and executes them.
+
+
+###Additional Notes:
+
+* The completed program source should live in the master server and get pulled to each of the RPIs by quesofiesta 
+
+* The third step (the process that checks for running processes) should recursively call itself until there are no remaining inactive processes that should be active
 
 
 
-## Initializing the Master
 
-#### Typical Initialization
 
-Running the master is fairly straightforward, assuming the chunkservers are active and the heartBeat is working. Simply type `python master.py` into the command line, or if you wish to enable debugging, `python master.py -v`. 
-
-#### Test Initialization
-
-For a local testing setup, a bit more work has to be done. First, if you are going to use test chunkservers, they will need to be initialized on different machines (this can be done through ssh), and the IPs of those machines will need to be added to `hosts.txt`.
-
-Now, the master can be run `python master.py`, which will also intialize the heartBeat and database. If you wish to interact with the master/database and send commands, you will need an instance of the API client running. It is important to make sure that the `masterip` variable in `config.py` is updated to reflect the IP of the machine that is running your master/database instance, or else the API client will not be able to communicate.
-
-Once testing is complete, be sure to revert any changes to `hosts.txt` or `config.py` before pushing any changes, especially if the updated version will be pulled to backus.

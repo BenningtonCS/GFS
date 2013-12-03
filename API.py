@@ -165,7 +165,7 @@ class API():
 				newData = da.read()
 	
 		dataSize = len(newData)
-		logging.debug("dataSize == "dataSize)
+		logging.debug("dataSize ==" + dataSize)
 
 		
 		lenNewData = int(dataSize)
