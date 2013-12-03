@@ -30,6 +30,7 @@ def rmSpace(spaceList):
 
 
 thisMachineIp = fL.get_lan_ip()
+content=""
 
 with open("machineFunction.txt","r") as machineList:
 	for line in machineList:
