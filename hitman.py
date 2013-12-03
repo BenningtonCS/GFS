@@ -38,10 +38,10 @@ with open("machineFunction.txt","r") as machineList:
  			machineType =  SplitLine[1]
 print machineType
 if machineType == "C":
-	with open('hitlistC.txt') as w:
+	with open('hitlistC.txt','r') as w:
         	content = w.readlines()
 elif machineType == "M":
-	with open('hitlistM.txt') as w:
+	with open('hitlistM.txt','r') as w:
 		content = w.readlines()
 
 
