@@ -65,9 +65,14 @@ if "p" not in options:
 # create and populate the toRun and toKill lists with the contents of the respective files
 toRun = []
 toKill = []
-toRun += getList("whizzifest.txt")
-toKill += getList("hitlist.txt")
 
+if "m" in options:
+	
+	toRun += getList("whizzifestM.txt")
+	toKill += getList("hitlistM.txt")
+else:
+	toRun += getList("whizzifestC.txt")
+	toKill += getList("hitlistC.txt")	
 # if we have the "run" option selected 
 # add it (assuming it's not already there) to toRun
 #remove any instance of it from toKill
