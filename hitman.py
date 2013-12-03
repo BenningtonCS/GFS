@@ -38,10 +38,10 @@ with open("machineFunction.txt","r") as machineList:
 
 if machineType == "C":
 	with open('hitlistC.txt') as w:
-        content = w.readlines()
+        	content = w.readlines()
 elif machineType == "M":
 	with open('hitlistM.txt') as w:
-        content = w.readlines()
+		content = w.readlines()
 
 
 # make a new list wherein all the newline characters have been stripped
