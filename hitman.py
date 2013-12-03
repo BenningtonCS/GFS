@@ -30,17 +30,17 @@ def rmSpace(spaceList):
 
 thisMachineIp = fL.get_lan_ip()
 
- with open("machineFunction.txt","r") as machineList:
- 	for line in machineList:
+with open("machineFunction.txt","r") as machineList:
+	for line in machineList:
  		SplitLine = line.split("|")
  		if thisMachineIp == SplitLine[0]:
  			machineType =  SplitLine[1]
 
- if machineType == "C":
- 	with open('hitlistC.txt') as w:
+if machineType == "C":
+	with open('hitlistC.txt') as w:
         content = w.readlines()
- elif machineType == "M":
- 	with open('hitlistM.txt') as w:
+elif machineType == "M":
+	with open('hitlistM.txt') as w:
         content = w.readlines()
 
 
