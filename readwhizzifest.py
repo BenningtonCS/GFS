@@ -1,12 +1,27 @@
 #!/usr/bin/env python
 
 import os
+import functionLibrary as fL
 
 
+thisMachineIp = fL.get_lan_ip()
+
+with open("machineFunction.txt","r") as machineList:
+ 	for line in machineList:
+ 		SplitLine = line.split("|")
+ 		if thisMachineIp == SplitLine[0]:
+ 			machineType =  SplitLine[1]
+
+ if machineType == "C":
+ 	with open('whizzifestC.txt') as w:
+        content = w.readlines()
+ elif machineType == "M":
+ 	with open('whizzifestM.txt') as w:
+        content = w.readlines()
 # open the whizzifest.txt file that has been manually generated. This 
 # puts the file into a list named content, each line being its own item.
-with open('whizzifest.txt') as w:
-        content = w.readlines()
+#with open('whizzifest.txt') as w:
+        #content = w.readlines()
 
 # take each element from the list 'content' and split it where the 
 # character '|' appears. This is part of a new list called 'programs'. 
