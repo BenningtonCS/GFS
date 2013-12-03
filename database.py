@@ -720,5 +720,26 @@ class Database:
 
 	# A function that returns all of the file names that are currently in the database
 	def getFiles(self):
-		return self.data.keys()
+		message = ''
+
+		for fileName in self.data.keys():
+			message += '|' + fileName + '*'
+
+			for chunk in self.data[fileName].chunks.keys():
+				message += chunk + '*'
+
+				for location in self.data[fileName].chunks[chunk].locations:
+					message += location + '*'
+
+		return message
+
+
+
+
+
+
+
+
+
+
 
