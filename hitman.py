@@ -10,6 +10,7 @@
 is the new interface for managing the cheesewhiz family"""
 
 import os
+import functionLibrary as fL
 
 def rmSpace(spaceList):
 	#Later in the code when the information returned by ps-ef
