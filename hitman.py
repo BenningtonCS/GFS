@@ -26,8 +26,23 @@ def rmSpace(spaceList):
 
 
 #Open the hitlist, get all the lines, and put them in a list
-with open('hitlist.txt') as w:
+
+
+thisMachineIp = fL.get_lan_ip()
+
+ with open("machineFunction.txt","r") as machineList:
+ 	for line in machineList:
+ 		SplitLine = line.split("|")
+ 		if thisMachineIp == SplitLine[0]:
+ 			machineType =  SplitLine[1]
+
+ if machineType == "C":
+ 	with open('hitlistC.txt') as w:
         content = w.readlines()
+ elif machineType == "M":
+ 	with open('hitlistM.txt') as w:
+        content = w.readlines()
+
 
 # make a new list wherein all the newline characters have been stripped
 programs = [elem.strip("\n") for elem in content]
