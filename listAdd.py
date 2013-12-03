@@ -94,13 +94,22 @@ elif "k" in options:
 			toKill.append(process)
 			
 #now overwrite the previous text files with the new list.
-with open(whizconfig.path+"whizzifest.txt", "w") as whiz:
-	for item in toRun:
-		whiz.write(item+"\n")
+if "m" in options:
+	with open(whizconfig.path+"whizzifestM.txt", "w") as whiz:
+		for item in toRun:
+			whiz.write(item+"\n")
 
-with open(whizconfig.path+"hitlist.txt","w") as hit:
-	for item in toKill:
-		hit.write(item+"\n")
+	with open(whizconfig.path+"hitlistM.txt","w") as hit:
+		for item in toKill:
+			hit.write(item+"\n")
+else: 
+	with open(whizconfig.path+"whizzifestC.txt", "w") as whiz:
+                for item in toRun:
+                        whiz.write(item+"\n")
+
+        with open(whizconfig.path+"hitlistC.txt","w") as hit:
+                for item in toKill:
+                        hit.write(item+"\n")
 
 
 
