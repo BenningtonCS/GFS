@@ -1,0 +1,138 @@
+UID        PID  PPID  C STIME TTY          TIME CMD
+root         1     0  0  2012 ?        00:01:07 /sbin/init
+root         2     0  0  2012 ?        00:00:00 [kthreadd]
+root         3     2  0  2012 ?        00:11:10 [ksoftirqd/0]
+root         6     2 99  2012 ?        424-20:27:58 [migration/0]
+root         7     2  0  2012 ?        00:00:43 [watchdog/0]
+root         8     2 99  2012 ?        425-00:32:58 [migration/1]
+root        10     2  0  2012 ?        00:13:32 [ksoftirqd/1]
+root        12     2  0  2012 ?        00:00:20 [watchdog/1]
+root        13     2 99  2012 ?        425-02:00:58 [migration/2]
+root        15     2  0  2012 ?        00:15:08 [ksoftirqd/2]
+root        16     2  0  2012 ?        00:00:13 [watchdog/2]
+root        17     2 99  2012 ?        424-23:02:27 [migration/3]
+root        18     2  0  2012 ?        00:30:33 [kworker/3:0]
+root        19     2  0  2012 ?        00:17:00 [ksoftirqd/3]
+root        20     2  0  2012 ?        00:00:18 [watchdog/3]
+root        21     2  0  2012 ?        00:00:00 [cpuset]
+root        22     2  0  2012 ?        00:00:00 [khelper]
+root        23     2  0  2012 ?        00:00:00 [kdevtmpfs]
+root        24     2  0  2012 ?        00:00:00 [netns]
+root        26     2  0  2012 ?        00:00:37 [sync_supers]
+root        27     2  0  2012 ?        00:00:01 [bdi-default]
+root        28     2  0  2012 ?        00:00:00 [kintegrityd]
+root        29     2  0  2012 ?        00:00:00 [kblockd]
+root        30     2  0  2012 ?        00:00:00 [ata_sff]
+root        31     2  0  2012 ?        00:00:00 [khubd]
+root        32     2  0  2012 ?        00:00:00 [md]
+root        57     2  0  2012 ?        00:00:08 [khungtaskd]
+root        58     2  0  2012 ?        00:01:15 [kswapd0]
+root        59     2  0  2012 ?        00:01:32 [kswapd1]
+root        60     2  0  2012 ?        00:00:00 [ksmd]
+root        61     2  0  2012 ?        00:00:00 [khugepaged]
+root        62     2  0  2012 ?        00:00:00 [fsnotify_mark]
+root        63     2  0  2012 ?        00:00:00 [ecryptfs-kthrea]
+root        64     2  0  2012 ?        00:00:00 [crypto]
+root        72     2  0  2012 ?        00:00:00 [kthrotld]
+root        81     2  0  2012 ?        00:00:32 [kworker/3:1]
+root       101     2  0  2012 ?        00:00:00 [devfreq_wq]
+root       246     2  0  2012 ?        00:00:00 [scsi_eh_0]
+root       248     2  0  2012 ?        00:00:00 [scsi_eh_1]
+root       249     2  0  2012 ?        00:00:00 [scsi_eh_2]
+root       250     2  0  2012 ?        00:00:00 [scsi_eh_3]
+root       251     2  0  2012 ?        00:00:00 [scsi_eh_4]
+root       252     2  0  2012 ?        00:00:00 [scsi_eh_5]
+root       256     2  0  2012 ?        00:00:00 [kworker/u:5]
+root       257     2  0  2012 ?        00:01:31 [kworker/u:6]
+root       260     2  0  2012 ?        00:02:08 [kworker/1:1]
+root       289     2  0  2012 ?        00:00:00 [kdmflush]
+root       296     2  0  2012 ?        00:00:00 [kdmflush]
+root       308     2  0  2012 ?        00:00:00 [kdmflush]
+root       319     2  0  2012 ?        00:17:14 [jbd2/dm-1-8]
+root       320     2  0  2012 ?        00:00:00 [ext4-dio-unwrit]
+root       433     1  0  2012 ?        00:00:00 upstart-udev-bridge --daemon
+root       438     1  0  2012 ?        00:00:00 /sbin/udevd --daemon
+root       509     2  0  2012 ?        00:00:00 [edac-poller]
+root       522     2  0  2012 ?        00:00:00 [kpsmoused]
+www-data   664 18327  0 Dec02 ?        00:00:00 /usr/sbin/apache2 -k start
+root       848     1  0  2012 ?        00:00:00 upstart-socket-bridge --daemon
+root       983     2  0  2012 ?        00:00:32 [jbd2/dm-0-8]
+root       984     2  0  2012 ?        00:00:00 [ext4-dio-unwrit]
+root      1022     1  0  2012 ?        00:00:59 smbd -F
+root      1027     1  0  2012 ?        00:09:56 /usr/sbin/sshd -D
+syslog    1040     1  0  2012 ?        00:33:38 rsyslogd -c5
+root      1042     1  0  2012 ?        00:32:43 nmbd -D
+103       1047     1  0  2012 ?        00:00:00 dbus-daemon --system --fork --activation=upstart
+root      1067  1022  0  2012 ?        00:00:00 smbd -F
+www-data  1082 18327  0 10:39 ?        00:00:00 /usr/sbin/apache2 -k start
+root      1107     1  0  2012 tty4     00:00:00 /sbin/getty -8 38400 tty4
+root      1115     1  0  2012 tty5     00:00:00 /sbin/getty -8 38400 tty5
+root      1128     1  0  2012 tty2     00:00:00 /sbin/getty -8 38400 tty2
+root      1130     1  0  2012 tty3     00:00:00 /sbin/getty -8 38400 tty3
+root      1135     1  0  2012 tty6     00:00:00 /sbin/getty -8 38400 tty6
+root      1154     1  0  2012 ?        00:00:00 acpid -c /etc/acpi/events -s /var/run/acpid.socket
+root      1158     1  0  2012 ?        00:53:21 /usr/sbin/irqbalance
+whoopsie  1159     1  0  2012 ?        00:00:01 whoopsie
+root      1166     1  0  2012 ?        00:00:00 /usr/sbin/libvirtd -d
+mysql     1179     1  0  2012 ?        02:07:04 /usr/sbin/mysqld
+root      1184     1  0  2012 ?        00:00:54 cron
+daemon    1185     1  0  2012 ?        00:00:00 atd
+postgres  1237     1  0  2012 ?        00:08:39 /usr/lib/postgresql/9.1/bin/postgres -D /var/lib/postgresql/9.1/main -c config_file=/etc/postgresql/9.1/main/postgresql.conf
+107       1276     1  0  2012 ?        00:00:03 /usr/sbin/dnsmasq -u libvirt-dnsmasq --strict-order --bind-interfaces --pid-file=/var/run/libvirt/network/default.pid --conf-file= --except-interface lo --listen-address 192.168.122.1 --dhcp-range 192.168.122.2,192.168.122.254 --dhcp-leasefile=/var/lib/libvirt/dnsmasq/default.leases --dhcp-lease-max=253 --dhcp-no-override
+postgres  1316  1237  0  2012 ?        00:12:49 postgres: writer process                                                                                                    
+postgres  1317  1237  0  2012 ?        00:09:57 postgres: wal writer process                                                                                                
+postgres  1318  1237  0  2012 ?        00:17:05 postgres: autovacuum launcher process                                                                                       
+postgres  1319  1237  0  2012 ?        00:16:04 postgres: stats collector process                                                                                           
+root      1442     1  0  2012 ?        00:00:12 /usr/sbin/winbindd
+root      1460  1442  0  2012 ?        00:00:11 /usr/sbin/winbindd
+tomcat6   1534     1  0  2012 ?        02:04:01 /usr/lib/jvm/default-java/bin/java -Djava.util.logging.config.file=/var/lib/tomcat6/conf/logging.properties -Djava.awt.headless=true -Xmx128m -XX:+UseConcMarkSweepGC -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -Djava.endorsed.dirs=/usr/share/tomcat6/endorsed -classpath /usr/share/tomcat6/bin/bootstrap.jar -Dcatalina.base=/var/lib/tomcat6 -Dcatalina.home=/usr/share/tomcat6 -Djava.io.tmpdir=/tmp/tomcat6-tomcat6-tmp org.apache.catalina.startup.Bootstrap start
+root      1546     2  0  2012 ?        00:08:12 [flush-252:1]
+root      1583     1  0  2012 tty1     00:00:00 /sbin/getty -8 38400 tty1
+root      1898  1442  0  2012 ?        00:00:00 /usr/sbin/winbindd
+root      3237  1027  0 12:53 ?        00:00:00 sshd: pi [priv]     
+root      3311   438  0 Nov14 ?        00:00:00 /sbin/udevd --daemon
+root      3312   438  0 Nov14 ?        00:00:00 /sbin/udevd --daemon
+pi        3373  3237  0 12:53 ?        00:00:00 sshd: pi@pts/4      
+pi        3374  3373  0 12:53 pts/4    00:00:00 -bash
+root      4894  1184  0 12:56 ?        00:00:00 CRON
+root      4895  1184  0 12:56 ?        00:00:00 CRON
+pi        4896  4894  0 12:56 ?        00:00:00 /bin/sh -c cd /data/PackRat && python readwhizzifest.py
+pi        4897  4895  0 12:56 ?        00:00:00 /bin/sh -c cd /data/PackRat && python hitman.py
+pi        4898  4896  0 12:56 ?        00:00:00 python readwhizzifest.py
+pi        4899  4897  0 12:56 ?        00:00:00 python hitman.py
+pi        4900  4898  0 12:56 ?        00:00:00 sh -c ps -ef > ps.txt
+pi        4901  4900  0 12:56 ?        00:00:00 ps -ef
+pi        4902  4899  0 12:56 ?        00:00:00 sh -c ps -ef > psh.txt
+root      6096  1027  0 Dec02 ?        00:00:00 sshd: pi [priv]     
+pi        6229  6096  0 Dec02 ?        00:00:00 sshd: pi@pts/5      
+pi        6230  6229  0 Dec02 pts/5    00:00:01 -bash
+www-data  6575 18327  4 Dec02 ?        01:00:01 /usr/sbin/apache2 -k start
+root      9467     2  0 Sep18 ?        00:00:16 [kworker/1:0]
+root     11549     2  0 Nov27 ?        00:00:58 [kworker/0:1]
+root     14866     2  0 Nov27 ?        00:00:15 [flush-252:0]
+root     16095  1442  0 Jun26 ?        00:00:00 /usr/sbin/winbindd
+root     17650  1027  0 12:34 ?        00:00:00 sshd: pi [priv]     
+pi       17783 17650  0 12:34 ?        00:00:00 sshd: pi@pts/0      
+pi       17784 17783  0 12:34 pts/0    00:00:00 -bash
+root     18327     1  0  2012 ?        00:04:14 /usr/sbin/apache2 -k start
+www-data 18450 18327  0 Dec02 ?        00:00:00 /usr/sbin/apache2 -k start
+root     19556  1184  0 11:51 ?        00:00:00 CRON
+pi       19558 19556  0 11:51 ?        00:00:00 /bin/sh -c cd /data/PackRat && python readwhizzifest.py
+pi       19561 19558  0 11:51 ?        00:00:00 python readwhizzifest.py
+pi       19566 19561  0 11:51 ?        00:00:00 sh -c python  /data/PackRat/master.py /data/PackRat/scrubber.py
+pi       19567 19566  0 11:51 ?        00:00:00 python /data/PackRat/master.py /data/PackRat/scrubber.py
+www-data 19737 18327  0 Dec02 ?        00:00:01 /usr/sbin/apache2 -k start
+www-data 21694 18327  0 11:54 ?        00:00:00 /usr/sbin/apache2 -k start
+root     21714     2  0 Oct22 ?        00:00:21 [kworker/2:0]
+www-data 21907 18327  0 11:54 ?        00:00:00 /usr/sbin/apache2 -k start
+www-data 21908 18327  0 11:54 ?        00:00:00 /usr/sbin/apache2 -k start
+root     22812  1027  0 12:41 ?        00:00:00 sshd: pi [priv]     
+pi       22945 22812  0 12:41 ?        00:00:00 sshd: pi@pts/2      
+pi       22946 22945  0 12:41 pts/2    00:00:00 -bash
+root     23784  1027  0 11:56 ?        00:00:00 sshd: pi [priv]     
+pi       23919 23784  0 11:56 ?        00:00:00 sshd: pi@pts/3      
+pi       23920 23919  0 11:56 pts/3    00:00:00 -bash
+root     24625     2  0 Nov27 ?        00:01:00 [kworker/0:0]
+root     24789     2  0 Dec01 ?        00:00:04 [kworker/2:2]
+www-data 25023 18327  0 01:06 ?        00:00:00 /usr/sbin/apache2 -k start
+www-data 25181 18327  4 Dec02 ?        01:00:01 /usr/sbin/apache2 -k start

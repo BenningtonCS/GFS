@@ -12,9 +12,9 @@
 
 import os
 import hashlib
-
+import PackRatConfig as PRconfig
 # Define the directory path mgen.py will work in
-GFS_PATH = "/data/gfsbin/"
+GFS_PATH = PRconfig.path+"/"
 
 # If the manifest file already exists in the defined path, get the version number from line 1 and store it
 # in memory, then remove the manifest
@@ -32,12 +32,19 @@ with open(GFS_PATH + "manifest.txt", "w") as a:
         a.write(NEW_VERSION + os.linesep)
 	# Look at all files and subdirectories in the defined directory and add them to the manifest
         for path, subdirs, files in os.walk(GFS_PATH):
-                for filename in files:
-                        f = os.path.join(path, filename)
-			# For all files that are not the manifest, create an md5 checksum
-                        if f != "/data/gfsbin/manifest.txt":
-                                hex = hashlib.md5(open(str(f)).read()).hexdigest()
-                                a.write(str(f) + "|" + hex + os.linesep)
+          
+		
+		
+			
+			for filename in files:
+				
+                	        f = os.path.join(path, filename)
+				
+				#print f
+				# For all files that are not the manifest, create an md5 checksum
+                       		if f != PRconfig.path+"/manifest.txt":
+                        	        hex = hashlib.md5(open(str(f)).read()).hexdigest()
+                               		a.write(str(f) + "|" + hex + os.linesep)
 
 # Create an md5 checksum for the manifest itself
 with open(GFS_PATH + "manifest.txt", "r") as a:
