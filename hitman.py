@@ -10,6 +10,7 @@
 is the new interface for managing the cheesewhiz family"""
 
 import os
+import functionLibrary as fL
 
 def rmSpace(spaceList):
 	#Later in the code when the information returned by ps-ef
@@ -30,18 +31,18 @@ def rmSpace(spaceList):
 
 thisMachineIp = fL.get_lan_ip()
 
- with open("machineFunction.txt","r") as machineList:
- 	for line in machineList:
+with open("machineFunction.txt","r") as machineList:
+	for line in machineList:
  		SplitLine = line.split("|")
  		if thisMachineIp == SplitLine[0]:
  			machineType =  SplitLine[1]
 
- if machineType == "C":
- 	with open('hitlistC.txt') as w:
-        content = w.readlines()
- elif machineType == "M":
- 	with open('hitlistM.txt') as w:
-        content = w.readlines()
+if machineType == "C":
+	with open('hitlistC.txt') as w:
+        	content = w.readlines()
+elif machineType == "M":
+	with open('hitlistM.txt') as w:
+		content = w.readlines()
 
 
 # make a new list wherein all the newline characters have been stripped
