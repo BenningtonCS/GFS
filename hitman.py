@@ -36,7 +36,7 @@ with open("machineFunction.txt","r") as machineList:
  		SplitLine = line.split("|")
  		if thisMachineIp == SplitLine[0]:
  			machineType =  SplitLine[1]
-
+print machineType
 if machineType == "C":
 	with open('hitlistC.txt') as w:
         	content = w.readlines()
