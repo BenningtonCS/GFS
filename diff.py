@@ -61,28 +61,40 @@ def main():
 		if thing in toPull:
 			toDelete.remove(thing)
 
-	for c in toDelete:
-		if os.path.exists(c):
-			os.remove(c)
-			print "===>Deleted ", c ,"\n"
+#	for c in toDelete:
+#		if os.path.exists(c):
+#			os.remove(c)
+#			print "===>Deleted ", c ,"\n"
 
 	NewFi = open(PRconfig.path+"/neededFiles.txt", "w")
 
 
 	for item in toPull:
                 ln.append(item.split("/"))
-        for item in ln:
-                while len(item) > 4:
-                        del item[4]
-        for item in ln:
+#        for item in ln:
+#                while len(item) > 4:
+#                        del item[4]
+	
+	for item in ln:
+		if len(item) > 3:
+			for index in range(3,len(item)):
+				os.system("mkdir "+item[index])
+
         	RealPull.append('/'.join(item))
+
+	
 
 	for item in RealPull:
 		NewFi.write(item)
 		NewFi.write("\n")
 		
 	NewFi.write(PRconfig.path+"/manifest.txt\n")
-	 	
+	
+	for c in toDelete:
+                if os.path.exists(c):
+                        os.remove(c)
+                        print "===>Deleted ", c ,"\n"	
+ 	
 	piman.close()
 	servman.close()
 	NewFi.close()

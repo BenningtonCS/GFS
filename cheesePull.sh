@@ -10,7 +10,7 @@ then
 	do
 		
 		
-		scp -r pi@10.10.100.144:$line /data/PackRat
+		scp -r pi@10.10.100.144:$line $line
 		if [ "$line" ]
 		then
 			if [ -f $line ]
