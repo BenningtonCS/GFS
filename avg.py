@@ -2,7 +2,7 @@
 print "start"
 
 
-with open('16mb1itr/3/scrubTest1.txt', 'r') as datafile:
+with open('64mb1itr/2/scrubTest1.txt', 'r') as datafile:
 	data = datafile.read().splitlines()
 
 
