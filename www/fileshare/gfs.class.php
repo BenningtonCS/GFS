@@ -24,9 +24,29 @@ class GFS {
 		$response = stream_get_contents($this->x);
 		return $response;
 		}
-	public function read($filename) {
+	public function read($filename, $rand) {
 		$this->connect();
-		$message = "READ|".$filename;
+		$message = "READ|".$filename."|".$rand."|0|-1";
+		$len = strlen($message);
+		$buffer = pack("N", $len);
+		fwrite($this->x, $buffer.$message);
+		$response = stream_get_contents($this->x);
+		return $response;
+	}
+	public function stream($filename,$rand, $start, $end, $flag) {
+		$this->connect();
+		$message = "READ|".$filename."|".$rand."|".$start."|".$end;
+		$len = strlen($message);
+		$buffer = pack("N", $len);
+		fwrite($this->x, $buffer.$message);
+		if($flag == 1) {
+			$response = stream_get_contents($this->x);
+			return $response;
+		}
+	}
+	public function fileList() {
+		$this->connect();
+		$message = "FILELIST|x";
 		$len = strlen($message);
 		$buffer = pack("N", $len);
 		fwrite($this->x, $buffer.$message);

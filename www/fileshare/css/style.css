@@ -1,3 +1,22 @@
+body {
+	min-height: 2000px;
+	padding-top: 70px;
+}
 .footer {
-	margin-top:20px;
+	border-top:#CCC 1px solid;
+	margin-top:30px;
+	padding-top: 20px;
+}
+
+
+.mejs-container {
+}
+#result {
+	width:100%;
+}
+#player {
+	width:720px;
+	height:480px;
+	background: #000;
+	margin: 30px auto;
 }

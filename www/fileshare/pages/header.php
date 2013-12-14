@@ -14,6 +14,9 @@ ini_set('upload_max_filesize', '64M');
 
     <title>GFS Master Server</title>
     <script type="text/javascript" src="js/canvasjs.min.js"></script>
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <script src="js/mediaelement-and-player.min.js"></script>
+    <link rel="stylesheet" href="js/mediaelementplayer.css" />
     <!-- Bootstrap core CSS -->
     <link href="css/bootstrap.css" rel="stylesheet">
 
@@ -27,9 +30,24 @@ ini_set('upload_max_filesize', '64M');
   </head>
 
   <body>
+        <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="index.php">Bennington File Share</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="index.php">Home</a></li>
+            <li><a href="files.php">File Manager</a></li>
+            <li><a href="http://<?=$_SERVER['SERVER_ADDR']?>">System Stats</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
   <div class="container">
-    <div class="page-header">
+<!--    <div class="page-header">
       <h1>Bennnington File Share</h1>
       <p class="lead">Upload all the files!</p>
     </div>
-
+-->

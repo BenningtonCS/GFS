@@ -1,19 +1,18 @@
-<?php
-
-?>
-<h2>Upload</h2>
+      <div class="jumbotron">
+        <h1>Upload a File</h1>
 <form role="form" method="post" enctype="multipart/form-data" action="upload.php">
-<div class="form-group">
-	<label for="file">Select File</label>
+
+        <p><div class="form-group">
 	<input type="file" class="form-control" name="file" id="file">
 </div>
-<button type="submit" class="btn btn-primary">Upload</button>
+</p>
+        <p>
+          <button type="submit" class="btn btn-lg btn-primary">Upload</button>
+        </p>
 </form>
-<h2>Retrieve File</h2>
-<form role="form" method="post" action="read.php">
-<div class="form-group">
-	<label for="fileName">File Name</label>
-	<input type="text" class="form-control" name="fileName" id="fileName">
-</div>
-<button type="submit" class="btn btn-primary">Retrieve</button>
-</form>
+        <p>Uploading large files (>500MB) may take a long time to process.</p>
+
+      </div>
+
+
+

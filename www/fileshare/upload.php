@@ -32,7 +32,7 @@ $gfs = new GFS;
 <h2>File Uploaded Successfully!</h2>
 <p>Name: <?=$_FILES["file"]["name"]?></p>
 <p>Size: <?=($_FILES["file"]["size"] / 1024)?>Kb</p>
-<p>Download Link: <a href="read.php?fileName=<?=$_FILES["file"]["name"]?>">Link</a></p>
+<p>Download Link: <a href="file.php?fileName=<?=$_FILES["file"]["name"]?>">Link</a></p>
 <?php 
         }
         else {

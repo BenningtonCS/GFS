@@ -22,9 +22,22 @@
   </head>
 
   <body>
-  <div class="container">
-    <div class="page-header">
-      <h1>GFS Master</h1>
-      <p class="lead">Running on <?=$_SERVER['SERVER_ADDR']?></p>
+            <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="index.php">PackRat Monitor</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="index.php">Home</a></li>
+            <li><a href="fileshare/files.php">File Manager</a></li>
+            <li><a href="fileshare/index.php">Bennington File Share</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
     </div>
+
+
+  <div class="container">
+
 
