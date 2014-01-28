@@ -327,8 +327,9 @@ class Database:
 					# From the file name we found the chunk to be associated with in the
 					# lookup, we can append the current IP to the list of chunk locations
 					# in the chunk object within the file object dictionary.
-					self.data[fileName].chunks[chunk].locations.append(IP)
-					logging.debug('Appended location to chunk ' + str(chunk) + ' location list')
+					if IP not in self.data[fileName].chunks[chunk].locations:
+						self.data[fileName].chunks[chunk].locations.append(IP)
+						logging.debug('Appended location to chunk ' + str(chunk) + ' location list')
 
 				# If the chunk is not recognized in the master's database, the chunk is an orphan (does not
 				# belong to a file). In this case, the chunk should be removed.
