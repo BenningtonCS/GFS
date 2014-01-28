@@ -25,11 +25,9 @@ import config, logging, socket, API, random, listener, heartBeat
 
 
 # Define the common parameters from the config file
-HOSTSFILE = config.hostsfile
 ACTIVEHOSTSFILE = config.activehostsfile
 OPLOG = config.oplog
 chunkPort = config.port
-EOT = config.eot
 
 # Initiallize an instance of the API, to be used for chunk replication
 api = API.API()
