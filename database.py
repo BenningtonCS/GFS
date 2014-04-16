@@ -719,3 +719,12 @@ class Database:
 					message += location + '*'
 
 		return message
+
+	# Return a string containing a pipe-separated file names
+	def getFileNames(self):
+		message = ''
+
+		for fileName in self.data.keys():
+			message += fileName + '|'
+
+		return message

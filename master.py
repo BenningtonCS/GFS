@@ -377,6 +377,11 @@ class handleCommand(threading.Thread):
 		fL.send(self.s, list)
 
 
+	#Executes when FILENAMES message is received, sends string of existing file names
+	def fileNames(self):
+		names = str(database.getFileNames())
+		fL.send(self.s, names)
+
 
 	# Function to handle the message received from the API
 	def run(self):
@@ -437,6 +442,10 @@ class handleCommand(threading.Thread):
 		# Initiate the protocol to get a list of all the files currently in the database
 		elif self.op == "FILELIST":
 			self.fileList()
+
+		# Initiate the protocol to get a list of all the files currently in the database
+		elif self.op == "FILENAMES":
+			self.fileNames()
 						
 		# Initiate the protocol to create a new chunk (not a new file). Called on a multichunk append
 		elif self.op == "CREATECHUNK":
