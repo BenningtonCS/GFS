@@ -42,49 +42,43 @@ class GUI(Frame):
         options['title'] = 'This is a title'
 
         
-        lbl = Label(self, text="Bennington File System Server Status:", foreground="black")
+        lbl = Label(self, text="Bennington File System Files List", foreground="black")
         lbl.grid(column=0, row=0, pady=4, padx=5)
 
-        self.status = Label(self, text="", foreground="black")
-        self.status.grid(column=3, row=0, pady=4, padx=5)
+        #self.status = Label(self, text="", foreground="black")
+        #self.status.grid(column=3, row=0, pady=4, padx=5)
 
 
         #self.connectToServer()
 
 
         self.area = Listbox(self, height=20)
-        self.area.grid(row=1, column=0, columnspan=1, rowspan=7, padx=5, sticky=N+W+E+S)
+        self.area.grid(row=1, column=0, columnspan=1, rowspan=10, padx=5, sticky=N+W+E+S)
 
         
         self.getFiles()
         
 
-        reconn = Button(self, text="Connect")
-        reconn.grid(row=1, column=3)
+        #reconn = Button(self, text="Connect")
+        #reconn.grid(row=1, column=3)
 
-        cbtn = Button(self, text="Disconnect")
-        cbtn.grid(row=2, column=3, pady=4)
+        #cbtn = Button(self, text="Disconnect")
+        #cbtn.grid(row=2, column=3, pady=4)
 
         abtn = Button(self, text="Upload", command=self.openFile)
-        abtn.grid(row=3, column=3)
+        abtn.grid(row=1, column=3)
 
         dwnbtn = Button(self, text="Download", command=self.downloadFile)
-        dwnbtn.grid(row=4, column=3)
+        dwnbtn.grid(row=2, column=3)
         
         delbtn = Button(self, text="Delete", command=self.deleteFile)
-        delbtn.grid(row=5, column=3)
+        delbtn.grid(row=3, column=3)
 
         undelbtn = Button(self, text="Undelete", command=self.undeleteFile)
-        undelbtn.grid(row=6, column=3)
+        undelbtn.grid(row=4, column=3)
 
         refbtn = Button(self, text="Refresh List", command=self.getFiles)
-        refbtn.grid(row=7, column=3)
-
-        #hbtn = Button(self, text="Help")
-        #hbtn.grid(row=5, column=0, padx=5)
-
-        #obtn = Button(self, text="OK")
-        #obtn.grid(row=5, column=3)
+        refbtn.grid(row=5, column=3)
 
 
 
@@ -174,6 +168,11 @@ class GUI(Frame):
             self.area.itemconfig(END, {'bg':'salmon'})
 
 
+    def exitProgram(self):
+        #self.disconnectFromServer()
+        self.quit()
+
+'''
     def connectToServer(self):
 
         try:
@@ -215,10 +214,9 @@ class GUI(Frame):
 
         except Exception as e:
             raise e
+'''
 
-    def exitProgram(self):
-        self.disconnectFromServer()
-        self.quit()
+    
 
 
               
