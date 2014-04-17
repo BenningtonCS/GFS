@@ -17,7 +17,7 @@ class GUI(Frame):
         self.SERVER_IP = '10.10.100.144'
         self.SERVER_PORT = 9666
         self.serverStatus = 0
-        self.filesList = []
+        self.toDelete = []
 
 
         self.parent = parent
@@ -74,7 +74,7 @@ class GUI(Frame):
         delbtn = Button(self, text="Delete", command=self.deleteFile)
         delbtn.grid(row=5, column=3)
 
-        undelbtn = Button(self, text="Undelete")
+        undelbtn = Button(self, text="Undelete", command=self.undeleteFile)
         undelbtn.grid(row=6, column=3)
 
         refbtn = Button(self, text="Refresh List", command=self.getFiles)
@@ -93,18 +93,35 @@ class GUI(Frame):
 
 
     def downloadFile(self):
-        fileName = self.currentSelection()
+        fileName = self.currentSelectionFileName()
         self.api.read(fileName, 0, -1, fileName)
 
 
-    def currentSelection(self):
+    def currentSelectionFileName(self):
         index = self.area.curselection()[0]
         fileName = self.area.get(index)
         return fileName
 
 
+    def currentSelectionIndex(self):
+        index = self.area.curselection()[0]
+        return index
+
+
     def deleteFile(self):
-        print "(:"
+        index = self.currentSelectionIndex()
+        filename = self.area.get(index)
+        self.area.itemconfig(index, {'bg':'salmon'}) 
+        self.api.delete(filename)
+        self.toDelete.append(filename)
+
+
+    def undeleteFile(self):
+        index = self.currentSelectionIndex()
+        filename = self.area.get(index)
+        self.area.itemconfig(index, {'bg':'white'})
+        self.api.undelete(filename)
+        self.toDelete.remove(filename)
 
 
     def openFile(self):
@@ -113,6 +130,8 @@ class GUI(Frame):
 
         self.api.create(filename)
         self.api.append(filename, filepath, 1)
+
+        self.getFiles()
 
     def getFiles(self):
         try:
@@ -127,15 +146,32 @@ class GUI(Frame):
                     if "|" in thing and not thing == "|":
                         fileNames.append(thing.strip('|'))
 
+            # If the file is marked for deletion and still in the fileNames list
+            # keep the file in the toDelete list
+            temp = []
+            for item in self.toDelete:
+                if item in fileNames:
+                    temp.append(item)
 
+            self.toDelete = temp
+
+            # Remove all entries in the listbox
+            self.area.delete(0, END)
+
+            # Populate the listbox with the file names returned from the master
             for item in fileNames:
-                if item not in self.filesList:
-                    self.area.insert( END, item )
-                    self.filesList.append(item)
+                self.area.insert( END, item )
+                self.checkIfMarked(item)
 
 
         except Exception as e:
             raise e
+
+
+
+    def checkIfMarked(self, fileName):
+        if fileName in self.toDelete:
+            self.area.itemconfig(END, {'bg':'salmon'})
 
 
     def connectToServer(self):
