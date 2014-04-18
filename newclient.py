@@ -99,7 +99,7 @@ class GUI(Frame):
     # Get the file name of the active selection in the listbox
     def currentSelectionFileName(self):
         # Get the index of the active selection
-        index = currentSelectionIndex()
+        index = self.currentSelectionIndex()
         # From the listbox object, pass in the index to get the filename
         fileName = self.area.get(index)
         return fileName
