@@ -74,68 +74,12 @@ def chunkdebug():
 
 ###############################################################################
 
-"""
-def recv(connection):
-	# Debug message to show the function has been called
-	logging.debug('RECV: Starting recv() function')
-	# Create an empty string which will eventually hold the received message
-	data = ""
-	# Coninuously receive data over the socket connection until the end of 
-	# transmission character appears at the end of a message.
-	length = connection.recv(8)
-	print length
-	lengthint = -1
-	if len(length) == 8 and length != "GETDELET":
-		try:
-			lengthint = int(struct.unpack("!Q", length)[0])
-			print lengthint
-		except Exception as e:
-			print e
-	try:
-		lengthint = int(lengthint)
-	except ValueError:
-		lengthint = -1
-	recvLen = 0
-	while recvLen < lengthint:
-		print lengthint
-		# Receive the data
-		d = connection.recv(1024)
-		#logging.debug('RECV: data has been received: ' + str(connection.getsockname() + connection.getpeername()))
-		# Append the received data to the data string
-		recvLen += len(d)
-		data += d
-		# Create a string from the received data string which contains the last 
-		# character. Creating this small string should reduce the omputational load 
-		# of parsing through what could be a long string.
-		#try:
-		#	ending = d[-eotlen:0]
-		#except IndexError:
-		#	logging.debug('RECV: No data received')
-		#	break
-		# Check the ending of the received data to see if it contains an end of
-		# transmission character, and if it does, break out of the loop since 
-		# no more data should be sent.
-		#if eot in ending:
-		#	logging.debug('RECV: End of transmission character found. No longer receiving.')
-		#	break
-		#if not data:
-		#	break
-		
-		#logging.debug('RECV: End of transmission character not found. Continue receiving.')
-
-	# In the received data, remove the end of transmission character
-	#data = data.replace(eot, "")
-	logging.debug('RECV: Data Parsed Successfully!')
-	# Give back the received data
-	return data
-"""
 packer = struct.Struct('!L')
 
 def recv(connection):
         msg = ""
         msgLen = packer.unpack(connection.recv(4))[0]
 #	msgLen = int(connection.recv(8))
-        print msgLen
         while len(msg) < msgLen:
                 msg += connection.recv(msgLen-len(msg))
         return msg
@@ -145,16 +89,10 @@ def recv(connection):
 #               TCP SEND FUNCTION 
 
 ###############################################################################
-"""
-def send(connection, message):
-	length = len(message)
-	buffer = struct.pack("Q", length)
-	connection.send(buffer + message)
-"""
+
 def send(connection, message):
 	totalSent = 0
 	msgLen = len(message)
-	print msgLen
 	packed_msgLen = packer.pack(msgLen)
 	connection.send(packed_msgLen)
 	while totalSent < msgLen:
